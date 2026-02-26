@@ -139,6 +139,45 @@ def evaluate_acc(
     return correct / max(total, 1)
 
 
+@torch.no_grad()
+def evaluate_metrics(
+    model,
+    loader: DataLoader,
+    device: torch.device,
+    max_batches: int = 0,
+    *,
+    use_hi: Optional[bool] = None,
+) -> Dict[str, float]:
+    was_training = bool(model.training)
+    model.eval()
+
+    correct = 0
+    total = 0
+    total_loss = 0.0
+    n_batches = 0
+
+    ctx = nullcontext() if use_hi is None else _set_dualrank_use_hi(model, use_hi)
+
+    with ctx:
+        for i, batch in enumerate(loader):
+            if max_batches > 0 and i >= max_batches:
+                break
+            batch = {k: v.to(device) for k, v in batch.items()}
+            out = model(**batch)
+            preds = out.logits.argmax(dim=-1)
+            labels = batch["labels"]
+            correct += (preds == labels).sum().item()
+            total += labels.numel()
+            total_loss += float(out.loss.detach().item())
+            n_batches += 1
+
+    model.train(was_training)
+    return {
+        "acc": float(correct / max(total, 1)),
+        "loss": float(total_loss / max(n_batches, 1)),
+    }
+
+
 def _dbg_cfg(cfg: Dict[str, Any]) -> Dict[str, Any]:
     d = cfg.get("debug", {}) or {}
     return {
@@ -326,22 +365,34 @@ def train_one(
         if step == last_eval_global_step:
             return
 
-        val_acc = evaluate_acc(model, val_loader, device, max_batches=eval_max_batches, use_hi=True)
-        payload: Dict[str, Any] = {"val/acc": float(val_acc), "epoch": int(ep)}
+        val_full = evaluate_metrics(model, val_loader, device, max_batches=eval_max_batches, use_hi=True)
+        val_acc = float(val_full["acc"])
+        payload: Dict[str, Any] = {
+            "val/acc": float(val_acc),
+            "val/loss": float(val_full["loss"]),
+            "epoch": int(ep),
+            "probe/is_eval": 1.0,
+        }
 
         val_acc_r = None
         if is_ours and eval_r_only:
-            val_acc_r = evaluate_acc(model, val_loader, device, max_batches=eval_max_batches, use_hi=False)
+            val_r = evaluate_metrics(model, val_loader, device, max_batches=eval_max_batches, use_hi=False)
+            val_acc_r = float(val_r["acc"])
             payload["val/acc_r_only"] = float(val_acc_r)
+            payload["val/loss_r_only"] = float(val_r["loss"])
 
         if compute_train_acc:
-            tr_acc = evaluate_acc(model, train_loader, device, max_batches=train_acc_max_batches, use_hi=True)
+            tr_full = evaluate_metrics(model, train_loader, device, max_batches=train_acc_max_batches, use_hi=True)
+            tr_acc = float(tr_full["acc"])
             payload["train/acc"] = float(tr_acc)
+            payload["train/loss_eval"] = float(tr_full["loss"])
             payload["gap/train_minus_val"] = float(tr_acc - val_acc)
 
             if is_ours and eval_r_only:
-                tr_acc_r = evaluate_acc(model, train_loader, device, max_batches=train_acc_max_batches, use_hi=False)
+                tr_r = evaluate_metrics(model, train_loader, device, max_batches=train_acc_max_batches, use_hi=False)
+                tr_acc_r = float(tr_r["acc"])
                 payload["train/acc_r_only"] = float(tr_acc_r)
+                payload["train/loss_r_only_eval"] = float(tr_r["loss"])
                 if val_acc_r is not None:
                     payload["gap_r_only/train_minus_val_r_only"] = float(tr_acc_r - float(val_acc_r))
 
@@ -368,7 +419,15 @@ def train_one(
                 loss = out.loss
                 loss.backward()
                 step_loss_val = float(loss.item())
-                logger.log(global_step, {"train/loss": step_loss_val})
+                logger.log(
+                    global_step,
+                    {
+                        "train/loss": step_loss_val,
+                        "epoch": int(ep),
+                        "step_in_epoch": int(step_in_epoch),
+                        "probe/is_eval": 0.0,
+                    },
+                )
 
             else:
                 bs = int(batch["input_ids"].shape[0])
@@ -488,9 +547,19 @@ def train_one(
                     {
                         "train/loss": float(step_loss_val),
                         "train/gate0_triggered_blocks": info.get("triggered_blocks", 0.0),
+                        "train/gate0_considered_blocks": info.get("considered_blocks", 0.0),
+                        "train/gate0_trigger_rate": info.get("gate0_trigger_rate", 0.0),
+                        "train/pull_to_r_blocks": info.get("pull_to_r_blocks", 0.0),
+                        "train/pull_to_R_blocks": info.get("pull_to_R_blocks", 0.0),
+                        "train/pull_to_r_rate": info.get("pull_to_r_rate", 0.0),
+                        "train/pull_to_R_rate": info.get("pull_to_R_rate", 0.0),
+                        "train/alpha_pull_mean": info.get("alpha_pull_mean", 0.0),
                         "train/single_vote_skipped_blocks": float(single_vote_blocks),
                         "train/tau_N": info.get("tau_N", 0.0),
                         "train/tau_D": info.get("tau_D", 0.0),
+                        "epoch": int(ep),
+                        "step_in_epoch": int(step_in_epoch),
+                        "probe/is_eval": 0.0,
                     },
                 )
 

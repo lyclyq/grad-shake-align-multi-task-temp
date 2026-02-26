@@ -12,7 +12,7 @@ train:
   batch_size: 32
   lr: 2e-5
   warmup_ratio: 0.1
-  seed: 12
+  seed: 2
 
   weight_decay: 0.0
   max_grad_norm: 1.0
@@ -60,7 +60,7 @@ method:
   # -------------------------
   baseline_r:
     lora:
-      r: 16
+      r: 32
       alpha: 2.0
       dropout: 0.1
 
@@ -78,9 +78,9 @@ method:
   # -------------------------
   ours:
     lora:
-      r: 16
+      r: 32
       R: 128
-      alpha: 4.0
+      alpha: 16.0
       dropout: 0.1
 
     ema_H: 1
@@ -147,7 +147,7 @@ hpo:
     - { tag: baseline_R }
 
   budget:
-    total_trials: 10
+    total_trials: 400
 
   ratio_sensitivity: 0.20
   ratio_grid: 0.50
@@ -157,7 +157,7 @@ hpo:
 
   bandit:
     fixed_warmup_ratio: 0.1
-    refine_seeds: [12, 24]
+    refine_seeds: [2, 3]
     score:
       w_max: 0.5
       w_final: 0.4
@@ -167,12 +167,11 @@ hpo:
     knobs: ["routing_delta"]
     drop_if_weight_lt: 0.0
 
-    baseline_sweep_epochs: 1
-    baseline_refine_epochs: 3
+    baseline_search_epochs: 3
     sensitivity_epochs: 1
     grid_epochs: 3
     sens_samples_per_knob: 40
-    sens_seed: 12
+    sens_seed: 2
     rng_seed: 2026
     max_retries: 3
 
@@ -185,12 +184,16 @@ hpo:
     bayes_gp_var: 1.0
     bayes_gp_noise: 1e-3
     bayes_ei_xi: 0.01
+    rerank:
+      enabled: true
+      top_k: 10
+      epochs: 6
 
     alpha_probe:
       enabled: true
       num_alpha: 2
       num_lr: 2
-      seeds: [12, 24]
+      seeds: [2, 3]
       epochs: 3
 
     knob_specs:

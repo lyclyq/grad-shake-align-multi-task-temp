@@ -305,6 +305,22 @@ def _next_pending_item(st: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     return cand[0]
 
 
+def _next_pending_item_by_stage(st: Dict[str, Any], stages: List[str]) -> Optional[Dict[str, Any]]:
+    items = st.get("items", [])
+    if not isinstance(items, list):
+        return None
+    stage_set = {str(s) for s in stages}
+    cand = [
+        it
+        for it in items
+        if str(it.get("status", "")) in {"pending", "failed"} and str(it.get("stage", "")) in stage_set
+    ]
+    if not cand:
+        return None
+    cand.sort(key=lambda it: int(it.get("idx", 10**9)))
+    return cand[0]
+
+
 # -----------------------------
 # runner invocation
 # -----------------------------
@@ -767,10 +783,12 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
     tags = _baseline_tags(cfg)
 
     grid_cfg = hpo_cfg["grid"]
-    sens_epochs = int(grid_cfg["sensitivity_epochs"])
     grid_epochs = int(grid_cfg["grid_epochs"])
-    baseline_sweep_epochs = int(grid_cfg["baseline_sweep_epochs"])
-    baseline_refine_epochs = int(grid_cfg["baseline_refine_epochs"])
+    baseline_search_epochs = int(grid_cfg["baseline_search_epochs"])
+    rerank_cfg = grid_cfg["rerank"]
+    rerank_enabled = bool(rerank_cfg["enabled"])
+    rerank_top_k = int(rerank_cfg["top_k"])
+    rerank_epochs = int(rerank_cfg["epochs"])
 
     max_retries = int(grid_cfg["max_retries"])
 
@@ -784,34 +802,9 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
         raise RuntimeError("[HPO] forbidden knob name: 'lora'")
 
     drop_if_weight_lt = float(grid_cfg["drop_if_weight_lt"])
-    sens_seed = int(grid_cfg["sens_seed"])
-    rng = np.random.default_rng(int(grid_cfg["rng_seed"]))
     knob_specs_all = grid_cfg["knob_specs"]
     if not isinstance(knob_specs_all, dict):
         raise RuntimeError("[HPO] hpo.grid.knob_specs must be a dict")
-
-    def _sample_value(kn: str) -> float:
-        spec = knob_specs_all.get(kn, None)
-        if not isinstance(spec, dict):
-            raise RuntimeError(f"[HPO] missing knob spec: hpo.grid.knob_specs.{kn}")
-        kind = str(spec["kind"])
-        if kind == "choice":
-            choices = spec.get("choices", None)
-            if not isinstance(choices, list) or not choices:
-                raise RuntimeError(f"[HPO] choice knob '{kn}' must provide non-empty choices")
-            return float(rng.choice([float(x) for x in choices]))
-        lo = float(spec["lo"])
-        hi = float(spec["hi"])
-        step = spec.get("step", None)
-        v = float(rng.uniform(lo, hi))
-        if step is not None:
-            try:
-                st = float(step)
-                if st > 0:
-                    v = float(np.round(v / st) * st)
-            except Exception:
-                pass
-        return v
 
     # -----------------------
     # Build plan_status items deterministically
@@ -821,17 +814,27 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
     items: List[PlanItem] = []
     idx = 0
 
-    # baseline sweep (seed=12 fixed)
+    # baseline search (single seed, aligned to the first refine seed)
+    baseline_search_seed = int(refine_seeds[0])
     for tag in tags:
         lora = _baseline_lora_from_method(cfg, tag)
         for i, lr in enumerate(full_lrs):
-            trial_tag = f"bl_sweep__{tag}__i{i}"
-            run_dir = str(hpo_run_dir / "trial_runs" / "baseline_sweep" / tag / f"i{i}" / "s12")
+            trial_tag = f"bl_search__{tag}__i{i}"
+            run_dir = str(hpo_run_dir / "trial_runs" / "baseline_search" / tag / f"i{i}" / f"s{baseline_search_seed}")
             override = {
                 "method": {"name": tag, tag: {"lora": {"r": int(lora["r"]), "alpha": float(lora["alpha"]), "dropout": float(lora["dropout"])}}},
-                "train": {"lr": float(lr), "warmup_ratio": float(fixed_wu), "epochs": int(baseline_sweep_epochs), "seed": 12},
+                "train": {"lr": float(lr), "warmup_ratio": float(fixed_wu), "epochs": int(baseline_search_epochs), "seed": int(baseline_search_seed)},
             }
-            items.append(PlanItem(idx=idx, stage="baseline_sweep", trial_tag=trial_tag, seed=12, run_dir=run_dir, override=override))
+            items.append(
+                PlanItem(
+                    idx=idx,
+                    stage="baseline_search",
+                    trial_tag=trial_tag,
+                    seed=int(baseline_search_seed),
+                    run_dir=run_dir,
+                    override=override,
+                )
+            )
             idx += 1
 
     if not st.get("items"):
@@ -886,36 +889,30 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
         _save_plan_status(status_path, st)
 
     # -----------------------
-    # 0) Run baseline sweep
+    # 0) Run baseline search
     # -----------------------
     while True:
         st = _load_plan_status(status_path)
-        nxt = _next_pending_item(st)
+        nxt = _next_pending_item_by_stage(st, ["baseline_search"])
         if nxt is None:
-            break
-        if str(nxt.get("stage")) != "baseline_sweep":
             break
         _execute_one(nxt)
 
     st = _load_plan_status(status_path)
-    pending_sweep = [it for it in st.get("items", []) if str(it.get("stage")) == "baseline_sweep" and str(it.get("status")) != "done"]
-    if pending_sweep:
-        print(f"[HPO][STOP] baseline_sweep not finished. pending={len(pending_sweep)}")
+    pending_search = [it for it in st.get("items", []) if str(it.get("stage")) == "baseline_search" and str(it.get("status")) != "done"]
+    if pending_search:
+        print(f"[HPO][STOP] baseline_search not finished. pending={len(pending_search)}")
         return
 
-    # -----------------------
-    # 0.5) baseline refine materialize + run
-    # -----------------------
     rows = _read_all_rows(trials_csv)
-
     best_lr_by_tag: Dict[str, float] = {}
     for tag in tags:
         best = None
         best_s = float("-inf")
         for r in rows:
-            if str(r.get("stage", "")) != "baseline_sweep":
+            if str(r.get("stage", "")) != "baseline_search":
                 continue
-            if not str(r.get("trial_tag", "")).startswith(f"bl_sweep__{tag}__"):
+            if not str(r.get("trial_tag", "")).startswith(f"bl_search__{tag}__"):
                 continue
             try:
                 s = float(r.get("score", "-inf"))
@@ -925,68 +922,14 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
                 best_s = s
                 best = r
         if best is None:
-            best_lr_by_tag[tag] = float(cfg["train"]["lr"])
-        else:
-            try:
-                cfgj = json.loads(best.get("trial_cfg_json", "{}"))
-                best_lr_by_tag[tag] = float(cfgj["train"]["lr"])
-            except Exception as e:
-                raise RuntimeError(f"[HPO] failed to parse baseline sweep lr for tag={tag}") from e
+            raise RuntimeError(f"[HPO] baseline_search produced no finished row for tag={tag}")
+        try:
+            cfgj = json.loads(best.get("trial_cfg_json", "{}"))
+            best_lr_by_tag[tag] = float(cfgj["train"]["lr"])
+        except Exception as e:
+            raise RuntimeError(f"[HPO] failed to parse baseline search lr for tag={tag}") from e
 
-    refine_lr_lists: Dict[str, List[float]] = {}
-    for tag in tags:
-        refine_lr_lists[tag] = lr_neighborhood_from_plan(plan, best_lr_by_tag[tag])
-
-    st = _load_plan_status(status_path)
-    existing = _plan_index(st)
-    idx0 = max([int(it.get("idx", 0)) for it in st.get("items", [])] + [0]) + 1
-
-    for tag in tags:
-        lora = _baseline_lora_from_method(cfg, tag)
-        for i, lr in enumerate(refine_lr_lists[tag]):
-            for sd in refine_seeds:
-                trial_tag = f"bl_refine__{tag}__i{i}__s{sd}"
-                key = f"{trial_tag}__seed_{sd}"
-                if key in existing:
-                    continue
-                run_dir = str(hpo_run_dir / "trial_runs" / "baseline_refine" / tag / f"i{i}" / f"s{sd}")
-                override = {
-                    "method": {"name": tag, tag: {"lora": {"r": int(lora["r"]), "alpha": float(lora["alpha"]), "dropout": float(lora["dropout"])}}},
-                    "train": {"lr": float(lr), "warmup_ratio": float(fixed_wu), "epochs": int(baseline_refine_epochs), "seed": int(sd)},
-                }
-                _update_item(st, PlanItem(idx=idx0, stage="baseline_refine", trial_tag=trial_tag, seed=int(sd), run_dir=run_dir, override=override))
-                idx0 += 1
-    _save_plan_status(status_path, st)
-
-    while True:
-        st = _load_plan_status(status_path)
-        nxt = _next_pending_item(st)
-        if nxt is None:
-            break
-        if str(nxt.get("stage")) != "baseline_refine":
-            break
-        _execute_one(nxt)
-
-    st = _load_plan_status(status_path)
-    pending_ref = [it for it in st.get("items", []) if str(it.get("stage")) == "baseline_refine" and str(it.get("status")) != "done"]
-    if pending_ref:
-        print(f"[HPO][STOP] baseline_refine not finished. pending={len(pending_ref)}")
-        return
-
-    rows = _read_all_rows(trials_csv)
-    best_refined_lr_by_tag: Dict[str, float] = {}
-    for tag in tags:
-        best_lr = best_lr_by_tag[tag]
-        best_score = float("-inf")
-        for i, lr in enumerate(refine_lr_lists[tag]):
-            seed_tags = [f"bl_refine__{tag}__i{i}__s{sd}" for sd in refine_seeds]
-            m = _score_mean_for_tags(trials_csv, seed_tags)
-            if m is None:
-                continue
-            if float(m) > best_score:
-                best_score = float(m)
-                best_lr = float(lr)
-        best_refined_lr_by_tag[tag] = float(best_lr)
+    best_refined_lr_by_tag: Dict[str, float] = {k: float(v) for k, v in best_lr_by_tag.items()}
 
     lrs_union: List[float] = []
     for tag in tags:
@@ -998,264 +941,55 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
         if fx not in seen_lr:
             out_lr.append(fx)
             seen_lr.add(fx)
-    lrs_union = out_lr or lr_neighborhood_from_plan(plan, float(cfg["train"]["lr"]))
+    if not out_lr:
+        raise RuntimeError("[HPO] empty lrs_union from baseline best lr neighborhoods")
+    lrs_union = out_lr
 
     # -----------------------
-    # 1) sensitivity stage
+    # 1) Direct grid space from knob specs (no sensitivity stage)
     # -----------------------
     budget_alloc = plan["budget"]["alloc"]
-    sens_trials = int(budget_alloc["sensitivity_trials"])
-
-    st = _load_plan_status(status_path)
-    existing = _plan_index(st)
-    idx0 = max([int(it.get("idx", 0)) for it in st.get("items", [])] + [0]) + 1
-
-    emitted = 0
-    j = 0
-
-    ours_base_knobs = json.loads(json.dumps(cfg["method"]["ours"]))
-
-    while emitted < sens_trials:
-        for kn in forced_knobs:
-            if emitted >= sens_trials:
-                break
-
-            trial_tag = f"sens__{kn}__j{j}__s{sens_seed}"
-            key = f"{trial_tag}__seed_{sens_seed}"
-
-            if key not in existing:
-                lr = float(rng.choice(lrs_union))
-                v = float(_sample_value(kn))
-                run_dir = str(hpo_run_dir / "trial_runs" / "sensitivity" / kn / f"j{j}" / f"s{sens_seed}")
-
-                ours_block = dict(ours_base_knobs)
-                ours_block[kn] = float(v)
-
-                override = {
-                    "method": {"name": "ours", "ours": ours_block},
-                    "train": {
-                        "lr": float(lr),
-                        "warmup_ratio": float(fixed_wu),
-                        "epochs": int(sens_epochs),
-                        "seed": int(sens_seed),
-                    },
-                }
-
-                _update_item(
-                    st,
-                    PlanItem(
-                        idx=idx0,
-                        stage="sensitivity",
-                        trial_tag=trial_tag,
-                        seed=int(sens_seed),
-                        run_dir=run_dir,
-                        override=override,
-                    ),
-                )
-                idx0 += 1
-                existing[key] = 1  # ✅ 就在这里
-
-            emitted += 1
-        j += 1
-
-    _save_plan_status(status_path, st)
-
-    while True:
-        st = _load_plan_status(status_path)
-        nxt = _next_pending_item(st)
-        if nxt is None:
-            break
-        if str(nxt.get("stage")) != "sensitivity":
-            break
-        _execute_one(nxt)
-
-    st = _load_plan_status(status_path)
-    pending_sens = [it for it in st.get("items", []) if str(it.get("stage")) == "sensitivity" and str(it.get("status")) != "done"]
-    if pending_sens:
-        print(f"[HPO][STOP] sensitivity not finished. pending={len(pending_sens)}")
-        return
-
-    # derive knob ranges + weights from sensitivity results
-    rows = _read_all_rows(trials_csv)
-    sens_records: List[Dict[str, Any]] = []
-    for r in rows:
-        if not str(r.get("trial_tag", "")).startswith("sens__"):
-            continue
-        try:
-            cfg_json = json.loads(r.get("trial_cfg_json", "{}"))
-            ours = cfg_json.get("method", {}).get("ours", {})
-            if not isinstance(ours, dict):
-                continue
-            for kn in forced_knobs:
-                if kn not in ours:
-                    continue
-                sens_records.append({"knob": str(kn), "value": float(ours[kn]), "score": float(r.get("score", "-inf"))})
-        except Exception:
-            continue
-
     knob_ranges: List[KnobRange] = []
     for kn in forced_knobs:
         spec = knob_specs_all.get(kn, None)
         if not isinstance(spec, dict):
             raise RuntimeError(f"[HPO] missing knob spec: hpo.grid.knob_specs.{kn}")
         kind = str(spec["kind"])
-        recs = [x for x in sens_records if x["knob"] == kn]
-        if not recs:
-            continue
-
-        scores = np.array([float(x["score"]) for x in recs], dtype=float)
-        weight = float(np.max(scores) - float(np.median(scores)))
+        weight = 1.0
         if weight < drop_if_weight_lt:
             continue
-
         if kind == "choice":
             choices = spec.get("choices", None)
             if not isinstance(choices, list) or not choices:
                 raise RuntimeError(f"[HPO] choice knob '{kn}' must provide non-empty choices")
             knob_ranges.append(KnobRange(name=kn, kind="choice", choices=[float(x) for x in choices], weight=weight))
-            continue
-
-        top_q = float(spec["top_quantile"])
-        top_q = min(0.9, max(0.05, top_q))
-        padding_ratio = float(spec["padding_ratio"])
-
-        recs_sorted = sorted(recs, key=lambda x: float(x["score"]), reverse=True)
-        take = max(1, int(math.ceil(len(recs_sorted) * top_q)))
-        vals = np.array([float(x["value"]) for x in recs_sorted[:take]], dtype=float)
-
-        lo = float(np.min(vals))
-        hi = float(np.max(vals))
-        if lo > hi:
-            lo, hi = hi, lo
-        span = max(1e-12, hi - lo)
-        lo2 = lo - padding_ratio * span
-        hi2 = hi + padding_ratio * span
-
-        clamp_lo = spec.get("clamp_lo", None)
-        clamp_hi = spec.get("clamp_hi", None)
-        if clamp_lo is not None:
-            lo2 = max(float(clamp_lo), lo2)
-        if clamp_hi is not None:
-            hi2 = min(float(clamp_hi), hi2)
-
-        knob_ranges.append(KnobRange(name=kn, kind="float", lo=float(lo2), hi=float(hi2), weight=weight))
+        elif kind == "float":
+            lo = float(spec["lo"])
+            hi = float(spec["hi"])
+            if lo > hi:
+                lo, hi = hi, lo
+            clamp_lo = spec.get("clamp_lo", None)
+            clamp_hi = spec.get("clamp_hi", None)
+            if clamp_lo is not None:
+                lo = max(float(clamp_lo), lo)
+            if clamp_hi is not None:
+                hi = min(float(clamp_hi), hi)
+            if lo > hi:
+                lo, hi = hi, lo
+            knob_ranges.append(KnobRange(name=kn, kind="float", lo=float(lo), hi=float(hi), weight=weight))
+        else:
+            raise RuntimeError(f"[HPO] unsupported knob kind for {kn}: {kind}")
 
     # -----------------------
-    # 1.5) alpha probe (NOT budgeted)
+    # 1.5) ours alpha fixed to baseline_R alpha
     # -----------------------
-    alpha_probe_cfg = grid_cfg["alpha_probe"]
-    alpha_probe_enabled = bool(alpha_probe_cfg["enabled"])
-
-    chosen_ours_alpha: Optional[float] = None
-    alpha_probe_report: Dict[str, Any] = {"enabled": bool(alpha_probe_enabled), "stage": "alpha_probe"}
-
-    if alpha_probe_enabled:
-        a_r = float(_baseline_lora_from_method(cfg, "baseline_r")["alpha"])
-        a_R = float(_baseline_lora_from_method(cfg, "baseline_R")["alpha"])
-        alpha_cands = [a_r, a_R]
-
-        lr_cands = [
-            float(best_refined_lr_by_tag["baseline_r"]),
-            float(best_refined_lr_by_tag["baseline_R"]),
-        ]
-
-        ap_seeds = [int(x) for x in alpha_probe_cfg["seeds"]]
-        if len(ap_seeds) < 2:
-            raise RuntimeError("[HPO] hpo.grid.alpha_probe.seeds must have at least 2 seeds")
-        ap_seeds = ap_seeds[:2]
-
-        ap_epochs = int(alpha_probe_cfg["epochs"])
-
-        range_map: Dict[str, KnobRange] = {k.name: k for k in knob_ranges}
-        fixed_assign: Dict[str, float] = {}
-        for kn in forced_knobs:
-            if kn in range_map:
-                fixed_assign[kn] = float(_median_from_knob_range(range_map[kn]))
-            else:
-                spec = knob_specs_all.get(kn, None)
-                if not isinstance(spec, dict):
-                    raise RuntimeError(f"[HPO] missing knob spec: hpo.grid.knob_specs.{kn}")
-                fixed_assign[kn] = float(_median_from_spec(spec))
-
-        alpha_probe_report.update(
-            {
-                "alpha_candidates": [float(x) for x in alpha_cands],
-                "lr_candidates": [float(x) for x in lr_cands],
-                "seeds": [int(x) for x in ap_seeds],
-                "epochs": int(ap_epochs),
-                "fixed_assign": fixed_assign,
-            }
-        )
-
-        st = _load_plan_status(status_path)
-        existing = _plan_index(st)
-        idx0 = max([int(it.get("idx", 0)) for it in st.get("items", [])] + [0]) + 1
-
-        alpha_tags_by_aidx: List[List[str]] = [[] for _ in range(len(alpha_cands))]
-
-        for ai, a in enumerate(alpha_cands):
-            for lr in lr_cands:
-                for sd in ap_seeds:
-                    payload = {"a_idx": int(ai), "alpha": float(a), "lr": float(lr), "seed": int(sd)}
-                    hh = _stable_hash(payload)
-                    trial_tag = f"alpha_probe__a{ai}__lr{float(lr):.3e}__s{int(sd)}__{hh}"
-                    alpha_tags_by_aidx[ai].append(trial_tag)
-
-                    key = f"{trial_tag}__seed_{sd}"
-                    if key in existing:
-                        continue
-
-                    run_dir = str(hpo_run_dir / "trial_runs" / "alpha_probe" / f"a{ai}" / f"lr_{float(lr):.3e}" / f"s{int(sd)}")
-
-                    ours_block = json.loads(json.dumps(cfg["method"]["ours"]))
-                    for k_assign, v_assign in fixed_assign.items():
-                        if k_assign == "lora":
-                            raise RuntimeError("[HPO] forbidden knob name: 'lora'")
-                        ours_block[k_assign] = float(v_assign)
-                    ours_block["lora"]["alpha"] = float(a)
-
-                    override = {
-                        "method": {"name": "ours", "ours": ours_block},
-                        "train": {"lr": float(lr), "warmup_ratio": float(fixed_wu), "epochs": int(ap_epochs), "seed": int(sd)},
-                    }
-
-                    _update_item(st, PlanItem(idx=idx0, stage="alpha_probe", trial_tag=trial_tag, seed=int(sd), run_dir=run_dir, override=override))
-                    idx0 += 1
-        _save_plan_status(status_path, st)
-
-        while True:
-            st = _load_plan_status(status_path)
-            nxt = _next_pending_item(st)
-            if nxt is None:
-                break
-            if str(nxt.get("stage")) != "alpha_probe":
-                break
-            _execute_one(nxt)
-
-        st = _load_plan_status(status_path)
-        pending_ap = [it for it in st.get("items", []) if str(it.get("stage")) == "alpha_probe" and str(it.get("status")) != "done"]
-        if pending_ap:
-            print(f"[HPO][STOP] alpha_probe not finished. pending={len(pending_ap)}")
-            return
-
-        alpha_scores: List[Dict[str, Any]] = []
-        for ai, a in enumerate(alpha_cands):
-            m = _score_mean_for_tags(trials_csv, alpha_tags_by_aidx[ai])
-            alpha_scores.append({"alpha": float(a), "tags": alpha_tags_by_aidx[ai], "mean_score": m})
-        alpha_probe_report["results"] = alpha_scores
-
-        best_m = float("-inf")
-        best_a: Optional[float] = None
-        for rec in alpha_scores:
-            m = rec.get("mean_score", None)
-            if m is None:
-                continue
-            if float(m) > best_m:
-                best_m = float(m)
-                best_a = float(rec.get("alpha", 0.0))
-        chosen_ours_alpha = best_a
-        alpha_probe_report["chosen_ours_alpha"] = chosen_ours_alpha
-        alpha_probe_report["chosen_mean_score"] = best_m
+    chosen_ours_alpha: Optional[float] = float(_baseline_lora_from_method(cfg, "baseline_R")["alpha"])
+    alpha_probe_report: Dict[str, Any] = {
+        "enabled": False,
+        "stage": "alpha_probe",
+        "mode": "fixed_baseline_R",
+        "chosen_ours_alpha": chosen_ours_alpha,
+    }
 
     # -----------------------
     # 2) grid2 cartesian (budgeted)
@@ -1348,10 +1082,8 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
 
     while True:
         st = _load_plan_status(status_path)
-        nxt = _next_pending_item(st)
+        nxt = _next_pending_item_by_stage(st, ["grid2"])
         if nxt is None:
-            break
-        if str(nxt.get("stage")) not in {"grid2"}:
             break
         _execute_one(nxt)
 
@@ -1530,10 +1262,8 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
 
         while True:
             st = _load_plan_status(status_path)
-            nxt = _next_pending_item(st)
+            nxt = _next_pending_item_by_stage(st, ["bayes"])
             if nxt is None:
-                break
-            if str(nxt.get("stage")) != "bayes":
                 break
             _execute_one(nxt)
 
@@ -1584,25 +1314,195 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
         bayes_best_row = _best_row(rows, stage_prefix="bayes.agg", only_aggregate=True)
 
     # -----------------------
+    # 4) top-k rerank (optional, not budgeted)
+    # -----------------------
+    rerank_source_stages = ["grid2.agg"] + (["bayes.agg"] if use_bayes else [])
+    rerank_report: Dict[str, Any] = {
+        "enabled": bool(rerank_enabled),
+        "top_k": int(rerank_top_k),
+        "epochs": int(rerank_epochs),
+        "source_stages": list(rerank_source_stages),
+        "candidates": 0,
+        "selected": 0,
+        "selected_source_tags": [],
+    }
+    rerank_best_row: Optional[Dict[str, Any]] = None
+
+    if rerank_enabled and rerank_top_k > 0:
+        rows = _read_all_rows(trials_csv)
+        stage_set = set(rerank_source_stages)
+        candidates: List[Tuple[float, Dict[str, Any]]] = []
+        seen_tags = set()
+        for r in rows:
+            stage = str(r.get("stage", ""))
+            if stage not in stage_set:
+                continue
+            seeds = str(r.get("seeds", "")).strip()
+            if "," not in seeds:
+                continue
+            trial_tag = str(r.get("trial_tag", ""))
+            if trial_tag in seen_tags:
+                continue
+            try:
+                s = float(r.get("score", "-inf"))
+            except Exception:
+                continue
+            candidates.append((s, r))
+            seen_tags.add(trial_tag)
+
+        candidates.sort(key=lambda x: float(x[0]), reverse=True)
+        top_rows = [r for _, r in candidates[: int(rerank_top_k)]]
+        rerank_report["candidates"] = int(len(candidates))
+        rerank_report["selected"] = int(len(top_rows))
+        rerank_report["selected_source_tags"] = [str(r.get("trial_tag", "")) for r in top_rows]
+
+        if top_rows:
+            st = _load_plan_status(status_path)
+            existing = _plan_index(st)
+            idx0 = max([int(it.get("idx", 0)) for it in st.get("items", [])] + [0]) + 1
+
+            for rank_i, src_row in enumerate(top_rows):
+                src_tag = str(src_row.get("trial_tag", ""))
+                try:
+                    src_cfg = json.loads(str(src_row.get("trial_cfg_json", "{}")))
+                except Exception as e:
+                    raise RuntimeError(f"[HPO] failed to parse trial_cfg_json for rerank source: {src_tag}") from e
+                if not isinstance(src_cfg, dict):
+                    raise RuntimeError(f"[HPO] rerank source cfg must be dict, got {type(src_cfg)} for {src_tag}")
+                if not isinstance(src_cfg.get("train"), dict):
+                    raise RuntimeError(f"[HPO] rerank source cfg missing train block: {src_tag}")
+
+                base_override = json.loads(json.dumps(src_cfg))
+                base_override["train"]["epochs"] = int(rerank_epochs)
+
+                payload = {
+                    "rank": int(rank_i),
+                    "src_trial_tag": src_tag,
+                    "src_cfg": src_row.get("trial_cfg_json", ""),
+                    "rerank_epochs": int(rerank_epochs),
+                }
+                base_tag = f"rerank__{rank_i:02d}__{_stable_hash(payload)}"
+
+                for sd in refine_seeds:
+                    trial_tag = f"{base_tag}__s{sd}"
+                    key = f"{trial_tag}__seed_{sd}"
+                    if key in existing:
+                        continue
+                    override = json.loads(json.dumps(base_override))
+                    override["train"]["seed"] = int(sd)
+                    run_dir = str(hpo_run_dir / "trial_runs" / "rerank" / base_tag / f"s{sd}")
+                    _update_item(
+                        st,
+                        PlanItem(
+                            idx=idx0,
+                            stage="rerank",
+                            trial_tag=trial_tag,
+                            seed=int(sd),
+                            run_dir=run_dir,
+                            override=override,
+                        ),
+                    )
+                    idx0 += 1
+
+                keyagg = f"{base_tag}__agg"
+                if keyagg not in existing:
+                    override2 = json.loads(json.dumps(base_override))
+                    override2["train"].pop("seed", None)
+                    run_dir = str(hpo_run_dir / "trial_runs" / "rerank" / base_tag / "agg")
+                    _update_item(
+                        st,
+                        PlanItem(
+                            idx=idx0,
+                            stage="rerank_agg",
+                            trial_tag=base_tag,
+                            seed=None,
+                            run_dir=run_dir,
+                            override=override2,
+                        ),
+                    )
+                    idx0 += 1
+
+            _save_plan_status(status_path, st)
+
+            while True:
+                st = _load_plan_status(status_path)
+                nxt = _next_pending_item_by_stage(st, ["rerank"])
+                if nxt is None:
+                    break
+                _execute_one(nxt)
+
+            st = _load_plan_status(status_path)
+            items_list = st.get("items", []) if isinstance(st.get("items", []), list) else []
+            rerank_agg_items = [it for it in items_list if str(it.get("stage")) == "rerank_agg"]
+
+            for it in sorted(rerank_agg_items, key=lambda x: int(x.get("idx", 10**9))):
+                base_tag = str(it["trial_tag"])
+                if _is_done_in_trials_csv(trials_csv, base_tag):
+                    it["status"] = "done"
+                    it["last_update"] = int(time.time())
+                    _save_plan_status(status_path, st)
+                    continue
+
+                seeds_done = True
+                for sd in refine_seeds:
+                    seed_tag = f"{base_tag}__s{sd}"
+                    if not _is_done_in_trials_csv(trials_csv, seed_tag):
+                        seeds_done = False
+                        break
+                if not seeds_done:
+                    continue
+
+                ov = it.get("override", {})
+                trial_cfg_json = json.dumps(ov, sort_keys=True)
+                _ = _aggregate_seed_trial(
+                    trials_csv=trials_csv,
+                    base_trial_tag=base_tag,
+                    stage="rerank.agg",
+                    seeds=refine_seeds,
+                    trial_cfg_json=trial_cfg_json,
+                )
+                if _is_done_in_trials_csv(trials_csv, base_tag):
+                    it["status"] = "done"
+                    it["last_update"] = int(time.time())
+                    _save_plan_status(status_path, st)
+
+            st = _load_plan_status(status_path)
+            items_list = st.get("items", []) if isinstance(st.get("items", []), list) else []
+            pending_rerank = [it for it in items_list if str(it.get("stage")) in {"rerank", "rerank_agg"} and str(it.get("status")) != "done"]
+            if pending_rerank:
+                print(f"[HPO][STOP] rerank not finished. pending={len(pending_rerank)}")
+                return
+
+            rows = _read_all_rows(trials_csv)
+            rerank_best_row = _best_row(rows, stage_prefix="rerank.agg", only_aggregate=True)
+
+    # -----------------------
     # Final selection + persist best_hparams.json + bundle
     # -----------------------
     rows = _read_all_rows(trials_csv)
     best_grid = _best_row(rows, stage_prefix="grid2.agg", only_aggregate=True)
 
     best_overall = best_grid
+    best_source = "grid2"
     if bayes_best_row is not None:
         try:
             if float(bayes_best_row.get("score", "-inf")) >= float(best_grid.get("score", "-inf")) if best_grid else True:
                 best_overall = bayes_best_row
+                best_source = "bayes"
         except Exception:
             best_overall = bayes_best_row
+            best_source = "bayes"
+
+    if rerank_best_row is not None:
+        best_overall = rerank_best_row
+        best_source = "rerank"
 
     best_curves_dir.mkdir(parents=True, exist_ok=True)
     for tag in tags:
         best = None
         best_s = float("-inf")
         for r in rows:
-            if not str(r.get("trial_tag", "")).startswith(f"bl_refine__{tag}__"):
+            if not str(r.get("trial_tag", "")).startswith(f"bl_search__{tag}__"):
                 continue
             try:
                 s = float(r.get("score", "-inf"))
@@ -1620,7 +1520,7 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
     if best_overall:
         best_obj = {
             "best": best_overall,
-            "best_source": "bayes" if (bayes_best_row is not None and best_overall == bayes_best_row) else "grid2",
+            "best_source": best_source,
             "weights": {"w_max": w_max, "w_final": w_final, "w_avg": w_avg},
             "plan_path": str(plan_path),
             "status_path": str(status_path),
@@ -1632,6 +1532,7 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
             "grid_solve_meta": solve_meta,
             "use_bayes": bool(use_bayes),
             "bayes_report": bayes_report,
+            "rerank_report": rerank_report,
         }
         _atomic_write_json(best_path, best_obj)
         print(f"[HPO][OK] best saved: {best_path}")
@@ -1659,6 +1560,7 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
             "grid_solve_meta": solve_meta,
             "use_bayes": bool(use_bayes),
             "bayes_report": bayes_report,
+            "rerank_report": rerank_report,
             "config_snapshot": str(snapshot_path),
             "config_resolved": cfg,
         }

@@ -53,6 +53,109 @@ def _read_rows(csv_path: Path) -> List[Dict[str, Any]]:
         return list(csv.DictReader(f))
 
 
+def _safe_float(x: Any) -> Optional[float]:
+    try:
+        if x is None:
+            return None
+        s = str(x).strip()
+        if s == "" or s.lower() in {"nan", "none"}:
+            return None
+        return float(s)
+    except Exception:
+        return None
+
+
+def _metric_values_from_csv(metrics_csv: Path, key: str, *, max_epoch: Optional[int] = None) -> List[float]:
+    p = Path(metrics_csv)
+    if not p.is_absolute():
+        p = Path(os.getcwd()) / p
+    if not p.exists():
+        return []
+
+    out: List[float] = []
+    with p.open("r", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            v = _safe_float(row.get(key, ""))
+            if v is None:
+                continue
+            if max_epoch is not None:
+                ep = _safe_float(row.get("epoch", ""))
+                if ep is not None and ep > float(max_epoch):
+                    continue
+            out.append(float(v))
+    return out
+
+
+def _summary_stats(vals: List[float]) -> Dict[str, Any]:
+    if not vals:
+        return {"n_points": 0}
+    arr = np.asarray(vals, dtype=float)
+    return {
+        "n_points": int(arr.size),
+        "mean": float(np.mean(arr)),
+        "std": float(np.std(arr)),
+        "min": float(np.min(arr)),
+        "max": float(np.max(arr)),
+    }
+
+
+def _aggregate_ours_diagnostics(rows: List[Dict[str, Any]], *, dense_early_epochs: int) -> Dict[str, Any]:
+    ours_rows = [r for r in rows if str(r.get("method", "")) == "ours"]
+    metric_specs = [
+        ("gate0_activation", ["train/gate0_trigger_rate", "train/gate0_triggered_blocks"]),
+        ("pull_direction_to_r", ["train/pull_to_r_rate", "train/pull_to_r_blocks"]),
+        ("pull_direction_to_R", ["train/pull_to_R_rate", "train/pull_to_R_blocks"]),
+        ("pull_strength_alpha", ["train/alpha_pull_mean"]),
+    ]
+
+    out: Dict[str, Any] = {
+        "dense_window_epochs": int(dense_early_epochs),
+        "n_ours_seeds": int(len(ours_rows)),
+        "metrics": {},
+    }
+
+    for metric_name, keys in metric_specs:
+        merged_vals: List[float] = []
+        seeds_with_data = set()
+        used_key_counts: Dict[str, int] = {k: 0 for k in keys}
+
+        for r in ours_rows:
+            metrics_csv = str(r.get("metrics_csv", "") or "").strip()
+            if not metrics_csv:
+                continue
+            seed = int(float(r.get("seed", 0)))
+
+            picked_key = None
+            picked_vals: List[float] = []
+            for k in keys:
+                vals = _metric_values_from_csv(
+                    Path(metrics_csv),
+                    k,
+                    max_epoch=int(dense_early_epochs),
+                )
+                if vals:
+                    picked_key = k
+                    picked_vals = vals
+                    break
+
+            if picked_key is None:
+                continue
+
+            used_key_counts[picked_key] += 1
+            seeds_with_data.add(seed)
+            merged_vals.extend(picked_vals)
+
+        metric_out: Dict[str, Any] = {
+            "candidate_keys": list(keys),
+            "used_key_counts": {k: int(v) for k, v in used_key_counts.items() if v > 0},
+            "n_seeds_with_data": int(len(seeds_with_data)),
+        }
+        metric_out.update(_summary_stats(merged_vals))
+        out["metrics"][metric_name] = metric_out
+
+    return out
+
+
 def _safe_name(x: str) -> str:
     s = str(x)
     for ch in ["/", "\\", " ", ":", ";", "|", "\t", "\n", "\r"]:
@@ -445,6 +548,8 @@ def run_final(
     }
     for m in methods_present:
         agg["methods"][m] = _aggregate_method(rows, m)
+    dense_early_epochs = int((((cfg.get("train", {}) or {}).get("eval", {}) or {}).get("dense_early_epochs", 2)))
+    agg["ours_diagnostics"] = _aggregate_ours_diagnostics(rows, dense_early_epochs=dense_early_epochs)
 
     dump_json(summary_json, agg)
     print(f"[final] saved: {summary_json}")

@@ -323,6 +323,13 @@ class ShakeAlignController:
             "tau_N": tau_N,
             "tau_D": tau_D,
             "triggered_blocks": 0.0,
+            "considered_blocks": 0.0,
+            "gate0_trigger_rate": 0.0,
+            "pull_to_r_blocks": 0.0,
+            "pull_to_R_blocks": 0.0,
+            "pull_to_r_rate": 0.0,
+            "pull_to_R_rate": 0.0,
+            "alpha_pull_mean": 0.0,
         }
         if debug:
             info["per_block"] = {}
@@ -332,6 +339,10 @@ class ShakeAlignController:
             info["per_block_history"] = {}
 
         triggered = 0
+        considered = 0
+        pull_to_r = 0
+        pull_to_R = 0
+        alpha_pull_sum = 0.0
 
         for name, mod in lora_modules.items():
             if name not in stats or name not in vote_sums:
@@ -375,6 +386,7 @@ class ShakeAlignController:
             gate0 = (N_summary >= tau_N) or (D >= tau_D)
 
             chi_star = self.trusted_reference(s)
+            considered += 1
 
             deltaC = float(s.C_r - s.C_R)
             insuff = self._sigmoid(float(k_pull) * float(deltaC))
@@ -490,6 +502,11 @@ class ShakeAlignController:
 
             if gate0:
                 triggered += 1
+                alpha_pull_sum += float(alpha_pull)
+                if chi_star == "r":
+                    pull_to_r += 1
+                else:
+                    pull_to_R += 1
 
             if debug:
                 info["per_block"][name] = {
@@ -526,4 +543,13 @@ class ShakeAlignController:
                     ]
 
         info["triggered_blocks"] = float(triggered)
+        info["considered_blocks"] = float(considered)
+        if considered > 0:
+            info["gate0_trigger_rate"] = float(triggered) / float(considered)
+        if triggered > 0:
+            info["pull_to_r_blocks"] = float(pull_to_r)
+            info["pull_to_R_blocks"] = float(pull_to_R)
+            info["pull_to_r_rate"] = float(pull_to_r) / float(triggered)
+            info["pull_to_R_rate"] = float(pull_to_R) / float(triggered)
+            info["alpha_pull_mean"] = float(alpha_pull_sum) / float(triggered)
         return info

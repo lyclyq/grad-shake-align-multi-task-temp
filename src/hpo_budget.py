@@ -107,14 +107,14 @@ def derive_total_trials(cfg: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
 def _alpha_probe_meta(cfg: Dict[str, Any], refine_seeds: List[int]) -> Dict[str, Any]:
     """
-    alpha_probe meta (NOT counted in budget):
-      default: 2 alpha × 2 lr × 2 seeds = 8 seed-runs
+    alpha_probe meta (NOT counted in budget).
+    Current policy disables alpha_probe execution; ours alpha follows baseline_R.
     """
     hpo = _require_dict(cfg["hpo"], "hpo")
     grid = _require_dict(hpo["grid"], "hpo.grid")
     ap = _require_dict(grid["alpha_probe"], "hpo.grid.alpha_probe")
 
-    enabled = bool(ap["enabled"])
+    enabled_cfg = bool(ap["enabled"])
     num_alpha = int(ap["num_alpha"])
     num_lr = int(ap["num_lr"])
     seeds2 = [int(x) for x in _require_list(ap["seeds"], "hpo.grid.alpha_probe.seeds")]
@@ -122,9 +122,12 @@ def _alpha_probe_meta(cfg: Dict[str, Any], refine_seeds: List[int]) -> Dict[str,
         raise RuntimeError("[hpo_budget] hpo.grid.alpha_probe.seeds must have at least 2 seeds")
 
     n_seeds = int(len(seeds2))
-    trials = (num_alpha * num_lr * n_seeds) if enabled else 0
+    # Policy: alpha_probe is currently disabled; ours alpha follows baseline_R alpha.
+    enabled = False
+    trials = 0
 
     return {
+        "enabled_cfg": enabled_cfg,
         "enabled": enabled,
         "num_alpha": int(num_alpha),
         "num_lr": int(num_lr),
@@ -164,13 +167,15 @@ def _baseline_tags(cfg: Dict[str, Any]) -> List[str]:
 def build_grid_plan(cfg: Dict[str, Any]) -> Dict[str, Any]:
     """
     Build an HPO plan that:
-      - accounts baseline sweep + baseline refine as budget consumption (DEDUCTED)
-      - alpha_probe is NOT counted (as you requested)
-      - remaining budget split by ratios (sens/grid/bayes)
-      - auto-derives grid density (configs per seed) from grid_trials
+      - baseline LR search is a fixed overhead stage (NOT deducted from grid budget)
+      - alpha_probe is NOT counted (as requested)
+      - budget.total_trials is interpreted as CONFIG budget (|Grid|-style units)
+      - split config budget by ratios (grid/bayes), with sensitivity merged into grid
     """
     hpo = _require_dict(cfg["hpo"], "hpo")
     bandit = _require_dict(hpo["bandit"], "hpo.bandit")
+    grid = _require_dict(hpo["grid"], "hpo.grid")
+    rerank = _require_dict(grid["rerank"], "hpo.grid.rerank")
 
     total_trials, meta = derive_total_trials(cfg)
     use_bayes = bool(hpo["use_bayes"])
@@ -181,6 +186,8 @@ def build_grid_plan(cfg: Dict[str, Any]) -> Dict[str, Any]:
     if not use_bayes:
         ratio_grid = ratio_grid + ratio_bayes
         ratio_bayes = 0.0
+    # Sensitivity is disabled: its budget share goes to grid.
+    ratio_grid = ratio_grid + ratio_sens
 
     refine_seeds = [int(x) for x in _require_list(bandit["refine_seeds"], "hpo.bandit.refine_seeds")]
     n_seeds = max(1, len(refine_seeds))
@@ -199,47 +206,57 @@ def build_grid_plan(cfg: Dict[str, Any]) -> Dict[str, Any]:
 
     tags = _baseline_tags(cfg)
 
-    # baseline cost model: sweep uses 1 fixed seed (seed=12) per lr per tag
-    baseline_sweep_trials = int(len(tags) * baseline_points * 1)
-
-    # baseline refine: neighbor_points per tag per refine_seed
-    baseline_refine_trials = int(len(tags) * neighbor_points * n_seeds)
+    # baseline LR search is a single stage (seed is the first refine seed at runtime)
+    baseline_search_trials = int(len(tags) * baseline_points * 1)
 
     alpha_probe_meta = _alpha_probe_meta(cfg, refine_seeds=refine_seeds)
     alpha_probe_trials = int(alpha_probe_meta.get("alpha_probe_trials", 0))  # NOT deducted
+    rerank_enabled = bool(rerank["enabled"])
+    rerank_top_k = int(rerank["top_k"])
+    rerank_epochs = int(rerank["epochs"])
+    rerank_trials = int(rerank_top_k * n_seeds) if rerank_enabled else 0
 
-    # remaining for sens/grid/bayes
-    remaining = int(max(1, total_trials - baseline_sweep_trials - baseline_refine_trials))
+    # CONFIG budget for ours-stage search space (|Grid| style)
+    config_budget = int(max(1, total_trials))
+    sens_configs = 0
+    grid_configs = max(1, int(math.floor(config_budget * ratio_grid)))
+    bayes_configs = max(0, int(math.floor(config_budget * ratio_bayes)))
 
-    sens_trials = max(1, int(math.floor(remaining * ratio_sens)))
-    grid_trials = max(1, int(math.floor(remaining * ratio_grid)))
-    bayes_trials = max(0, int(math.floor(remaining * ratio_bayes)))
-
-    # per-config count in grid/bayes (each config evaluated on n_seeds)
-    grid_configs = max(1, int(grid_trials // n_seeds))
-    bayes_configs = max(0, int(bayes_trials // n_seeds))
+    # runtime seed-runs (for reporting only)
+    sens_trials = 0
+    grid_trials = int(grid_configs * n_seeds)
+    bayes_trials = int(bayes_configs * n_seeds)
 
     # for reporting and optional tuning
     plan = {
         "budget": {
             "total_trials": int(total_trials),
             "meta": meta,
+            "unit": "configs",
             "use_bayes": bool(use_bayes),
             "deducted": {
-                "baseline_sweep_trials": int(baseline_sweep_trials),
-                "baseline_refine_trials": int(baseline_refine_trials),
+                "baseline_search_trials": 0,
             },
-            "remaining_after_baseline": int(remaining),
+            "remaining_after_baseline": int(config_budget),
             "alloc": {
                 "sensitivity_trials": int(sens_trials),
                 "grid_trials": int(grid_trials),
                 "bayes_trials": int(bayes_trials),
                 "n_seeds_refine": int(n_seeds),
+                "sensitivity_configs": int(sens_configs),
                 "grid_configs": int(grid_configs),
                 "bayes_configs": int(bayes_configs),
             },
             "not_counted": {
+                "baseline_search_trials": int(baseline_search_trials),
                 "alpha_probe": alpha_probe_meta,
+                "rerank": {
+                    "enabled": bool(rerank_enabled),
+                    "top_k": int(rerank_top_k),
+                    "epochs": int(rerank_epochs),
+                    "rerank_trials": int(rerank_trials),
+                    "counted_in_budget": False,
+                },
             },
         },
         "lr": {
@@ -254,12 +271,19 @@ def build_grid_plan(cfg: Dict[str, Any]) -> Dict[str, Any]:
             "extend_factor": float(extend_factor),
         },
         "stages": [
-            {"name": "baseline_sweep", "counted_in_budget": True, "budget_trials": int(baseline_sweep_trials)},
-            {"name": "baseline_refine", "counted_in_budget": True, "budget_trials": int(baseline_refine_trials)},
-            {"name": "sensitivity", "counted_in_budget": True, "budget_trials": int(sens_trials)},
+            {"name": "baseline_search", "counted_in_budget": False, "budget_trials": int(baseline_search_trials)},
+            {"name": "sensitivity", "counted_in_budget": False, "budget_trials": int(sens_trials), "configs": int(sens_configs)},
             {"name": "alpha_probe", "counted_in_budget": False, "meta": alpha_probe_meta},
             {"name": "grid2", "counted_in_budget": True, "budget_trials": int(grid_trials), "configs": int(grid_configs)},
             {"name": "bayes_refine", "counted_in_budget": bool(use_bayes), "budget_trials": int(bayes_trials), "configs": int(bayes_configs)},
+            {
+                "name": "rerank",
+                "counted_in_budget": False,
+                "budget_trials": int(rerank_trials),
+                "configs": int(rerank_top_k if rerank_enabled else 0),
+                "epochs": int(rerank_epochs),
+                "enabled": bool(rerank_enabled),
+            },
         ],
     }
     return plan

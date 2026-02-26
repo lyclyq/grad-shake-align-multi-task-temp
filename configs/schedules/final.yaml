@@ -2,7 +2,6 @@
 stage: final
 
 train:
-  epochs: 10
   warmup_ratio: 0.1
 
   eval:
@@ -20,5 +19,6 @@ train:
     first_step: false
 
 final:
+  # final.py uses this single source of truth for per-trial train epochs.
   epochs: 10
   seeds: [2, 3, 5, 7, 11]
