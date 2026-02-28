@@ -65,6 +65,114 @@ def _safe_float(x: Any) -> Optional[float]:
         return None
 
 
+def _normalize_ours_cfg_from_best(best_trial_cfg: Dict[str, Any], cfg: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Backward-compatible normalization for legacy best_hparams formats:
+      - old key: method.ours.noise_gate.{tau_n,kappa_n} -> gate0_noise.{tau,kappa}
+      - missing method.ours.lora -> fill from current cfg.method.ours.lora
+      - partial lora block -> fill missing keys from cfg defaults
+    """
+    try:
+        ours_cfg = json.loads(json.dumps(best_trial_cfg["method"]["ours"]))
+    except Exception as e:
+        raise RuntimeError("[final] best_hparams best.trial_cfg_json missing method.ours") from e
+
+    if not isinstance(ours_cfg, dict):
+        raise RuntimeError("[final] best_hparams method.ours must be a JSON object")
+
+    ng = ours_cfg.get("noise_gate", None)
+    if isinstance(ng, dict) and "gate0_noise" not in ours_cfg:
+        ours_cfg["gate0_noise"] = {
+            "tau": float(ng.get("tau_n", -10.0)),
+            "kappa": float(ng.get("kappa_n", 10.0)),
+        }
+
+    lora_default = json.loads(json.dumps(cfg["method"]["ours"]["lora"]))
+    lora_best = ours_cfg.get("lora", None)
+    if not isinstance(lora_best, dict):
+        ours_cfg["lora"] = lora_default
+    else:
+        merged = dict(lora_default)
+        merged.update(lora_best)
+        ours_cfg["lora"] = merged
+
+    return ours_cfg
+
+
+def _pick_best_lr_for_baseline(rows: List[Dict[str, Any]], tag: str) -> Optional[float]:
+    best_score = float("-inf")
+    best_lr: Optional[float] = None
+    for r in rows:
+        stage = str(r.get("stage", "")).strip()
+        trial_tag = str(r.get("trial_tag", "")).strip()
+        stage_match = stage in {f"baseline.{tag}", f"baseline_{tag}", tag}
+        search_match = stage == "baseline_search" and trial_tag.startswith(f"bl_search__{tag}__")
+        if not (stage_match or search_match):
+            continue
+
+        score = _safe_float(r.get("score", None))
+        if score is None:
+            continue
+
+        try:
+            trial_cfg = json.loads(str(r.get("trial_cfg_json", "{}")))
+            lr = _safe_float((trial_cfg.get("train", {}) or {}).get("lr", None))
+        except Exception:
+            lr = None
+        if lr is None:
+            continue
+
+        if float(score) > best_score:
+            best_score = float(score)
+            best_lr = float(lr)
+
+    return best_lr
+
+
+def _derive_baseline_best_lr_refined(best_obj: Dict[str, Any], best_path: Path) -> Optional[Dict[str, float]]:
+    bl = best_obj.get("baseline_best_lr_refined", None)
+    if isinstance(bl, dict) and ("baseline_r" in bl) and ("baseline_R" in bl):
+        try:
+            return {
+                "baseline_r": float(bl["baseline_r"]),
+                "baseline_R": float(bl["baseline_R"]),
+            }
+        except Exception:
+            pass
+
+    hpo_dir_raw = best_obj.get("hpo_dir", None)
+    hpo_dir = Path(str(hpo_dir_raw)) if hpo_dir_raw else best_path.parent
+    trials_csv = hpo_dir / "trials.csv"
+    if not trials_csv.exists():
+        return None
+
+    rows = _read_rows(trials_csv)
+    lr_r = _pick_best_lr_for_baseline(rows, "baseline_r")
+    lr_R = _pick_best_lr_for_baseline(rows, "baseline_R")
+    if lr_r is None or lr_R is None:
+        return None
+    return {"baseline_r": float(lr_r), "baseline_R": float(lr_R)}
+
+
+def _resolve_plan_path(best_obj: Dict[str, Any], best_path: Path) -> Optional[Path]:
+    pp = best_obj.get("plan_path", None)
+    if pp:
+        p = Path(str(pp))
+        if p.exists():
+            return p
+
+    hpo_dir_raw = best_obj.get("hpo_dir", None)
+    if hpo_dir_raw:
+        p2 = Path(str(hpo_dir_raw)) / "grid_plan.json"
+        if p2.exists():
+            return p2
+
+    p3 = best_path.parent / "grid_plan.json"
+    if p3.exists():
+        return p3
+    return None
+
+
 def _metric_values_from_csv(metrics_csv: Path, key: str, *, max_epoch: Optional[int] = None) -> List[float]:
     p = Path(metrics_csv)
     if not p.is_absolute():
@@ -357,9 +465,11 @@ def run_final(
     best_row = best_obj["best"]
     best_trial_cfg = json.loads(best_row["trial_cfg_json"])
 
-    ours_cfg = json.loads(json.dumps(best_trial_cfg["method"]["ours"]))
+    ours_cfg = _normalize_ours_cfg_from_best(best_trial_cfg, cfg)
     ours_lora = ours_cfg["lora"]
-    ours_lr = float(best_trial_cfg["train"]["lr"])
+    ours_lr = _safe_float((best_trial_cfg.get("train", {}) or {}).get("lr", None))
+    if ours_lr is None:
+        raise RuntimeError("[final] best_hparams best.trial_cfg_json missing train.lr")
     ours_r = int(ours_lora["r"])
     ours_R = int(ours_lora["R"])
 
@@ -372,18 +482,19 @@ def run_final(
             )
 
     # plan path -> baseline best lr by variant
-    plan_path = Path(str(best_obj["plan_path"]))
-    if not plan_path.exists():
-        raise FileNotFoundError(f"[final] plan_path not found: {plan_path}")
+    plan_path_opt = _resolve_plan_path(best_obj, bp)
+    if plan_path_opt is None:
+        raise FileNotFoundError("[final] plan_path not found in best_hparams and fallback locations")
+    plan_path = plan_path_opt
 
     plan = _read_json(plan_path)
     if not isinstance(plan, dict):
         raise RuntimeError("[final] grid_plan.json must be a JSON dict")
 
-    # strict: baseline best lr must exist (from best_hparams.json)
-    bl = best_obj.get("baseline_best_lr_refined", None)
+    # baseline best lr by variant (new format) or legacy fallback from hpo_dir/trials.csv
+    bl = _derive_baseline_best_lr_refined(best_obj, bp)
     if not isinstance(bl, dict):
-        raise RuntimeError("[final] best_hparams.json missing baseline_best_lr_refined")
+        raise RuntimeError("[final] missing baseline_best_lr_refined and failed to derive from hpo trials.csv")
     baseline_lr_r = float(bl["baseline_r"])
     baseline_lr_R = float(bl["baseline_R"])
 
