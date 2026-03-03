@@ -106,18 +106,6 @@ def _fname(metric: str) -> str:
     return metric.replace("/", "_").replace(" ", "_").replace(":", "_")
 
 
-def _r_only_pair(metric: str) -> Optional[str]:
-    mapping = {
-        "val/acc": "val/acc_r_only",
-        "val/loss": "val/loss_r_only",
-        "train/acc": "train/acc_r_only",
-        "train/loss": "train/loss_r_only_eval",
-        "train/loss_eval": "train/loss_r_only_eval",
-        "gap/train_minus_val": "gap_r_only/train_minus_val_r_only",
-    }
-    return mapping.get(metric)
-
-
 # -------------------------
 # grouping helpers
 # -------------------------
@@ -130,10 +118,6 @@ def _infer_group_from_filename(p: Path) -> Optional[str]:
         return "baseline_r"
     if name.startswith("baseline_R_") or name.startswith("best_baseline_R"):
         return "baseline_R"
-    if name.startswith("baseline_cagrad_r_") or name.startswith("best_baseline_cagrad_r"):
-        return "baseline_cagrad_r"
-    if name.startswith("baseline_cagrad_R_") or name.startswith("best_baseline_cagrad_R"):
-        return "baseline_cagrad_R"
     if name.startswith("ours_") or name.startswith("best_ours"):
         return "ours"
     return None
@@ -146,13 +130,7 @@ def _collect_group_metric_maps(curves_dir: Path) -> Dict[str, Dict[str, Dict[int
     where values are pooled across seeds.
     """
     curves_dir = Path(curves_dir)
-    group_files: Dict[str, List[Path]] = {
-        "baseline_r": [],
-        "baseline_R": [],
-        "baseline_cagrad_r": [],
-        "baseline_cagrad_R": [],
-        "ours": [],
-    }
+    group_files: Dict[str, List[Path]] = {"baseline_r": [], "baseline_R": [], "ours": []}
 
     for p in curves_dir.glob("*.csv"):
         g = _infer_group_from_filename(p)
@@ -189,11 +167,7 @@ def _plot_compare_one_metric(
     plt.figure()
 
     # consistent order
-    order = ["baseline_r", "baseline_R", "baseline_cagrad_r", "baseline_cagrad_R", "ours", "ours_r_only"]
-    style = {
-        "ours": {"color": "tab:red", "linestyle": "-", "linewidth": 2.0},
-        "ours_r_only": {"color": "black", "linestyle": "--", "linewidth": 2.2},
-    }
+    order = ["baseline_r", "baseline_R", "ours"]
     for g in order:
         per_step = group_to_per_step.get(g, {}) or {}
         if not per_step:
@@ -217,17 +191,9 @@ def _plot_compare_one_metric(
         mean = np.array(means, dtype=float)
         std = np.array(stds, dtype=float)
 
-        kw = style.get(g, {})
-        plt.plot(xs, mean, label=f"{g} mean", **kw)
+        plt.plot(xs, mean, label=f"{g} mean")
         # if only one seed, std will be 0 -> still ok
-        plt.fill_between(
-            xs,
-            mean - std,
-            mean + std,
-            alpha=0.12 if g == "ours_r_only" else 0.2,
-            color=kw.get("color", None),
-            label=f"{g} ±std",
-        )
+        plt.fill_between(xs, mean - std, mean + std, alpha=0.2, label=f"{g} ±std")
 
     plt.title(metric)
     plt.xlabel("step")
@@ -258,11 +224,8 @@ def plot_compare(curves_dir: Path, out_dir: Path) -> None:
     for metric in metrics:
         g2ps = {
             g: group_metric_maps.get(g, {}).get(metric, {}) or {}
-            for g in ["baseline_r", "baseline_R", "baseline_cagrad_r", "baseline_cagrad_R", "ours"]
+            for g in ["baseline_r", "baseline_R", "ours"]
         }
-        r_only_metric = _r_only_pair(metric)
-        if r_only_metric is not None:
-            g2ps["ours_r_only"] = group_metric_maps.get("ours", {}).get(r_only_metric, {}) or {}
         out_path = out_dir / f"{_fname(metric)}.png"
         _plot_compare_one_metric(metric, g2ps, out_path)
 

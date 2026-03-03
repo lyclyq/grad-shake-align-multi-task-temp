@@ -250,16 +250,6 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
     _require_dict(_get_path(cfg, "task"), "task")
     _ensure_str(_get_path(cfg, "task.name"), "task.name")
     _ensure_int(_get_path(cfg, "task.max_len"), "task.max_len")
-    task_cfg = _get_path(cfg, "task")
-    multi_enabled = False
-    if "multi" in task_cfg:
-        _require_dict(_get_path(cfg, "task.multi"), "task.multi")
-        multi_enabled = _ensure_bool(_get_path(cfg, "task.multi.enabled"), "task.multi.enabled")
-        datasets = _require_list(_get_path(cfg, "task.multi.datasets"), "task.multi.datasets")
-        for i, ds in enumerate(datasets):
-            _ensure_str(ds, f"task.multi.datasets[{i}]")
-        if multi_enabled and len(datasets) == 0:
-            raise ValueError("task.multi.datasets must be non-empty when task.multi.enabled=true")
 
     _require_dict(_get_path(cfg, "train"), "train")
     _ensure_int(_get_path(cfg, "train.epochs"), "train.epochs")
@@ -267,49 +257,6 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
     _ensure_float(_get_path(cfg, "train.lr"), "train.lr")
     _ensure_float(_get_path(cfg, "train.warmup_ratio"), "train.warmup_ratio")
     _ensure_int(_get_path(cfg, "train.seed"), "train.seed")
-    train_cfg = _get_path(cfg, "train")
-    if "precision" in train_cfg:
-        prec = _ensure_str(_get_path(cfg, "train.precision"), "train.precision").strip().lower()
-        if prec not in {"fp32", "bf16"}:
-            raise ValueError("train.precision must be one of: fp32 / bf16")
-    if "tf32" in train_cfg:
-        _ensure_bool(_get_path(cfg, "train.tf32"), "train.tf32")
-    if "compile" in train_cfg:
-        _ensure_bool(_get_path(cfg, "train.compile"), "train.compile")
-    if "fused_adamw" in train_cfg:
-        _ensure_bool(_get_path(cfg, "train.fused_adamw"), "train.fused_adamw")
-    if "max_steps" in train_cfg:
-        _ensure_int(_get_path(cfg, "train.max_steps"), "train.max_steps")
-    if "dataloader" in train_cfg:
-        _require_dict(_get_path(cfg, "train.dataloader"), "train.dataloader")
-        td = _get_path(cfg, "train.dataloader")
-        if "num_workers" in td:
-            _ensure_int(_get_path(cfg, "train.dataloader.num_workers"), "train.dataloader.num_workers")
-        if "pin_memory" in td:
-            _ensure_bool(_get_path(cfg, "train.dataloader.pin_memory"), "train.dataloader.pin_memory")
-        if "persistent_workers" in td:
-            _ensure_bool(_get_path(cfg, "train.dataloader.persistent_workers"), "train.dataloader.persistent_workers")
-        if "prefetch_factor" in td:
-            _ensure_int(_get_path(cfg, "train.dataloader.prefetch_factor"), "train.dataloader.prefetch_factor")
-    if "multi" in train_cfg:
-        _require_dict(_get_path(cfg, "train.multi"), "train.multi")
-        tm = _get_path(cfg, "train.multi")
-        if "drop_last" in tm:
-            _ensure_bool(_get_path(cfg, "train.multi.drop_last"), "train.multi.drop_last")
-        if "steps_mode" in tm:
-            sm = _ensure_str(_get_path(cfg, "train.multi.steps_mode"), "train.multi.steps_mode").strip().lower()
-            if sm not in {"max_steps", "epochs"}:
-                raise ValueError("train.multi.steps_mode must be one of: max_steps / epochs")
-    if multi_enabled:
-        tm = _get_path(cfg, "train.multi") if "multi" in train_cfg else {}
-        sm = str(tm.get("steps_mode", "max_steps")).strip().lower()
-        if sm not in {"max_steps", "epochs"}:
-            raise ValueError("train.multi.steps_mode must be one of: max_steps / epochs")
-        if sm == "max_steps":
-            if "max_steps" not in train_cfg:
-                raise KeyError("Missing required config key for multi-task mode max_steps: 'train.max_steps'")
-            if int(_get_path(cfg, "train.max_steps")) <= 0:
-                raise ValueError("train.max_steps must be > 0 when task.multi.enabled=true and train.multi.steps_mode=max_steps")
 
     _require_dict(_get_path(cfg, "train.eval"), "train.eval")
     _ensure_str(_get_path(cfg, "train.eval.strategy"), "train.eval.strategy")
@@ -345,25 +292,9 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
     # baseline blocks must exist (so you can switch without hidden defaults)
     _require_dict(_get_path(cfg, "method.baseline_r"), "method.baseline_r")
     _validate_lora_block(cfg, "method.baseline_r.lora", require_R=False)
-    br_cfg = _get_path(cfg, "method.baseline_r")
-    if "grad_solver" in br_cfg:
-        gs = _ensure_str(_get_path(cfg, "method.baseline_r.grad_solver"), "method.baseline_r.grad_solver")
-        if gs not in {"avg", "cagrad"}:
-            raise ValueError("method.baseline_r.grad_solver must be one of: avg / cagrad")
-    if "cagrad" in br_cfg:
-        _require_dict(_get_path(cfg, "method.baseline_r.cagrad"), "method.baseline_r.cagrad")
-        _ensure_float(_get_path(cfg, "method.baseline_r.cagrad.c"), "method.baseline_r.cagrad.c")
 
     _require_dict(_get_path(cfg, "method.baseline_R"), "method.baseline_R")
     _validate_lora_block(cfg, "method.baseline_R.lora", require_R=False)
-    bR_cfg = _get_path(cfg, "method.baseline_R")
-    if "grad_solver" in bR_cfg:
-        gs = _ensure_str(_get_path(cfg, "method.baseline_R.grad_solver"), "method.baseline_R.grad_solver")
-        if gs not in {"avg", "cagrad"}:
-            raise ValueError("method.baseline_R.grad_solver must be one of: avg / cagrad")
-    if "cagrad" in bR_cfg:
-        _require_dict(_get_path(cfg, "method.baseline_R.cagrad"), "method.baseline_R.cagrad")
-        _ensure_float(_get_path(cfg, "method.baseline_R.cagrad.c"), "method.baseline_R.cagrad.c")
 
     # ours block must exist + strict knobs
     _validate_ours_block(cfg)
@@ -409,14 +340,6 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
         _ensure_int(_get_path(cfg, "hpo.grid.sensitivity_epochs"), "hpo.grid.sensitivity_epochs")
         _ensure_int(_get_path(cfg, "hpo.grid.grid_epochs"), "hpo.grid.grid_epochs")
         _ensure_int(_get_path(cfg, "hpo.grid.baseline_search_epochs"), "hpo.grid.baseline_search_epochs")
-        if "baseline_search_max_steps" in _get_path(cfg, "hpo.grid"):
-            _ensure_int(_get_path(cfg, "hpo.grid.baseline_search_max_steps"), "hpo.grid.baseline_search_max_steps")
-            if int(_get_path(cfg, "hpo.grid.baseline_search_max_steps")) < 0:
-                raise ValueError("hpo.grid.baseline_search_max_steps must be >= 0")
-        if "grid_max_steps" in _get_path(cfg, "hpo.grid"):
-            _ensure_int(_get_path(cfg, "hpo.grid.grid_max_steps"), "hpo.grid.grid_max_steps")
-            if int(_get_path(cfg, "hpo.grid.grid_max_steps")) < 0:
-                raise ValueError("hpo.grid.grid_max_steps must be >= 0")
         _ensure_int(_get_path(cfg, "hpo.grid.max_retries"), "hpo.grid.max_retries")
         _ensure_int(_get_path(cfg, "hpo.grid.sens_seed"), "hpo.grid.sens_seed")
         _ensure_int(_get_path(cfg, "hpo.grid.rng_seed"), "hpo.grid.rng_seed")
@@ -432,10 +355,6 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
         _ensure_bool(_get_path(cfg, "hpo.grid.rerank.enabled"), "hpo.grid.rerank.enabled")
         _ensure_int(_get_path(cfg, "hpo.grid.rerank.top_k"), "hpo.grid.rerank.top_k")
         _ensure_int(_get_path(cfg, "hpo.grid.rerank.epochs"), "hpo.grid.rerank.epochs")
-        if "max_steps" in _get_path(cfg, "hpo.grid.rerank"):
-            _ensure_int(_get_path(cfg, "hpo.grid.rerank.max_steps"), "hpo.grid.rerank.max_steps")
-            if int(_get_path(cfg, "hpo.grid.rerank.max_steps")) < 0:
-                raise ValueError("hpo.grid.rerank.max_steps must be >= 0")
 
         ap = _require_dict(_get_path(cfg, "hpo.grid.alpha_probe"), "hpo.grid.alpha_probe")
         _ensure_bool(_get_path(cfg, "hpo.grid.alpha_probe.enabled"), "hpo.grid.alpha_probe.enabled")
@@ -502,14 +421,6 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
                     f"Found forbidden keys in baseline_variants[{i}]: {sorted(bad)}. "
                     "Put these under method.baseline_r.lora / method.baseline_R.lora instead."
                 )
-
-        if "cagrad" in _get_path(cfg, "hpo"):
-            _require_dict(_get_path(cfg, "hpo.cagrad"), "hpo.cagrad")
-            c_grid = _require_list(_get_path(cfg, "hpo.cagrad.c_grid"), "hpo.cagrad.c_grid")
-            if len(c_grid) == 0:
-                raise ValueError("hpo.cagrad.c_grid must be non-empty")
-            for i, c in enumerate(c_grid):
-                _ensure_float(c, f"hpo.cagrad.c_grid[{i}]")
 
     if cmd == "final":
         _require_dict(_get_path(cfg, "final"), "final")

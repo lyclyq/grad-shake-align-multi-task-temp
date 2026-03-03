@@ -159,98 +159,29 @@ def run_train(
     seed = int(cfg["train"]["seed"])
     set_seed(seed)
 
+    dataset = str(cfg["task"]["name"])
+    assert dataset.startswith("glue/"), "Only glue/<task> supported in this scaffold"
+    glue_task = dataset.split("/", 1)[1]
+
     model_name = str(cfg["model"]["name"])
     max_len = int(cfg["task"]["max_len"])
-    task_cfg = cfg["task"]
-    multi_cfg = task_cfg.get("multi", {}) or {}
-    multi_enabled = bool(multi_cfg.get("enabled", False))
-    batch_size = int(cfg["train"]["batch_size"])
-    drop_last = bool(((cfg.get("train", {}) or {}).get("multi", {}) or {}).get("drop_last", False))
-    dl_cfg = ((cfg.get("train", {}) or {}).get("dataloader", {}) or {})
-    num_workers = int(dl_cfg.get("num_workers", 4))
-    pin_memory = bool(dl_cfg.get("pin_memory", True))
-    persistent_workers = bool(dl_cfg.get("persistent_workers", True)) if num_workers > 0 else False
-    prefetch_factor = int(dl_cfg.get("prefetch_factor", 2)) if num_workers > 0 else None
 
-    if not multi_enabled:
-        dataset = str(task_cfg["name"])
-        assert dataset.startswith("glue/"), "Only glue/<task> supported in this scaffold"
-        glue_task = dataset.split("/", 1)[1]
-        data = load_glue(glue_task, model_name, max_len)
+    data = load_glue(glue_task, model_name, max_len)
 
-        train_loader = DataLoader(
-            data.train,
-            batch_size=batch_size,
-            shuffle=True,
-            collate_fn=data.collator,
-            drop_last=False,
-            num_workers=num_workers,
-            pin_memory=pin_memory,
-            persistent_workers=persistent_workers,
-            prefetch_factor=prefetch_factor,
-        )
-        val_loader = DataLoader(
-            data.validation,
-            batch_size=batch_size,
-            shuffle=False,
-            collate_fn=data.collator,
-            num_workers=num_workers,
-            pin_memory=pin_memory,
-            persistent_workers=persistent_workers,
-            prefetch_factor=prefetch_factor,
-        )
-        model = build_model(model_name, num_labels=data.num_labels)
-    else:
-        datasets_raw = list(multi_cfg.get("datasets", []) or [])
-        if len(datasets_raw) == 0:
-            raise RuntimeError("[runner] task.multi.enabled=true but task.multi.datasets is empty")
+    train_loader = DataLoader(
+        data.train,
+        batch_size=int(cfg["train"]["batch_size"]),
+        shuffle=True,
+        collate_fn=data.collator,
+    )
+    val_loader = DataLoader(
+        data.validation,
+        batch_size=int(cfg["train"]["batch_size"]),
+        shuffle=False,
+        collate_fn=data.collator,
+    )
 
-        train_loader = {}
-        val_loader = {}
-        num_labels_ref: Optional[int] = None
-
-        for ds_name in datasets_raw:
-            ds = str(ds_name).strip()
-            if not ds:
-                continue
-            if not ds.startswith("glue/"):
-                raise RuntimeError(f"[runner] only glue/* is supported in multi mode, got: {ds!r}")
-            glue_task = ds.split("/", 1)[1]
-            data = load_glue(glue_task, model_name, max_len)
-
-            if num_labels_ref is None:
-                num_labels_ref = int(data.num_labels)
-            elif int(data.num_labels) != int(num_labels_ref):
-                raise RuntimeError(
-                    f"[runner] mixed num_labels in multi datasets: "
-                    f"task={ds} has {data.num_labels}, expected {num_labels_ref}"
-                )
-
-            train_loader[ds] = DataLoader(
-                data.train,
-                batch_size=batch_size,
-                shuffle=True,
-                collate_fn=data.collator,
-                drop_last=bool(drop_last),
-                num_workers=num_workers,
-                pin_memory=pin_memory,
-                persistent_workers=persistent_workers,
-                prefetch_factor=prefetch_factor,
-            )
-            val_loader[ds] = DataLoader(
-                data.validation,
-                batch_size=batch_size,
-                shuffle=False,
-                collate_fn=data.collator,
-                num_workers=num_workers,
-                pin_memory=pin_memory,
-                persistent_workers=persistent_workers,
-                prefetch_factor=prefetch_factor,
-            )
-
-        if not train_loader:
-            raise RuntimeError("[runner] no valid datasets in task.multi.datasets")
-        model = build_model(model_name, num_labels=int(num_labels_ref))
+    model = build_model(model_name, num_labels=data.num_labels)
 
     # --------------------------
     # STRICT method resolution

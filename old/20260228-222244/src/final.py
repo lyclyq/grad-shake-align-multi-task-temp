@@ -102,13 +102,11 @@ def _normalize_ours_cfg_from_best(best_trial_cfg: Dict[str, Any], cfg: Dict[str,
 def _pick_best_lr_for_baseline(rows: List[Dict[str, Any]], tag: str) -> Optional[float]:
     best_score = float("-inf")
     best_lr: Optional[float] = None
-    best_score_agg = float("-inf")
-    best_lr_agg: Optional[float] = None
     for r in rows:
         stage = str(r.get("stage", "")).strip()
         trial_tag = str(r.get("trial_tag", "")).strip()
         stage_match = stage in {f"baseline.{tag}", f"baseline_{tag}", tag}
-        search_match = stage in {"baseline_search", "baseline_search.agg"} and trial_tag.startswith(f"bl_search__{tag}__")
+        search_match = stage == "baseline_search" and trial_tag.startswith(f"bl_search__{tag}__")
         if not (stage_match or search_match):
             continue
 
@@ -127,62 +125,8 @@ def _pick_best_lr_for_baseline(rows: List[Dict[str, Any]], tag: str) -> Optional
         if float(score) > best_score:
             best_score = float(score)
             best_lr = float(lr)
-        seeds_field = str(r.get("seeds", "")).strip()
-        is_agg = ("," in seeds_field) or stage.endswith(".agg")
-        if is_agg and float(score) > best_score_agg:
-            best_score_agg = float(score)
-            best_lr_agg = float(lr)
 
-    return best_lr_agg if best_lr_agg is not None else best_lr
-
-
-def _pick_best_cagrad_for_baseline(rows: List[Dict[str, Any]], tag: str) -> Optional[Dict[str, float]]:
-    best_score = float("-inf")
-    best_lr: Optional[float] = None
-    best_c: Optional[float] = None
-    best_score_agg = float("-inf")
-    best_lr_agg: Optional[float] = None
-    best_c_agg: Optional[float] = None
-    for r in rows:
-        stage = str(r.get("stage", "")).strip()
-        trial_tag = str(r.get("trial_tag", "")).strip()
-        if stage not in {"baseline_cagrad_search", "baseline_cagrad_search.agg"}:
-            continue
-        if not trial_tag.startswith(f"bl_cagrad__{tag}__"):
-            continue
-
-        score = _safe_float(r.get("score", None))
-        if score is None:
-            continue
-
-        try:
-            trial_cfg = json.loads(str(r.get("trial_cfg_json", "{}")))
-            lr = _safe_float((trial_cfg.get("train", {}) or {}).get("lr", None))
-            cval = _safe_float(
-                (((trial_cfg.get("method", {}) or {}).get(tag, {}) or {}).get("cagrad", {}) or {}).get("c", None)
-            )
-        except Exception:
-            lr = None
-            cval = None
-        if lr is None or cval is None:
-            continue
-
-        if float(score) > best_score:
-            best_score = float(score)
-            best_lr = float(lr)
-            best_c = float(cval)
-        seeds_field = str(r.get("seeds", "")).strip()
-        is_agg = ("," in seeds_field) or stage.endswith(".agg")
-        if is_agg and float(score) > best_score_agg:
-            best_score_agg = float(score)
-            best_lr_agg = float(lr)
-            best_c_agg = float(cval)
-
-    if best_lr_agg is not None and best_c_agg is not None:
-        return {"lr": float(best_lr_agg), "c": float(best_c_agg)}
-    if best_lr is None or best_c is None:
-        return None
-    return {"lr": float(best_lr), "c": float(best_c)}
+    return best_lr
 
 
 def _derive_baseline_best_lr_refined(best_obj: Dict[str, Any], best_path: Path) -> Optional[Dict[str, float]]:
@@ -208,37 +152,6 @@ def _derive_baseline_best_lr_refined(best_obj: Dict[str, Any], best_path: Path) 
     if lr_r is None or lr_R is None:
         return None
     return {"baseline_r": float(lr_r), "baseline_R": float(lr_R)}
-
-
-def _derive_baseline_cagrad_best(best_obj: Dict[str, Any], best_path: Path) -> Optional[Dict[str, Dict[str, float]]]:
-    bl = best_obj.get("baseline_cagrad_best_by_tag", None)
-    if isinstance(bl, dict) and ("baseline_r" in bl) and ("baseline_R" in bl):
-        try:
-            return {
-                "baseline_r": {
-                    "lr": float(bl["baseline_r"]["lr"]),
-                    "c": float(bl["baseline_r"]["c"]),
-                },
-                "baseline_R": {
-                    "lr": float(bl["baseline_R"]["lr"]),
-                    "c": float(bl["baseline_R"]["c"]),
-                },
-            }
-        except Exception:
-            pass
-
-    hpo_dir_raw = best_obj.get("hpo_dir", None)
-    hpo_dir = Path(str(hpo_dir_raw)) if hpo_dir_raw else best_path.parent
-    trials_csv = hpo_dir / "trials.csv"
-    if not trials_csv.exists():
-        return None
-
-    rows = _read_rows(trials_csv)
-    r_best = _pick_best_cagrad_for_baseline(rows, "baseline_r")
-    R_best = _pick_best_cagrad_for_baseline(rows, "baseline_R")
-    if r_best is None or R_best is None:
-        return None
-    return {"baseline_r": r_best, "baseline_R": R_best}
 
 
 def _resolve_plan_path(best_obj: Dict[str, Any], best_path: Path) -> Optional[Path]:
@@ -301,8 +214,6 @@ def _aggregate_ours_diagnostics(rows: List[Dict[str, Any]], *, dense_early_epoch
         ("pull_direction_to_r", ["train/pull_to_r_rate", "train/pull_to_r_blocks"]),
         ("pull_direction_to_R", ["train/pull_to_R_rate", "train/pull_to_R_blocks"]),
         ("pull_strength_alpha", ["train/alpha_pull_mean"]),
-        ("pull_strength_to_r", ["train/alpha_pull_to_r_mean"]),
-        ("pull_strength_to_R", ["train/alpha_pull_to_R_mean"]),
     ]
 
     out: Dict[str, Any] = {
@@ -587,17 +498,10 @@ def run_final(
     baseline_lr_r = float(bl["baseline_r"])
     baseline_lr_R = float(bl["baseline_R"])
 
-    bl_cagrad = _derive_baseline_cagrad_best(best_obj, bp)
-    if not isinstance(bl_cagrad, dict):
-        raise RuntimeError("[final] missing baseline_cagrad_best_by_tag and failed to derive from hpo trials.csv")
-    baseline_cagrad_r = bl_cagrad["baseline_r"]
-    baseline_cagrad_R = bl_cagrad["baseline_R"]
-
     # ensure final uses ranks derived from ours_r/ours_R
     methods = [
         {
             "name": "baseline_r",
-            "cfg_key": "baseline_r",
             "override": {
                 "method": {
                     "name": "baseline_r",
@@ -605,8 +509,7 @@ def run_final(
                         "lora": {
                             "r": int(ours_r),
                             # alpha/dropout come from base.yaml (strict); do not override.
-                        },
-                        "grad_solver": "avg",
+                        }
                     },
                 }
             },
@@ -614,53 +517,20 @@ def run_final(
         },
         {
             "name": "baseline_R",
-            "cfg_key": "baseline_R",
             "override": {
                 "method": {
                     "name": "baseline_R",
                     "baseline_R": {
                         "lora": {
                             "r": int(ours_R),
-                        },
-                        "grad_solver": "avg",
+                        }
                     },
                 }
             },
             "lr": baseline_lr_R,
         },
         {
-            "name": "baseline_cagrad_r",
-            "cfg_key": "baseline_r",
-            "override": {
-                "method": {
-                    "name": "baseline_r",
-                    "baseline_r": {
-                        "lora": {"r": int(ours_r)},
-                        "grad_solver": "cagrad",
-                        "cagrad": {"c": float(baseline_cagrad_r["c"])},
-                    },
-                }
-            },
-            "lr": float(baseline_cagrad_r["lr"]),
-        },
-        {
-            "name": "baseline_cagrad_R",
-            "cfg_key": "baseline_R",
-            "override": {
-                "method": {
-                    "name": "baseline_R",
-                    "baseline_R": {
-                        "lora": {"r": int(ours_R)},
-                        "grad_solver": "cagrad",
-                        "cagrad": {"c": float(baseline_cagrad_R["c"])},
-                    },
-                }
-            },
-            "lr": float(baseline_cagrad_R["lr"]),
-        },
-        {
             "name": "ours",
-            "cfg_key": "ours",
             "override": {
                 "method": {
                     "name": "ours",
@@ -684,7 +554,6 @@ def run_final(
 
     for m in methods:
         mname = str(m["name"])
-        cfg_key = str(m["cfg_key"])
         base_override = dict(m["override"])
         lr = float(m["lr"])
 
@@ -750,12 +619,14 @@ def run_final(
             task_cfg = cfg_resolved["task"]
             model_cfg = cfg_resolved["model"]
 
-            lora_cfg = method_cfg[cfg_key]["lora"]
+            if mname == "ours":
+                lora_cfg = method_cfg["ours"]["lora"]
+            else:
+                lora_cfg = method_cfg[mname]["lora"]
 
             repro_runs.append(
                 {
                     "method": mname,
-                    "cfg_key": cfg_key,
                     "seed": int(sd),
                     "run_dir": str(run_dir),
                     "train": {
@@ -773,7 +644,7 @@ def run_final(
                         "alpha": float(lora_cfg["alpha"]),
                         "dropout": float(lora_cfg["dropout"]),
                     },
-                    "method_cfg": method_cfg[cfg_key],
+                    "method_cfg": method_cfg[mname] if mname in method_cfg else method_cfg["ours"],
                 }
             )
 
@@ -803,8 +674,6 @@ def run_final(
         "ours_lr": float(ours_lr),
         "baseline_lr_r": float(baseline_lr_r),
         "baseline_lr_R": float(baseline_lr_R),
-        "baseline_cagrad_r": {"lr": float(baseline_cagrad_r["lr"]), "c": float(baseline_cagrad_r["c"])},
-        "baseline_cagrad_R": {"lr": float(baseline_cagrad_R["lr"]), "c": float(baseline_cagrad_R["c"])},
         "final_epochs": int(final_epochs),
         "fixed_warmup_ratio": float(fixed_wu),
         "final_seeds": [int(x) for x in final_seeds],

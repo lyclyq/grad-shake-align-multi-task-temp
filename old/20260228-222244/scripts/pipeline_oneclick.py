@@ -7,7 +7,6 @@ import json
 import re
 import subprocess
 import sys
-import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Tuple
@@ -50,68 +49,9 @@ def _default_runs_group(dataset: str, model: str) -> str:
     return f"{ds}_{bb}"
 
 
-def _default_runs_group_from_cfg(cfg: dict) -> str:
-    task = cfg["task"]
-    model = str(cfg["model"]["name"])
-    multi = (task.get("multi", {}) or {}) if isinstance(task, dict) else {}
-    if bool(multi.get("enabled", False)):
-        ds_list = list(multi.get("datasets", []) or [])
-        ds = "+".join([str(x).replace("/", "_") for x in ds_list]) if ds_list else str(task["name"]).replace("/", "_")
-    else:
-        ds = str(task["name"]).replace("/", "_")
-
-    if "roberta" in model.lower():
-        bb = "roberta"
-    elif "bert" in model.lower():
-        bb = "bert"
-    else:
-        bb = model.split("-")[0]
-    return f"{ds}_{bb}"
-
-
-def _multi_ds_token(ds_list: List[str]) -> str:
-    xs = [str(x).strip().replace("/", "_") for x in (ds_list or []) if str(x).strip()]
-    return "+".join(xs)
-
-
-def _augment_runs_group_with_datasets(runs_group: str, *, multi_enabled: Optional[bool], multi_datasets: Optional[List[str]]) -> str:
-    if not bool(multi_enabled):
-        return str(runs_group)
-    ds_tok = _multi_ds_token(list(multi_datasets or []))
-    if not ds_tok:
-        return str(runs_group)
-    rg = str(runs_group)
-    if ds_tok in rg:
-        return rg
-    return f"{rg}__{ds_tok}"
-
-
-def _fmt_stage_budget_tag(max_steps: Optional[int], epochs: Optional[int], prefix: str) -> str:
-    if max_steps is not None:
-        return f"{prefix}ms{int(max_steps)}"
-    if epochs is not None:
-        return f"{prefix}ep{int(epochs)}"
-    return f"{prefix}base"
-
-
-def _pipeline_budget_tag(spec: "ExpSpec") -> str:
-    ttag = f"t{int(spec.trials)}" if spec.trials is not None else "tbase"
-    run_tag = _fmt_stage_budget_tag(
-        spec.max_steps if spec.multi_steps_mode == "max_steps" else None,
-        spec.epochs if spec.multi_steps_mode == "epochs" else None,
-        "run",
-    )
-    hbs = _fmt_stage_budget_tag(spec.hpo_baseline_max_steps, spec.hpo_baseline_epochs, "hbs")
-    hg = _fmt_stage_budget_tag(spec.hpo_grid_max_steps, spec.hpo_grid_epochs, "hg")
-    hrr = _fmt_stage_budget_tag(spec.hpo_rerank_max_steps, spec.rerank_epochs, "hrr")
-    ftag = f"fep{int(spec.final_epochs)}" if spec.final_epochs is not None else "fepbase"
-    return f"{ttag}_{run_tag}_{hbs}_{hg}_{hrr}_{ftag}"
-
-
 @dataclass
 class ExpSpec:
     runs_group: str
-    epochs: Optional[int]
     final_epochs: Optional[int]
     final_seeds: List[int]
     resume_debug: str
@@ -120,11 +60,6 @@ class ExpSpec:
     dataset: Optional[str] = None
     model: Optional[str] = None
     trials: Optional[int] = None
-    multi_enabled: Optional[bool] = None
-    multi_datasets: Optional[List[str]] = None
-    multi_steps_mode: Optional[str] = None
-    max_steps: Optional[int] = None
-    multi_drop_last: Optional[bool] = None
 
     # ranks (must sync baseline_r/baseline_R/ours)
     ours_r: Optional[int] = None
@@ -135,16 +70,9 @@ class ExpSpec:
     rerank_enabled: Optional[bool] = None
     rerank_top_k: Optional[int] = None
     rerank_epochs: Optional[int] = None
-    hpo_baseline_epochs: Optional[int] = None
-    hpo_grid_epochs: Optional[int] = None
-    hpo_baseline_max_steps: Optional[int] = None
-    hpo_grid_max_steps: Optional[int] = None
-    hpo_rerank_max_steps: Optional[int] = None
 
 
 def sh(cmd: List[str], cwd: Optional[Path] = None) -> None:
-    if cmd and cmd[0] == "python":
-        cmd = [sys.executable] + cmd[1:]
     print("\n[CMD]", " ".join(cmd))
     subprocess.run(cmd, cwd=str(cwd or ROOT), check=True)
 
@@ -189,22 +117,6 @@ def _parse_bool_arg(s: str) -> bool:
     raise argparse.ArgumentTypeError(f"invalid bool value: {s!r} (use true/false)")
 
 
-def _parse_datasets_arg(s: Optional[str]) -> List[str]:
-    if s is None:
-        return []
-    ss = str(s).strip()
-    if not ss:
-        return []
-    if ss.startswith("["):
-        vals = json.loads(ss)
-        if not isinstance(vals, list):
-            raise argparse.ArgumentTypeError("--multi_datasets JSON must be a list")
-        out = [str(x).strip() for x in vals if str(x).strip()]
-    else:
-        out = [x.strip() for x in ss.split(",") if x.strip()]
-    return out
-
-
 def _get_nested(obj: Any, dotted: str) -> Any:
     cur = obj
     for k in dotted.split("."):
@@ -231,22 +143,11 @@ def _check_resume_snapshot_compat(
 
     keys = [
         "task.name",
-        "task.multi.enabled",
-        "task.multi.datasets",
-        "train.multi.steps_mode",
         "model.name",
-        "train.max_steps",
-        "train.epochs",
-        "train.multi.drop_last",
         "hpo.budget.total_trials",
         "hpo.grid.rerank.enabled",
         "hpo.grid.rerank.top_k",
         "hpo.grid.rerank.epochs",
-        "hpo.grid.baseline_search_epochs",
-        "hpo.grid.grid_epochs",
-        "hpo.grid.baseline_search_max_steps",
-        "hpo.grid.grid_max_steps",
-        "hpo.grid.rerank.max_steps",
         "method.baseline_r.lora.r",
         "method.baseline_R.lora.r",
         "method.ours.lora.r",
@@ -281,32 +182,6 @@ def build_argparser() -> argparse.ArgumentParser:
     # Optional pass-through overrides (ONLY applied if provided)
     p.add_argument("--dataset", type=str, default=None, help="Override task.name via --set task.name=...")
     p.add_argument("--model", type=str, default=None, help="Override model.name via --set model.name=...")
-    p.add_argument(
-        "--multi_enabled",
-        type=_parse_bool_arg,
-        default=None,
-        help="Override task.multi.enabled via --set (true/false)",
-    )
-    p.add_argument(
-        "--multi_datasets",
-        type=str,
-        default=None,
-        help="Override task.multi.datasets via --set. Accept JSON list or comma list.",
-    )
-    p.add_argument(
-        "--multi_steps_mode",
-        type=str,
-        choices=["max_steps", "epochs"],
-        default=None,
-        help="Override train.multi.steps_mode via --set (max_steps/epochs)",
-    )
-    p.add_argument("--max_steps", type=int, default=None, help="Override train.max_steps via --set (for multi-task)")
-    p.add_argument(
-        "--multi_drop_last",
-        type=_parse_bool_arg,
-        default=None,
-        help="Override train.multi.drop_last via --set (true/false)",
-    )
     p.add_argument("--trials", type=int, default=None, help="Override hpo.budget.total_trials via --set")
     p.add_argument(
         "--rerank_enabled",
@@ -316,16 +191,6 @@ def build_argparser() -> argparse.ArgumentParser:
     )
     p.add_argument("--rerank_top_k", type=int, default=None, help="Override hpo.grid.rerank.top_k via --set")
     p.add_argument("--rerank_epochs", type=int, default=None, help="Override hpo.grid.rerank.epochs via --set")
-    p.add_argument("--hpo_baseline_epochs", type=int, default=None, help="Override hpo.grid.baseline_search_epochs via --set")
-    p.add_argument("--hpo_grid_epochs", type=int, default=None, help="Override hpo.grid.grid_epochs via --set")
-    p.add_argument(
-        "--hpo_baseline_max_steps",
-        type=int,
-        default=None,
-        help="Override hpo.grid.baseline_search_max_steps via --set",
-    )
-    p.add_argument("--hpo_grid_max_steps", type=int, default=None, help="Override hpo.grid.grid_max_steps via --set")
-    p.add_argument("--hpo_rerank_max_steps", type=int, default=None, help="Override hpo.grid.rerank.max_steps via --set")
 
     # ranks: STRICT sync for baseline_r/baseline_R/ours
     p.add_argument("--ours_r", type=int, default=None, help="Override small rank r (sync baseline_r + ours.r)")
@@ -338,7 +203,6 @@ def build_argparser() -> argparse.ArgumentParser:
         default=None,
         help="Runs group folder under runs/. If omitted, derive from effective task/model (CLI overrides > base config).",
     )
-    p.add_argument("--epochs", type=int, default=None, help="Override train.epochs globally via --set")
 
     # Optional overrides for final stage ONLY
     p.add_argument("--final_epochs", type=int, default=None, help="Override train.epochs for final only via --set")
@@ -346,12 +210,6 @@ def build_argparser() -> argparse.ArgumentParser:
 
     p.add_argument("--ablate_interp", action="store_true")
     p.add_argument("--history_enabled", action="store_true")
-    p.add_argument(
-        "--set",
-        action="append",
-        default=[],
-        help="Extra raw --set overrides passthrough to HPO+FINAL (repeatable, e.g. --set train.batch_size=64).",
-    )
 
     p.add_argument(
         "--resume_debug",
@@ -380,24 +238,13 @@ def main() -> int:
             derive_sets.append(f"task.name={str(args.dataset)}")
         if args.model is not None:
             derive_sets.append(f"model.name={str(args.model)}")
-        if args.multi_enabled is not None:
-            derive_sets.append(f"task.multi.enabled={str(args.multi_enabled).lower()}")
-        ds_cli = _parse_datasets_arg(args.multi_datasets)
-        if ds_cli:
-            derive_sets.append("task.multi.datasets=" + json.dumps(ds_cli))
-        if args.max_steps is not None:
-            derive_sets.append(f"train.max_steps={int(args.max_steps)}")
-        if args.multi_steps_mode is not None:
-            derive_sets.append(f"train.multi.steps_mode={str(args.multi_steps_mode)}")
-        if args.multi_drop_last is not None:
-            derive_sets.append(f"train.multi.drop_last={str(args.multi_drop_last).lower()}")
-        if args.epochs is not None:
-            derive_sets.append(f"train.epochs={int(args.epochs)}")
         try:
             from src.config import load_config_with_cli_overrides
 
             cfg_eff = load_config_with_cli_overrides(base_cfg, None, derive_sets)
-            runs_group = _default_runs_group_from_cfg(cfg_eff)
+            ds_eff = str(cfg_eff["task"]["name"])
+            md_eff = str(cfg_eff["model"]["name"])
+            runs_group = _default_runs_group(ds_eff, md_eff)
             print(f"[PIPE] runs_group auto-derived from config: {runs_group}")
         except Exception as e:
             raise RuntimeError(
@@ -407,63 +254,27 @@ def main() -> int:
                 "or set --runs_group explicitly."
             ) from e
 
-    ds_cli = _parse_datasets_arg(args.multi_datasets)
     spec = ExpSpec(
         runs_group=runs_group,
-        epochs=int(args.epochs) if args.epochs is not None else None,
         final_epochs=int(args.final_epochs) if args.final_epochs is not None else None,
         final_seeds=_parse_seeds(args.final_seeds),
         resume_debug=str(args.resume_debug or ""),
         dataset=str(args.dataset) if args.dataset is not None else None,
         model=str(args.model) if args.model is not None else None,
         trials=int(args.trials) if args.trials is not None else None,
-        multi_enabled=args.multi_enabled,
-        multi_datasets=list(ds_cli) if ds_cli else None,
-        multi_steps_mode=str(args.multi_steps_mode) if args.multi_steps_mode is not None else None,
-        max_steps=int(args.max_steps) if args.max_steps is not None else None,
-        multi_drop_last=args.multi_drop_last,
         rerank_enabled=args.rerank_enabled,
         rerank_top_k=int(args.rerank_top_k) if args.rerank_top_k is not None else None,
         rerank_epochs=int(args.rerank_epochs) if args.rerank_epochs is not None else None,
-        hpo_baseline_epochs=int(args.hpo_baseline_epochs) if args.hpo_baseline_epochs is not None else None,
-        hpo_grid_epochs=int(args.hpo_grid_epochs) if args.hpo_grid_epochs is not None else None,
-        hpo_baseline_max_steps=int(args.hpo_baseline_max_steps) if args.hpo_baseline_max_steps is not None else None,
-        hpo_grid_max_steps=int(args.hpo_grid_max_steps) if args.hpo_grid_max_steps is not None else None,
-        hpo_rerank_max_steps=int(args.hpo_rerank_max_steps) if args.hpo_rerank_max_steps is not None else None,
         ours_r=int(args.ours_r) if args.ours_r is not None else None,
         ours_R=int(args.ours_R) if args.ours_R is not None else None,
         ablate_interp=bool(args.ablate_interp),
         history_enabled=bool(args.history_enabled),
     )
 
-    spec.runs_group = _augment_runs_group_with_datasets(
-        spec.runs_group,
-        multi_enabled=spec.multi_enabled,
-        multi_datasets=spec.multi_datasets,
-    )
-
     if spec.rerank_top_k is not None and spec.rerank_top_k <= 0:
         raise ValueError("--rerank_top_k must be > 0")
     if spec.rerank_epochs is not None and spec.rerank_epochs <= 0:
         raise ValueError("--rerank_epochs must be > 0")
-    if spec.hpo_baseline_epochs is not None and spec.hpo_baseline_epochs <= 0:
-        raise ValueError("--hpo_baseline_epochs must be > 0")
-    if spec.hpo_grid_epochs is not None and spec.hpo_grid_epochs <= 0:
-        raise ValueError("--hpo_grid_epochs must be > 0")
-    if spec.hpo_baseline_max_steps is not None and spec.hpo_baseline_max_steps <= 0:
-        raise ValueError("--hpo_baseline_max_steps must be > 0")
-    if spec.hpo_grid_max_steps is not None and spec.hpo_grid_max_steps <= 0:
-        raise ValueError("--hpo_grid_max_steps must be > 0")
-    if spec.hpo_rerank_max_steps is not None and spec.hpo_rerank_max_steps <= 0:
-        raise ValueError("--hpo_rerank_max_steps must be > 0")
-    if spec.max_steps is not None and spec.max_steps <= 0:
-        raise ValueError("--max_steps must be > 0")
-    if spec.epochs is not None and spec.epochs <= 0:
-        raise ValueError("--epochs must be > 0")
-    if spec.multi_enabled is True and (not spec.multi_datasets):
-        raise ValueError("--multi_enabled=true requires --multi_datasets")
-    if spec.multi_steps_mode == "max_steps" and spec.multi_enabled is True and spec.max_steps is None:
-        raise ValueError("--multi_steps_mode=max_steps with --multi_enabled=true requires --max_steps")
 
     runs_root = ROOT / "runs" / spec.runs_group
 
@@ -478,22 +289,6 @@ def main() -> int:
         common_sets_global.append(f"task.name={spec.dataset}")
     if spec.model is not None:
         common_sets_global.append(f"model.name={spec.model}")
-    if spec.multi_enabled is not None:
-        common_sets_global.append(f"task.multi.enabled={str(spec.multi_enabled).lower()}")
-    if spec.multi_datasets is not None:
-        common_sets_global.append("task.multi.datasets=" + json.dumps(spec.multi_datasets))
-    if spec.multi_steps_mode is not None:
-        common_sets_global.append(f"train.multi.steps_mode={spec.multi_steps_mode}")
-    if spec.max_steps is not None:
-        common_sets_global.append(f"train.max_steps={spec.max_steps}")
-    if spec.multi_drop_last is not None:
-        common_sets_global.append(f"train.multi.drop_last={str(spec.multi_drop_last).lower()}")
-    if spec.epochs is not None:
-        common_sets_global.append(f"train.epochs={spec.epochs}")
-    for s in list(args.set or []):
-        ss = str(s).strip()
-        if ss:
-            common_sets_global.append(ss)
 
     # ✅ STRICT rank sync (no method.lora.* anywhere)
     if spec.ours_r is not None:
@@ -526,16 +321,6 @@ def main() -> int:
         hpo_sets_only.append(f"hpo.grid.rerank.top_k={spec.rerank_top_k}")
     if spec.rerank_epochs is not None:
         hpo_sets_only.append(f"hpo.grid.rerank.epochs={spec.rerank_epochs}")
-    if spec.hpo_baseline_epochs is not None:
-        hpo_sets_only.append(f"hpo.grid.baseline_search_epochs={spec.hpo_baseline_epochs}")
-    if spec.hpo_grid_epochs is not None:
-        hpo_sets_only.append(f"hpo.grid.grid_epochs={spec.hpo_grid_epochs}")
-    if spec.hpo_baseline_max_steps is not None:
-        hpo_sets_only.append(f"hpo.grid.baseline_search_max_steps={spec.hpo_baseline_max_steps}")
-    if spec.hpo_grid_max_steps is not None:
-        hpo_sets_only.append(f"hpo.grid.grid_max_steps={spec.hpo_grid_max_steps}")
-    if spec.hpo_rerank_max_steps is not None:
-        hpo_sets_only.append(f"hpo.grid.rerank.max_steps={spec.hpo_rerank_max_steps}")
 
     # ---------------- (1) HPO ----------------
     cmd_hpo = ["python", "scripts/run.py", "hpo", "--config", base_cfg]
@@ -568,11 +353,7 @@ def main() -> int:
 
     # ---------------- (2) Final (timestamp-bound, deterministic) ----------------
     dbg_ts, dbg_hash = _extract_ts_and_hash_from_dirname(debug_dir.name)
-    final_ts = time.strftime("%Y%m%d-%H%M%S")
-    final_budget_tag = _pipeline_budget_tag(spec)
-    final_dir = runs_root / (
-        f"final__{_slug(spec.runs_group)}__from_{dbg_ts}__{dbg_hash}__{_slug(final_budget_tag)}__{final_ts}"
-    )
+    final_dir = runs_root / (f"final__{_slug(spec.runs_group)}__from_{dbg_ts}__{dbg_hash}")
 
     cmd_final = [
         "python", "scripts/run.py", "final",
@@ -615,21 +396,10 @@ def main() -> int:
                     "runs_group": spec.runs_group,
                     "dataset": spec.dataset,
                     "model": spec.model,
-                    "multi_enabled": spec.multi_enabled,
-                    "multi_datasets": spec.multi_datasets,
-                    "multi_steps_mode": spec.multi_steps_mode,
-                    "max_steps": spec.max_steps,
-                    "multi_drop_last": spec.multi_drop_last,
-                    "epochs": spec.epochs,
                     "total_trials": spec.trials,
                     "rerank_enabled": spec.rerank_enabled,
                     "rerank_top_k": spec.rerank_top_k,
                     "rerank_epochs": spec.rerank_epochs,
-                    "hpo_baseline_epochs": spec.hpo_baseline_epochs,
-                    "hpo_grid_epochs": spec.hpo_grid_epochs,
-                    "hpo_baseline_max_steps": spec.hpo_baseline_max_steps,
-                    "hpo_grid_max_steps": spec.hpo_grid_max_steps,
-                    "hpo_rerank_max_steps": spec.hpo_rerank_max_steps,
                     "ours_r": spec.ours_r,
                     "ours_R": spec.ours_R,
                     "final_epochs": spec.final_epochs,

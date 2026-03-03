@@ -73,17 +73,8 @@ def _read_first_good_curve(csvs: List[Path]) -> pd.DataFrame:
 @pytest.mark.parametrize(
     "name,extra_sets",
     [
-        ("baseline_r32", {"method.name": "baseline_r", "method.baseline_r.lora.r": "32"}),
-        ("baseline_R128", {"method.name": "baseline_R", "method.baseline_R.lora.r": "128"}),
-        (
-            "baseline_cagrad_r32",
-            {
-                "method.name": "baseline_r",
-                "method.baseline_r.lora.r": "32",
-                "method.baseline_r.grad_solver": "cagrad",
-                "method.baseline_r.cagrad.c": "0.4",
-            },
-        ),
+        ("baseline_r32", {"method.name": "baseline", "method.lora.r": "32"}),
+        ("baseline_R128", {"method.name": "baseline", "method.lora.r": "128"}),
         ("ours_full", {"method.name": "ours"}),
         (
             "ours_ablate",

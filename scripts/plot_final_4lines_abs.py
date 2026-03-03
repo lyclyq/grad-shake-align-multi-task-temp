@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # /home/lyclyq/Optimization/grad-shake-align/scripts/plot_final_4lines_abs.py
 
+import argparse
+import json
 from pathlib import Path
 from typing import Callable, List, Optional, Sequence, Tuple
 
@@ -10,6 +12,23 @@ import pandas as pd
 
 
 Curve = Tuple[np.ndarray, np.ndarray]
+
+
+def _detect_multitask_max_steps(trial_runs_dir: Path) -> bool:
+    for p in trial_runs_dir.glob("*/s*/config_resolved.json"):
+        try:
+            cfg = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        task = cfg.get("task", {}) or {}
+        train = cfg.get("train", {}) or {}
+        multi = task.get("multi", {}) or {}
+        if not bool(multi.get("enabled", False)):
+            continue
+        tm = train.get("multi", {}) or {}
+        mode = str(tm.get("steps_mode", "max_steps")).strip().lower()
+        return mode == "max_steps"
+    return False
 
 
 def read_epoch_curve(metrics_csv: Path, ykey: str) -> Tuple[Optional[Curve], str]:
@@ -69,6 +88,36 @@ def read_step_curve_any(
     return None, f"{last_msg}; tried={list(ykeys)}"
 
 
+def read_step_curve_mul(
+    metrics_csv: Path,
+    key_a: str,
+    key_b: str,
+    max_epoch: Optional[int] = 2,
+) -> Tuple[Optional[Curve], str]:
+    df = pd.read_csv(metrics_csv)
+    if "step" not in df.columns:
+        return None, f"[MISS] no 'step' col in {metrics_csv}"
+    if key_a not in df.columns or key_b not in df.columns:
+        return None, f"[MISS] no '{key_a}' or '{key_b}' in {metrics_csv}"
+
+    x = pd.to_numeric(df["step"], errors="coerce")
+    a = pd.to_numeric(df[key_a], errors="coerce")
+    b = pd.to_numeric(df[key_b], errors="coerce")
+    y = a * b
+    m = x.notna() & y.notna()
+
+    if max_epoch is not None and "epoch" in df.columns:
+        ep = pd.to_numeric(df["epoch"], errors="coerce")
+        m = m & ep.notna() & (ep <= int(max_epoch))
+
+    if not m.any():
+        return None, f"[MISS] no valid step points for '{key_a}*{key_b}' in {metrics_csv}"
+
+    d = pd.DataFrame({"x": x[m].astype(int), "y": y[m].astype(float)})
+    d = d.sort_values("x").drop_duplicates(subset=["x"], keep="last")
+    return (d["x"].to_numpy(dtype=int), d["y"].to_numpy(dtype=float)), f"[OK] {metrics_csv} points={len(d)} mul={key_a}*{key_b}"
+
+
 def collect_variant_curves(
     trial_runs_dir: Path,
     variant: str,
@@ -110,14 +159,44 @@ def align_and_stack(curves: List[Curve]) -> Tuple[Optional[np.ndarray], Optional
     return xs, np.asarray(ys, dtype=float)
 
 
-def mean_std_plot(x: np.ndarray, ys: np.ndarray, label: str, *, marker: Optional[str] = "o") -> None:
+def mean_std_plot(
+    x: np.ndarray,
+    ys: np.ndarray,
+    label: str,
+    *,
+    marker: Optional[str] = "o",
+    color: Optional[str] = None,
+    linestyle: str = "-",
+    linewidth: float = 1.8,
+    zorder: int = 2,
+    fill_alpha: float = 0.18,
+) -> None:
     mu = ys.mean(axis=0)
     sd = ys.std(axis=0)
     if marker is None:
-        plt.plot(x, mu, label=label)
+        plt.plot(x, mu, label=label, color=color, linestyle=linestyle, linewidth=linewidth, zorder=zorder)
     else:
-        plt.plot(x, mu, marker=marker, label=label)
-    plt.fill_between(x, mu - sd, mu + sd, alpha=0.18)
+        plt.plot(
+            x,
+            mu,
+            marker=marker,
+            label=label,
+            color=color,
+            linestyle=linestyle,
+            linewidth=linewidth,
+            zorder=zorder,
+        )
+    plt.fill_between(x, mu - sd, mu + sd, alpha=fill_alpha, color=color, zorder=max(1, zorder - 1))
+
+
+def _r_only_metric_key(metric: str) -> Optional[str]:
+    mapping = {
+        "val/acc": "val/acc_r_only",
+        "val/loss": "val/loss_r_only",
+        "train/acc": "train/acc_r_only",
+        "train/loss_eval": "train/loss_r_only_eval",
+    }
+    return mapping.get(metric)
 
 
 def _plot_4lines_epoch(tr: Path, metric: str) -> None:
@@ -133,26 +212,46 @@ def _plot_4lines_epoch(tr: Path, metric: str) -> None:
     if x is not None:
         mean_std_plot(x, ys, f"baseline_R ({metric})")
 
+    curves = collect_variant_curves(tr, "baseline_cagrad_r", lambda p: read_epoch_curve(p, metric), verbose=True)
+    x, ys = align_and_stack(curves)
+    if x is not None:
+        mean_std_plot(x, ys, f"baseline_cagrad_r ({metric})")
+
+    curves = collect_variant_curves(tr, "baseline_cagrad_R", lambda p: read_epoch_curve(p, metric), verbose=True)
+    x, ys = align_and_stack(curves)
+    if x is not None:
+        mean_std_plot(x, ys, f"baseline_cagrad_R ({metric})")
+
     curves = collect_variant_curves(tr, "ours", lambda p: read_epoch_curve(p, metric), verbose=True)
     x, ys = align_and_stack(curves)
     if x is not None:
-        mean_std_plot(x, ys, f"ours full ({metric})")
+        mean_std_plot(x, ys, f"ours full ({metric})", color="tab:red", linestyle="-", linewidth=2.1, zorder=4)
 
-    r_only_key = metric.replace("/acc", "/acc_r_only")
-    curves = collect_variant_curves(tr, "ours", lambda p: read_epoch_curve(p, r_only_key), verbose=True)
-    x, ys = align_and_stack(curves)
-    if x is not None:
-        mean_std_plot(x, ys, f"ours r-only ({r_only_key})")
+    r_only_key = _r_only_metric_key(metric)
+    if r_only_key is not None:
+        curves = collect_variant_curves(tr, "ours", lambda p: read_epoch_curve(p, r_only_key), verbose=True)
+        x, ys = align_and_stack(curves)
+        if x is not None:
+            mean_std_plot(
+                x,
+                ys,
+                f"ours r-only ({r_only_key})",
+                color="black",
+                linestyle="--",
+                linewidth=2.3,
+                zorder=5,
+                fill_alpha=0.08,
+            )
 
     plt.xlabel("epoch")
     plt.ylabel(metric)
-    plt.title("Final comparison (mean±std over seeds)")
+    plt.title("Final comparison (6 lines, mean±std over seeds)")
     plt.legend()
     plt.tight_layout()
 
     out_dir = tr / "_plots"
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"compare_4lines_{metric.replace('/','_')}.png"
+    out_path = out_dir / f"compare_6lines_{metric.replace('/','_')}.png"
     plt.savefig(out_path, dpi=160)
     plt.close()
     print(f"\n[OK] saved figure -> {out_path}")
@@ -174,16 +273,47 @@ def _plot_4lines_dense(tr: Path, *, y_full: str, y_r_only: str, title: str, out_
         mean_std_plot(x, ys, f"baseline_R ({y_full})", marker=None)
         plotted = True
 
+    curves = collect_variant_curves(tr, "baseline_cagrad_r", lambda p: read_step_curve(p, y_full, max_epoch=max_epoch), verbose=False)
+    x, ys = align_and_stack(curves)
+    if x is not None:
+        mean_std_plot(x, ys, f"baseline_cagrad_r ({y_full})", marker=None)
+        plotted = True
+
+    curves = collect_variant_curves(tr, "baseline_cagrad_R", lambda p: read_step_curve(p, y_full, max_epoch=max_epoch), verbose=False)
+    x, ys = align_and_stack(curves)
+    if x is not None:
+        mean_std_plot(x, ys, f"baseline_cagrad_R ({y_full})", marker=None)
+        plotted = True
+
     curves = collect_variant_curves(tr, "ours", lambda p: read_step_curve(p, y_full, max_epoch=max_epoch), verbose=False)
     x, ys = align_and_stack(curves)
     if x is not None:
-        mean_std_plot(x, ys, f"ours full ({y_full})", marker=None)
+        mean_std_plot(
+            x,
+            ys,
+            f"ours full ({y_full})",
+            marker=None,
+            color="tab:red",
+            linestyle="-",
+            linewidth=2.1,
+            zorder=4,
+        )
         plotted = True
 
     curves = collect_variant_curves(tr, "ours", lambda p: read_step_curve(p, y_r_only, max_epoch=max_epoch), verbose=False)
     x, ys = align_and_stack(curves)
     if x is not None:
-        mean_std_plot(x, ys, f"ours r-only ({y_r_only})", marker=None)
+        mean_std_plot(
+            x,
+            ys,
+            f"ours r-only ({y_r_only})",
+            marker=None,
+            color="black",
+            linestyle="--",
+            linewidth=2.3,
+            zorder=5,
+            fill_alpha=0.08,
+        )
         plotted = True
 
     plt.xlabel("global step")
@@ -203,7 +333,7 @@ def _plot_4lines_dense(tr: Path, *, y_full: str, y_r_only: str, title: str, out_
     print(f"[OK] saved figure -> {out_path}")
 
 
-def _plot_ours_gate_and_pull_dense(tr: Path, *, max_epoch: int = 2) -> None:
+def _plot_ours_gate_and_pull_dense(tr: Path, *, max_epoch: Optional[int] = 2) -> None:
     # gate0 trigger rate (fallback to triggered blocks for old logs)
     plt.figure()
     plotted_gate = False
@@ -282,7 +412,46 @@ def _plot_ours_gate_and_pull_dense(tr: Path, *, max_epoch: int = 2) -> None:
     plt.close()
     print(f"[OK] saved figure -> {out_path}")
 
-    # pull strength
+    # pull activation step split plots (r / R)
+    plt.figure()
+    plotted_pull_r = False
+    x_r, ys_r = align_and_stack(curves_r)
+    if x_r is not None:
+        mean_std_plot(x_r, ys_r, "pull toward r rate", marker=None)
+        plotted_pull_r = True
+    plt.xlabel("global step")
+    plt.ylabel("rate")
+    plt.title(f"Ours Pull Activation To r (dense, first {max_epoch} epochs)")
+    if plotted_pull_r:
+        plt.legend()
+    else:
+        print("[WARN] skip legend: no valid ours pull-to-r dense curves")
+    plt.tight_layout()
+    out_path = out_dir / "ours_pull_activation_to_r_dense.png"
+    plt.savefig(out_path, dpi=160)
+    plt.close()
+    print(f"[OK] saved figure -> {out_path}")
+
+    plt.figure()
+    plotted_pull_R = False
+    x_R, ys_R = align_and_stack(curves_R)
+    if x_R is not None:
+        mean_std_plot(x_R, ys_R, "pull toward R rate", marker=None)
+        plotted_pull_R = True
+    plt.xlabel("global step")
+    plt.ylabel("rate")
+    plt.title(f"Ours Pull Activation To R (dense, first {max_epoch} epochs)")
+    if plotted_pull_R:
+        plt.legend()
+    else:
+        print("[WARN] skip legend: no valid ours pull-to-R dense curves")
+    plt.tight_layout()
+    out_path = out_dir / "ours_pull_activation_to_R_dense.png"
+    plt.savefig(out_path, dpi=160)
+    plt.close()
+    print(f"[OK] saved figure -> {out_path}")
+
+    # pull strength (overall + split r / R)
     plt.figure()
     plotted_alpha = False
     curves_alpha = collect_variant_curves(
@@ -309,11 +478,133 @@ def _plot_ours_gate_and_pull_dense(tr: Path, *, max_epoch: int = 2) -> None:
     plt.close()
     print(f"[OK] saved figure -> {out_path}")
 
+    # prefer direction-specific alpha if available; fallback to alpha_mean * pull_direction_rate
+    plt.figure()
+    plotted_alpha_r = False
+    curves_alpha_r = collect_variant_curves(
+        tr,
+        "ours",
+        lambda p: read_step_curve_any(
+            p,
+            ["train/alpha_pull_to_r_mean"],
+            max_epoch=max_epoch,
+        ),
+        verbose=False,
+    )
+    x_ar, ys_ar = align_and_stack(curves_alpha_r)
+    if x_ar is None:
+        curves_alpha_r = collect_variant_curves(
+            tr,
+            "ours",
+            lambda p: read_step_curve_mul(
+                p,
+                "train/alpha_pull_mean",
+                "train/pull_to_r_rate",
+                max_epoch=max_epoch,
+            ),
+            verbose=False,
+        )
+        x_ar, ys_ar = align_and_stack(curves_alpha_r)
+    if x_ar is not None:
+        mean_std_plot(x_ar, ys_ar, "alpha pull toward r", marker=None)
+        plotted_alpha_r = True
+    plt.xlabel("global step")
+    plt.ylabel("alpha")
+    plt.title(f"Ours Pull Strength To r (dense, first {max_epoch} epochs)")
+    if plotted_alpha_r:
+        plt.legend()
+    else:
+        print("[WARN] skip legend: no valid ours pull-strength-to-r dense curves")
+    plt.tight_layout()
+    out_path = out_dir / "ours_pull_strength_to_r_dense.png"
+    plt.savefig(out_path, dpi=160)
+    plt.close()
+    print(f"[OK] saved figure -> {out_path}")
+
+    plt.figure()
+    plotted_alpha_R = False
+    curves_alpha_R = collect_variant_curves(
+        tr,
+        "ours",
+        lambda p: read_step_curve_any(
+            p,
+            ["train/alpha_pull_to_R_mean"],
+            max_epoch=max_epoch,
+        ),
+        verbose=False,
+    )
+    x_aR, ys_aR = align_and_stack(curves_alpha_R)
+    if x_aR is None:
+        curves_alpha_R = collect_variant_curves(
+            tr,
+            "ours",
+            lambda p: read_step_curve_mul(
+                p,
+                "train/alpha_pull_mean",
+                "train/pull_to_R_rate",
+                max_epoch=max_epoch,
+            ),
+            verbose=False,
+        )
+        x_aR, ys_aR = align_and_stack(curves_alpha_R)
+    if x_aR is not None:
+        mean_std_plot(x_aR, ys_aR, "alpha pull toward R", marker=None)
+        plotted_alpha_R = True
+    plt.xlabel("global step")
+    plt.ylabel("alpha")
+    plt.title(f"Ours Pull Strength To R (dense, first {max_epoch} epochs)")
+    if plotted_alpha_R:
+        plt.legend()
+    else:
+        print("[WARN] skip legend: no valid ours pull-strength-to-R dense curves")
+    plt.tight_layout()
+    out_path = out_dir / "ours_pull_strength_to_R_dense.png"
+    plt.savefig(out_path, dpi=160)
+    plt.close()
+    print(f"[OK] saved figure -> {out_path}")
+
 
 def plot_4lines(trial_runs_dir: str, metric: str = "val/acc") -> None:
     tr = Path(trial_runs_dir).expanduser().resolve()
     assert tr.exists(), f"trial_runs_dir not found: {tr}"
     print(f"[INFO] trial_runs_dir = {tr}")
+
+    if _detect_multitask_max_steps(tr):
+        print("[INFO] detected multi-task max_steps mode: use step-based plots")
+        _plot_4lines_dense(
+            tr,
+            y_full="val/acc",
+            y_r_only="val/acc_r_only",
+            title="Step Val Acc (all steps, mean±std)",
+            out_name="compare_6lines_step_val_acc.png",
+            max_epoch=None,
+        )
+        _plot_4lines_dense(
+            tr,
+            y_full="train/acc",
+            y_r_only="train/acc_r_only",
+            title="Step Train Acc (all steps, mean±std)",
+            out_name="compare_6lines_step_train_acc.png",
+            max_epoch=None,
+        )
+        _plot_4lines_dense(
+            tr,
+            y_full="train/loss_eval",
+            y_r_only="train/loss_r_only_eval",
+            title="Step Train Loss (all steps, mean±std)",
+            out_name="compare_6lines_step_train_loss.png",
+            max_epoch=None,
+        )
+        _plot_4lines_dense(
+            tr,
+            y_full="val/loss",
+            y_r_only="val/loss_r_only",
+            title="Step Val Loss (all steps, mean±std)",
+            out_name="compare_6lines_step_val_loss.png",
+            max_epoch=None,
+        )
+        _plot_ours_gate_and_pull_dense(tr, max_epoch=None)
+        return
 
     _plot_4lines_epoch(tr, metric)
     _plot_4lines_dense(
@@ -321,7 +612,7 @@ def plot_4lines(trial_runs_dir: str, metric: str = "val/acc") -> None:
         y_full="val/acc",
         y_r_only="val/acc_r_only",
         title="Dense Val Acc (first 2 epochs, mean±std)",
-        out_name="compare_4lines_dense_val_acc_first2ep.png",
+        out_name="compare_6lines_dense_val_acc_first2ep.png",
         max_epoch=2,
     )
     _plot_4lines_dense(
@@ -329,7 +620,7 @@ def plot_4lines(trial_runs_dir: str, metric: str = "val/acc") -> None:
         y_full="train/acc",
         y_r_only="train/acc_r_only",
         title="Dense Train Acc (first 2 epochs, mean±std)",
-        out_name="compare_4lines_dense_train_acc_first2ep.png",
+        out_name="compare_6lines_dense_train_acc_first2ep.png",
         max_epoch=2,
     )
     _plot_4lines_dense(
@@ -337,19 +628,23 @@ def plot_4lines(trial_runs_dir: str, metric: str = "val/acc") -> None:
         y_full="train/loss_eval",
         y_r_only="train/loss_r_only_eval",
         title="Dense Train Loss (first 2 epochs, mean±std)",
-        out_name="compare_4lines_dense_train_loss_first2ep.png",
+        out_name="compare_6lines_dense_train_loss_first2ep.png",
+        max_epoch=2,
+    )
+    _plot_4lines_dense(
+        tr,
+        y_full="val/loss",
+        y_r_only="val/loss_r_only",
+        title="Dense Val Loss (first 2 epochs, mean±std)",
+        out_name="compare_6lines_dense_val_loss_first2ep.png",
         max_epoch=2,
     )
     _plot_ours_gate_and_pull_dense(tr, max_epoch=2)
 
 
 if __name__ == "__main__":
-    import sys
-
-    trial_runs = "/home/lyclyq/Optimization/grad-shake-align/runs/final__glue_rte__bert-base-uncased__ours__ep7__bs32__lr8.046330436316312e-05__final__20260129-164311__1b79c799/trial_runs"
-    metric_name = "val/acc"
-    if len(sys.argv) >= 2:
-        trial_runs = sys.argv[1]
-    if len(sys.argv) >= 3:
-        metric_name = sys.argv[2]
-    plot_4lines(trial_runs, metric_name)
+    ap = argparse.ArgumentParser(description="Plot final 6-line comparison curves.")
+    ap.add_argument("trial_runs", type=str, help="Path to final_dir/trial_runs")
+    ap.add_argument("metric", nargs="?", default="val/acc", help="Epoch plot metric (non-max_steps mode)")
+    args = ap.parse_args()
+    plot_4lines(args.trial_runs, args.metric)

@@ -66,5 +66,3 @@ This scaffold does it safely:
    - apply in-place correction on `.grad`
 
 This matches your “Diagnosis before Correction” rule.
-
-# grad-shake-align-multi-task

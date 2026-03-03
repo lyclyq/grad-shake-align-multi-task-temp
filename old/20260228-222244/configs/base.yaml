@@ -6,33 +6,16 @@ model:
 task:
   name: glue/rte
   max_len: 128
-  multi:
-    enabled: false
-    datasets: [glue/cola, glue/mrpc, glue/rte]
 
 train:
   epochs: 1
-  max_steps: 1000
   batch_size: 32
-  precision: bf16
-  tf32: true
-  compile: true
-  fused_adamw: true
   lr: 2e-5
   warmup_ratio: 0.1
   seed: 2
 
   weight_decay: 0.0
   max_grad_norm: 1.0
-  multi:
-    steps_mode: max_steps
-    drop_last: true
-
-  dataloader:
-    num_workers: 4
-    pin_memory: true
-    persistent_workers: true
-    prefetch_factor: 2
 
   eval:
     strategy: per_epoch
@@ -80,9 +63,6 @@ method:
       r: 32
       alpha: 2.0
       dropout: 0.1
-    grad_solver: avg
-    cagrad:
-      c: 0.4
 
   # -------------------------
   # baseline (large rank)
@@ -92,9 +72,6 @@ method:
       r: 128
       alpha: 16.0
       dropout: 0.1
-    grad_solver: avg
-    cagrad:
-      c: 0.4
 
   # -------------------------
   # ours (dual-rank)
@@ -169,9 +146,6 @@ hpo:
     - { tag: baseline_r }
     - { tag: baseline_R }
 
-  cagrad:
-    c_grid: [0.2, 0.4, 0.6]
-
   budget:
     total_trials: 400
 
@@ -194,10 +168,8 @@ hpo:
     drop_if_weight_lt: 0.0
 
     baseline_search_epochs: 3
-    baseline_search_max_steps: 200
     sensitivity_epochs: 1
     grid_epochs: 3
-    grid_max_steps: 200
     sens_samples_per_knob: 40
     sens_seed: 2
     rng_seed: 2026
@@ -216,7 +188,6 @@ hpo:
       enabled: true
       top_k: 10
       epochs: 6
-      max_steps: 500
 
     alpha_probe:
       enabled: true

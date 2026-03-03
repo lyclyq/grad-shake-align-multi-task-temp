@@ -330,8 +330,6 @@ class ShakeAlignController:
             "pull_to_r_rate": 0.0,
             "pull_to_R_rate": 0.0,
             "alpha_pull_mean": 0.0,
-            "alpha_pull_to_r_mean": 0.0,
-            "alpha_pull_to_R_mean": 0.0,
         }
         if debug:
             info["per_block"] = {}
@@ -345,8 +343,6 @@ class ShakeAlignController:
         pull_to_r = 0
         pull_to_R = 0
         alpha_pull_sum = 0.0
-        alpha_pull_to_r_sum = 0.0
-        alpha_pull_to_R_sum = 0.0
 
         for name, mod in lora_modules.items():
             if name not in stats or name not in vote_sums:
@@ -509,10 +505,8 @@ class ShakeAlignController:
                 alpha_pull_sum += float(alpha_pull)
                 if chi_star == "r":
                     pull_to_r += 1
-                    alpha_pull_to_r_sum += float(alpha_pull)
                 else:
                     pull_to_R += 1
-                    alpha_pull_to_R_sum += float(alpha_pull)
 
             if debug:
                 info["per_block"][name] = {
@@ -558,8 +552,4 @@ class ShakeAlignController:
             info["pull_to_r_rate"] = float(pull_to_r) / float(triggered)
             info["pull_to_R_rate"] = float(pull_to_R) / float(triggered)
             info["alpha_pull_mean"] = float(alpha_pull_sum) / float(triggered)
-            if pull_to_r > 0:
-                info["alpha_pull_to_r_mean"] = float(alpha_pull_to_r_sum) / float(pull_to_r)
-            if pull_to_R > 0:
-                info["alpha_pull_to_R_mean"] = float(alpha_pull_to_R_sum) / float(pull_to_R)
         return info

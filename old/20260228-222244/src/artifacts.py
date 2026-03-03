@@ -21,47 +21,6 @@ def _hash_config(cfg: Dict[str, Any]) -> str:
     return hashlib.sha256(s).hexdigest()[:8]
 
 
-def _stage_budget_tag(cfg: Dict[str, Any], stage: str) -> Optional[str]:
-    if stage != "hpo":
-        return None
-    try:
-        hpo = cfg["hpo"]
-        grid = hpo["grid"]
-        rerank = grid["rerank"]
-        train = cfg["train"]
-        task = cfg["task"]
-    except Exception:
-        return None
-
-    trials = ((hpo.get("budget", {}) or {}).get("total_trials", None))
-    ttag = f"t{int(trials)}" if trials is not None else "tNA"
-
-    multi = (task.get("multi", {}) or {}) if isinstance(task, dict) else {}
-    tm = (train.get("multi", {}) or {}) if isinstance(train.get("multi", {}), dict) else {}
-    if bool(multi.get("enabled", False)) and str(tm.get("steps_mode", "max_steps")).strip().lower() == "max_steps":
-        run_tag = f"runms{int(train.get('max_steps', 0) or 0)}"
-    else:
-        run_tag = f"runep{int(train.get('epochs', 0) or 0)}"
-
-    def _fmt(prefix: str, max_steps: Any, epochs: Any) -> str:
-        try:
-            ms = int(max_steps or 0)
-        except Exception:
-            ms = 0
-        if ms > 0:
-            return f"{prefix}ms{ms}"
-        try:
-            ep = int(epochs or 0)
-        except Exception:
-            ep = 0
-        return f"{prefix}ep{ep if ep > 0 else 'NA'}"
-
-    bs_tag = _fmt("bs", grid.get("baseline_search_max_steps", 0), grid.get("baseline_search_epochs", 0))
-    g_tag = _fmt("g", grid.get("grid_max_steps", 0), grid.get("grid_epochs", 0))
-    rr_tag = _fmt("rr", rerank.get("max_steps", 0), rerank.get("epochs", 0))
-    return f"{ttag}__{bs_tag}__{g_tag}__{rr_tag}__{run_tag}"
-
-
 def make_run_name(cfg: Dict[str, Any], extra: Optional[Dict[str, Any]] = None) -> str:
     """
     Stable, audit-friendly run name.
@@ -73,22 +32,9 @@ def make_run_name(cfg: Dict[str, Any], extra: Optional[Dict[str, Any]] = None) -
     extra = extra or {}
 
     stage = str(cfg["stage"])
-    task_cfg = cfg["task"]
-    multi_cfg = (task_cfg.get("multi", {}) or {}) if isinstance(task_cfg, dict) else {}
-    if bool(multi_cfg.get("enabled", False)):
-        ds_list = multi_cfg.get("datasets", []) or []
-        ds_tokens = [str(x).replace("/", "_") for x in ds_list]
-        task = "multi_" + ("+".join(ds_tokens) if ds_tokens else "none")
-    else:
-        task = str(task_cfg["name"]).replace("/", "_")
+    task = str(cfg["task"]["name"]).replace("/", "_")
     model = str(cfg["model"]["name"]).replace("/", "_")
-    method_name = str(cfg["method"]["name"])
-    method = method_name
-    if method_name in {"baseline_r", "baseline_R"}:
-        mblk = (cfg.get("method", {}) or {}).get(method_name, {}) or {}
-        grad_solver = str(mblk.get("grad_solver", "avg")).strip().lower()
-        if grad_solver != "avg":
-            method = f"{method_name}-{grad_solver}"
+    method = str(cfg["method"]["name"])
 
     lr = cfg["train"]["lr"]
     ep = cfg["train"]["epochs"]
@@ -97,7 +43,6 @@ def make_run_name(cfg: Dict[str, Any], extra: Optional[Dict[str, Any]] = None) -
     trial_tag = extra.get("trial_tag")
     seed = extra.get("seed")
     kind = extra.get("kind")
-    stage_tag = _stage_budget_tag(cfg, stage=stage)
 
     ts = time.strftime("%Y%m%d-%H%M%S")
     h = _hash_config(cfg)
@@ -112,7 +57,6 @@ def make_run_name(cfg: Dict[str, Any], extra: Optional[Dict[str, Any]] = None) -
         f"lr{lr}",
         f"seed{seed}" if seed is not None else None,
         f"{kind}" if kind else None,
-        f"{stage_tag}" if stage_tag else None,
         f"{trial_tag}" if trial_tag else None,
         ts,
         h,
