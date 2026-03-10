@@ -1,0 +1,41 @@
+/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/torch/cuda/__init__.py:182: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 304: OS call failed or operation not supported on this OS (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:109.)
+  return torch._C._cuda_getDeviceCount() > 0
+Using the latest cached version of the dataset since glue couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'mrpc' at /home/lyclyq/.cache/huggingface/datasets/glue/mrpc/0.0.0/bcdcba79d07bc864c1c254ccfcedcce55bcc9a8c (last modified on Sun Feb 22 11:16:42 2026).
+Traceback (most recent call last):
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 76, in <module>
+    raise SystemExit(main())
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 38, in main
+    run_train(cfg, run_id=args.run_id, trial_id=args.trial_id, trial_tag=args.trial_tag)
+  File "/home/lyclyq/Optimization/grad-shake-align/src/runner.py", line 169, in run_train
+    data = load_glue(glue_task, model_name, max_len)
+  File "/home/lyclyq/Optimization/grad-shake-align/src/data_glue.py", line 51, in load_glue
+    ds: DatasetDict = load_dataset("glue", task)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/datasets/load.py", line 1392, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/datasets/load.py", line 1166, in load_dataset_builder
+    builder_instance: DatasetBuilder = builder_cls(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/datasets/packaged_modules/cache/cache.py", line 133, in __init__
+    super().__init__(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/datasets/builder.py", line 388, in __init__
+    with FileLock(lock_path):
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/filelock/_api.py", line 376, in __enter__
+    self.acquire()
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/filelock/_api.py", line 332, in acquire
+    self._acquire()
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/filelock/_unix.py", line 44, in _acquire
+    fd = os.open(self.lock_file, open_flags, self._context.mode)
+PermissionError: [Errno 13] Permission denied: '/home/lyclyq/.cache/huggingface/datasets/_home_lyclyq_.cache_huggingface_datasets_glue_mrpc_0.0.0_bcdcba79d07bc864c1c254ccfcedcce55bcc9a8c.lock'
+python scripts/run.py train --config configs/base.yaml --schedule configs/schedules/final.yaml --set task.name=glue/mrpc --set model.name=distilbert-base-uncased --set io.run_dir=runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4 --set io.overwrite=force --set train.eval.strategy=dense_early --set train.eval.dense_early_per_epoch=8 --set train.eval.dense_early_epochs=2 --set method.name=baseline_r --set method.baseline_r.lora.r=32 --set train.seed=2 --set train.epochs=10 --set train.warmup_ratio=0.1 --set train.lr=1.7931286244813644e-05 --set io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_r/s2 --set io.overwrite=resume --trial_tag final_baseline_r_s2
+Traceback (most recent call last):
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 76, in <module>
+    raise SystemExit(main())
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 63, in main
+    run_final(
+  File "/home/lyclyq/Optimization/grad-shake-align/src/final.py", line 465, in run_final
+    _run_one(
+  File "/home/lyclyq/Optimization/grad-shake-align/src/final.py", line 256, in _run_one
+    subprocess.run(cmd, check=True, env=os.environ.copy())
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/subprocess.py", line 528, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['python', 'scripts/run.py', 'train', '--config', 'configs/base.yaml', '--schedule', 'configs/schedules/final.yaml', '--set', 'task.name=glue/mrpc', '--set', 'model.name=distilbert-base-uncased', '--set', 'io.run_dir=runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4', '--set', 'io.overwrite=force', '--set', 'train.eval.strategy=dense_early', '--set', 'train.eval.dense_early_per_epoch=8', '--set', 'train.eval.dense_early_epochs=2', '--set', 'method.name=baseline_r', '--set', 'method.baseline_r.lora.r=32', '--set', 'train.seed=2', '--set', 'train.epochs=10', '--set', 'train.warmup_ratio=0.1', '--set', 'train.lr=1.7931286244813644e-05', '--set', 'io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_r/s2', '--set', 'io.overwrite=resume', '--trial_tag', 'final_baseline_r_s2']' returned non-zero exit status 1.

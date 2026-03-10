@@ -1,0 +1,24 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.run_dir=runs/mvp_multi_glue3_20_30_50/final__mvp_multi_glue3_20_30_50__from_20260301-193052__ebc9f355",
+    "io.overwrite=resume",
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50",
+    "task.name=glue/rte",
+    "model.name=roberta-base",
+    "task.multi.enabled=true",
+    "task.multi.datasets=[\"glue/cola\",\"glue/mrpc\",\"glue/rte\"]",
+    "train.multi.steps_mode=max_steps",
+    "train.max_steps=50",
+    "method.name=baseline_r",
+    "method.baseline_r.lora.r=32",
+    "method.baseline_r.grad_solver=avg",
+    "train.seed=3",
+    "train.epochs=10",
+    "train.warmup_ratio=0.1",
+    "train.lr=8.713819960639625e-05",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50/final__mvp_multi_glue3_20_30_50__from_20260301-193052__ebc9f355/trial_runs/baseline_r/s3",
+    "io.overwrite=resume"
+  ],
+  "schedule_path": "configs/schedules/final.yaml"
+}

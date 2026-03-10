@@ -1,0 +1,115 @@
+/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/utils/_http.py", line 409, in hf_raise_for_status
+    response.raise_for_status()
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/requests/models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://huggingface.co/datasets/nyu-mll/glue/resolve/bcdcba79d07bc864c1c254ccfcedcce55bcc9a8c/glue.py
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/datasets/load.py", line 982, in dataset_module_factory
+    api.hf_hub_download(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/hf_api.py", line 5539, in hf_hub_download
+    return hf_hub_download(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 1010, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 1073, in _hf_hub_download_to_cache_dir
+    (url_to_download, etag, commit_hash, expected_size, xet_file_data, head_call_error) = _get_metadata_or_catch_error(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 1546, in _get_metadata_or_catch_error
+    metadata = get_hf_file_metadata(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 1463, in get_hf_file_metadata
+    r = _request_wrapper(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 305, in _request_wrapper
+    return _request_wrapper(method=method, url=next_url, follow_relative_redirects=True, **params)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 286, in _request_wrapper
+    response = _request_wrapper(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/file_download.py", line 310, in _request_wrapper
+    hf_raise_for_status(response)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/utils/_http.py", line 420, in hf_raise_for_status
+    raise _format(EntryNotFoundError, message, response) from e
+huggingface_hub.errors.EntryNotFoundError: 404 Client Error. (Request ID: Root=1-699f8c6b-7464a7fe03a37b196eb95271;1c8e3017-a9eb-451b-b6c4-f91ed107273d)
+
+Entry Not Found for url: https://huggingface.co/datasets/nyu-mll/glue/resolve/bcdcba79d07bc864c1c254ccfcedcce55bcc9a8c/glue.py.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 76, in <module>
+    raise SystemExit(main())
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 38, in main
+    run_train(cfg, run_id=args.run_id, trial_id=args.trial_id, trial_tag=args.trial_tag)
+  File "/home/lyclyq/Optimization/grad-shake-align/src/runner.py", line 169, in run_train
+    data = load_glue(glue_task, model_name, max_len)
+  File "/home/lyclyq/Optimization/grad-shake-align/src/data_glue.py", line 51, in load_glue
+    ds: DatasetDict = load_dataset("glue", task)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/datasets/load.py", line 1392, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/datasets/load.py", line 1132, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/datasets/load.py", line 996, in dataset_module_factory
+    return HubDatasetModuleFactory(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/datasets/load.py", line 608, in get_module
+    exported_dataset_infos = _dataset_viewer.get_exported_dataset_infos(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/datasets/utils/_dataset_viewer.py", line 71, in get_exported_dataset_infos
+    info_response = get_session().get(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/requests/sessions.py", line 602, in get
+    return self.request("GET", url, **kwargs)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/huggingface_hub/utils/_http.py", line 96, in send
+    return super().send(request, *args, **kwargs)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/requests/adapters.py", line 644, in send
+    resp = conn.urlopen(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/urllib3/connectionpool.py", line 404, in _make_request
+    self._validate_conn(conn)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/urllib3/connectionpool.py", line 1061, in _validate_conn
+    conn.connect()
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/urllib3/connection.py", line 419, in connect
+    self.sock = ssl_wrap_socket(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/urllib3/util/ssl_.py", line 458, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/urllib3/util/ssl_.py", line 502, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/ssl.py", line 501, in wrap_socket
+    return self.sslsocket_class._create(
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/ssl.py", line 1074, in _create
+    self.do_handshake()
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/ssl.py", line 1343, in do_handshake
+    self._sslobj.do_handshake()
+KeyboardInterrupt
+python scripts/run.py train --config configs/base.yaml --schedule configs/schedules/final.yaml --set task.name=glue/mrpc --set model.name=distilbert-base-uncased --set io.run_dir=runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4 --set io.overwrite=force --set train.eval.strategy=dense_early --set train.eval.dense_early_per_epoch=8 --set train.eval.dense_early_epochs=2 --set method.name=baseline_r --set method.baseline_r.lora.r=32 --set train.seed=2 --set train.epochs=10 --set train.warmup_ratio=0.1 --set train.lr=1.7931286244813644e-05 --set io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_r/s2 --set io.overwrite=resume --trial_tag final_baseline_r_s2
+Traceback (most recent call last):
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 76, in <module>
+    raise SystemExit(main())
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 63, in main
+    run_final(
+  File "/home/lyclyq/Optimization/grad-shake-align/src/final.py", line 465, in run_final
+    _run_one(
+  File "/home/lyclyq/Optimization/grad-shake-align/src/final.py", line 256, in _run_one
+    subprocess.run(cmd, check=True, env=os.environ.copy())
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/subprocess.py", line 507, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/subprocess.py", line 1126, in communicate
+    self.wait()
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/subprocess.py", line 1189, in wait
+    return self._wait(timeout=timeout)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/subprocess.py", line 1933, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/subprocess.py", line 1891, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+KeyboardInterrupt

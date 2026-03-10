@@ -1,0 +1,2 @@
+step,train/loss,train/num_tasks,train/gate0_triggered_blocks,train/gate0_considered_blocks,train/gate0_trigger_rate,train/pull_to_r_blocks,train/pull_to_R_blocks,train/pull_to_r_rate,train/pull_to_R_rate,train/alpha_pull_mean,train/alpha_pull_to_r_mean,train/alpha_pull_to_R_mean,train/single_vote_skipped_blocks,train/tau_N,train/tau_D,epoch,step_in_epoch,probe/is_eval
+1,0.687591552734375,4.0,50.0,74.0,0.6756756756756757,5.0,45.0,0.1,0.9,0.1500543953723258,0.14318861858117746,0.15081725946023114,0.0,0.6,0.0033914772,1,1,0.0

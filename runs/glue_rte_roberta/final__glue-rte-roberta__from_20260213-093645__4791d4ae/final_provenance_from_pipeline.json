@@ -1,0 +1,27 @@
+{
+  "best_path": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260213-093645__4791d4ae/best_hparams.json",
+  "debug_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260213-093645__4791d4ae",
+  "debug_hash": "4791d4ae",
+  "debug_name": "hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260213-093645__4791d4ae",
+  "debug_timestamp": "20260213-093645",
+  "final_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/final__glue-rte-roberta__from_20260213-093645__4791d4ae",
+  "sets": {
+    "global": [
+      "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta"
+    ],
+    "hpo_only": [],
+    "ours_only": []
+  },
+  "spec": {
+    "ablate_interp": false,
+    "dataset": null,
+    "final_epochs": null,
+    "final_seeds": [],
+    "history_enabled": false,
+    "model": null,
+    "ours_R": null,
+    "ours_r": null,
+    "runs_group": "glue_rte_roberta",
+    "total_trials": null
+  }
+}

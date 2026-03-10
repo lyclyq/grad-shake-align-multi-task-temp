@@ -1,0 +1,24 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "task.multi.enabled=true",
+    "task.multi.datasets=[\"glue/cola\",\"glue/mrpc\",\"glue/rte\"]",
+    "train.multi.steps_mode=max_steps",
+    "train.max_steps=50",
+    "task.name=glue/rte",
+    "model.name=roberta-base",
+    "method.name=ours",
+    "stage=final",
+    "train.lr=8.713819960639625e-05",
+    "method.ours.routing_delta=0.005",
+    "method.ours.trigger_gate0.tau_D=0.0033914772",
+    "method.ours.trigger_gate0.tau_N=0.6",
+    "method.ours.pulling.gamma_pull=0.3",
+    "method.ours.pulling.k_pull=8",
+    "method.ours.voting.samples_per_vote=12",
+    "train.seed=7",
+    "io.run_dir=runs/mvp_spv_sweep/rd0005_tauD003391_gamma03_k8_spv_12p0_s7",
+    "io.overwrite=force"
+  ],
+  "schedule_path": "configs/schedules/final.yaml"
+}

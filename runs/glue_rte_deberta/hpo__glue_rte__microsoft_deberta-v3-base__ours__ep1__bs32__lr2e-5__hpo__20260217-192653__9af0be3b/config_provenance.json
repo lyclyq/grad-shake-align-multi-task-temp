@@ -1,0 +1,10 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta",
+    "task.name=glue/rte",
+    "model.name=microsoft/deberta-v3-base",
+    "hpo.budget.total_trials=400"
+  ],
+  "schedule_path": null
+}

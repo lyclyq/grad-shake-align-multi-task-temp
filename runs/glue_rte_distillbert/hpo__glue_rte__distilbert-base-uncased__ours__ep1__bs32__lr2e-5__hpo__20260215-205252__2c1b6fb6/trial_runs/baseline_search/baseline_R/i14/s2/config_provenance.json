@@ -1,0 +1,20 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_distillbert",
+    "task.name=glue/rte",
+    "model.name=distilbert-base-uncased",
+    "hpo.budget.total_trials=320",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_distillbert/hpo__glue_rte__distilbert-base-uncased__ours__ep1__bs32__lr2e-5__hpo__20260215-205252__2c1b6fb6/trial_runs/baseline_search/baseline_R/i14/s2",
+    "io.overwrite=resume",
+    "method.baseline_R.lora.alpha=16.0",
+    "method.baseline_R.lora.dropout=0.1",
+    "method.baseline_R.lora.r=128",
+    "method.name=baseline_R",
+    "train.epochs=3",
+    "train.lr=0.01",
+    "train.seed=2",
+    "train.warmup_ratio=0.1"
+  ],
+  "schedule_path": null
+}

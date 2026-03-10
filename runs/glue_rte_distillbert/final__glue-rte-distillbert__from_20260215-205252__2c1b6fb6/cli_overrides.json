@@ -1,0 +1,11 @@
+{
+  "set_args": [
+    "task.name=glue/rte",
+    "model.name=distilbert-base-uncased",
+    "io.run_dir=runs/glue_rte_distillbert/final__glue-rte-distillbert__from_20260215-205252__2c1b6fb6",
+    "io.overwrite=force",
+    "train.eval.strategy=dense_early",
+    "train.eval.dense_early_per_epoch=8",
+    "train.eval.dense_early_epochs=2"
+  ]
+}

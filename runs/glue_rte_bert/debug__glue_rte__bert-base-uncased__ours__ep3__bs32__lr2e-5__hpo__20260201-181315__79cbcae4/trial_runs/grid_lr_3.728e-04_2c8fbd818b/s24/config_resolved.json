@@ -1,0 +1,146 @@
+{
+  "debug": {
+    "assert_hi_zero_init": true,
+    "dump_gates": true,
+    "dump_grad_norms": true,
+    "dump_history": false,
+    "dump_init": true,
+    "dump_votes": true,
+    "enabled": false,
+    "max_blocks_to_print": 3,
+    "print_every_steps": 80
+  },
+  "final": {
+    "epochs": 7,
+    "seeds": [
+      2,
+      3,
+      5,
+      7,
+      11
+    ]
+  },
+  "hpo": {
+    "bandit": {
+      "fixed_warmup_ratio": 0.1,
+      "refine_seeds": [
+        12,
+        24
+      ]
+    },
+    "baseline_variants": {
+      "0": {
+        "r": 32,
+        "tag": "baseline_r"
+      },
+      "1": {
+        "r": 128,
+        "tag": "baseline_R"
+      }
+    },
+    "budget": {
+      "total_trials": 200
+    },
+    "grid": {
+      "drop_if_weight_lt": 0.0,
+      "grid_epochs": 3,
+      "knobs": [
+        "routing_delta"
+      ],
+      "sens_samples_per_knob": 40,
+      "sensitivity_epochs": 1
+    },
+    "lr_grid": {
+      "baseline_points": 15,
+      "clamp_max_lr": "1e-2",
+      "clamp_min_lr": "1e-6",
+      "extend_factor": 1.6,
+      "max_lr": "5e-3",
+      "min_lr": "1e-5",
+      "neighbor_points": 7
+    },
+    "ratio_bayes": 0.3,
+    "ratio_grid": 0.5,
+    "ratio_sensitivity": 0.2,
+    "use_bayes": false
+  },
+  "io": {
+    "overwrite": "resume",
+    "root": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_bert",
+    "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_bert/debug__glue_rte__bert-base-uncased__ours__ep3__bs32__lr2e-5__hpo__20260201-181315__79cbcae4/trial_runs/grid_lr_3.728e-04_2c8fbd818b/s24"
+  },
+  "log": {
+    "csv": true,
+    "swanlab": {
+      "enabled": false,
+      "project": "ShakeAlign_LoRA"
+    },
+    "tensorboard": false,
+    "wandb": false
+  },
+  "method": {
+    "lora": {
+      "R": 32,
+      "alpha": 16,
+      "dropout": 0.1,
+      "r": 8
+    },
+    "name": "ours",
+    "ours": {
+      "ablate": {
+        "cagrad": true,
+        "interp": false
+      },
+      "ema_H": 1,
+      "history": {
+        "enabled": false,
+        "exp_beta": 0.7,
+        "weighting": "exp",
+        "window_steps": 4
+      },
+      "noise_gate": {
+        "kappa_n": 10.0,
+        "tau_n": -10.0
+      },
+      "pulling": {
+        "gamma_pull": 0.35,
+        "k_pull": 8.0
+      },
+      "routing_delta": 0.26432973208074095,
+      "trigger_gate0": {
+        "tau_D": 0.0038053,
+        "tau_N": 0.6
+      },
+      "votes": 8,
+      "voting": {
+        "allow_tail": true,
+        "keep_single_votes": true,
+        "samples_per_vote": 8
+      }
+    }
+  },
+  "model": {
+    "name": "bert-base-uncased"
+  },
+  "task": {
+    "max_len": 128,
+    "name": "glue/rte"
+  },
+  "train": {
+    "batch_size": 32,
+    "epochs": 3,
+    "eval": {
+      "dense_early_epochs": 2,
+      "dense_early_per_epoch": 8,
+      "every_steps": 50,
+      "first_step": false,
+      "max_batches": 0,
+      "strategy": "per_epoch"
+    },
+    "lr": 0.0003727593720314938,
+    "max_grad_norm": 1.0,
+    "seed": 24,
+    "warmup_ratio": 0.1,
+    "weight_decay": 0.0
+  }
+}

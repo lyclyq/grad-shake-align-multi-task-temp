@@ -1,0 +1,4 @@
+step,train/loss,train/num_tasks,train/gate0_triggered_blocks,train/gate0_considered_blocks,train/gate0_trigger_rate,train/pull_to_r_blocks,train/pull_to_R_blocks,train/pull_to_r_rate,train/pull_to_R_rate,train/alpha_pull_mean,train/single_vote_skipped_blocks,train/tau_N,train/tau_D,epoch,step_in_epoch,probe/is_eval,val/acc,val/loss,val/acc_r_only,val/loss_r_only,train/acc,train/loss_eval,gap/train_minus_val,train/acc_r_only,train/loss_r_only_eval,gap_r_only/train_minus_val_r_only
+1,0.6913444101810455,2.0,44.0,74.0,0.5945945945945946,10.0,34.0,0.22727272727272727,0.7727272727272727,0.17145751437483986,0.0,0.6,0.0038053,1,1,0.0,,,,,,,,,,
+2,0.6899714171886444,2.0,28.0,74.0,0.3783783783783784,9.0,19.0,0.32142857142857145,0.6785714285714286,0.17071391091574523,0.0,0.6,0.0038053,1,2,0.0,,,,,,,,,,
+2,,,,,,,,,,,,,,1,,1.0,0.5625,0.6942709684371948,0.5625,0.694229781627655,0.6875,0.6790433526039124,0.125,0.625,0.6878978908061981,0.0625

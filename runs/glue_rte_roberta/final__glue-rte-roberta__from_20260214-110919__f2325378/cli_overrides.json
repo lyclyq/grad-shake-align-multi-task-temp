@@ -1,0 +1,7 @@
+{
+  "set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/final__glue-rte-roberta__from_20260214-110919__f2325378",
+    "io.overwrite=resume"
+  ]
+}

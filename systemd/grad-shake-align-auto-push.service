@@ -1,0 +1,7 @@
+[Unit]
+Description=Force-push grad-shake-align backup to temp GitHub repo
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/lyclyq/Optimization/grad-shake-align
+ExecStart=/home/lyclyq/Optimization/grad-shake-align/scripts/auto_force_push_temp.sh

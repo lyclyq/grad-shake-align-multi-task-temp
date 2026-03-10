@@ -1,0 +1,10 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_roberta",
+    "task.name=glue/mrpc",
+    "model.name=roberta-base",
+    "hpo.budget.total_trials=400"
+  ],
+  "schedule_path": null
+}

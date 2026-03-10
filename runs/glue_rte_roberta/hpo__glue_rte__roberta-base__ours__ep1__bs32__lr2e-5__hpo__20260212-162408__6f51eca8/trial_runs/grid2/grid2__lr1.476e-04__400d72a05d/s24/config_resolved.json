@@ -1,0 +1,243 @@
+{
+  "_provenance": {
+    "base_config_path": "configs/base.yaml",
+    "cli_set_args": [
+      "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta",
+      "hpo.budget.total_trials=30",
+      "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8",
+      "io.overwrite=resume",
+      "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.476e-04__400d72a05d/s24",
+      "io.overwrite=resume",
+      "method.name=ours",
+      "method.ours.ablate.interp=False",
+      "method.ours.compensation.enabled=True",
+      "method.ours.compensation.ridge_lambda=1e-4",
+      "method.ours.compression.enabled=False",
+      "method.ours.compression.every_steps=0",
+      "method.ours.compression.qr.enabled=True",
+      "method.ours.compression.svd.enabled=True",
+      "method.ours.compression.target_rank=None",
+      "method.ours.ema_H=1",
+      "method.ours.gate0_noise.kappa=10.0",
+      "method.ours.gate0_noise.tau=-10.0",
+      "method.ours.history.enabled=False",
+      "method.ours.history.exp_beta=0.7",
+      "method.ours.history.weighting=exp",
+      "method.ours.history.window_steps=1",
+      "method.ours.lora.R=128",
+      "method.ours.lora.alpha=16.0",
+      "method.ours.lora.dropout=0.1",
+      "method.ours.lora.r=16",
+      "method.ours.pulling.gamma_pull=0.35",
+      "method.ours.pulling.k_pull=8.0",
+      "method.ours.routing_delta=0.035250000000000004",
+      "method.ours.trigger_gate0.tau_D=0.0038053",
+      "method.ours.trigger_gate0.tau_N=0.6",
+      "method.ours.votes=8",
+      "method.ours.voting.allow_tail=True",
+      "method.ours.voting.keep_single_votes=True",
+      "method.ours.voting.samples_per_vote=8",
+      "train.epochs=3",
+      "train.lr=0.00014759590069374914",
+      "train.seed=24",
+      "train.warmup_ratio=0.1"
+    ],
+    "schedule_path": null
+  },
+  "debug": {
+    "assert_hi_zero_init": true,
+    "dump_gates": true,
+    "dump_grad_norms": true,
+    "dump_history": false,
+    "dump_init": true,
+    "dump_votes": true,
+    "enabled": false,
+    "max_blocks_to_print": 3,
+    "print_every_steps": 80
+  },
+  "hpo": {
+    "bandit": {
+      "fixed_warmup_ratio": 0.1,
+      "refine_seeds": [
+        12,
+        24
+      ],
+      "score": {
+        "w_avg": 0.1,
+        "w_final": 0.4,
+        "w_max": 0.5
+      }
+    },
+    "baseline_variants": [
+      {
+        "tag": "baseline_r"
+      },
+      {
+        "tag": "baseline_R"
+      }
+    ],
+    "budget": {
+      "total_trials": 30
+    },
+    "grid": {
+      "alpha_probe": {
+        "enabled": true,
+        "epochs": 3,
+        "num_alpha": 2,
+        "num_lr": 2,
+        "seeds": [
+          12,
+          24
+        ]
+      },
+      "baseline_search_epochs": 3,
+      "bayes_ei_xi": 0.01,
+      "bayes_gp_length": 0.6,
+      "bayes_gp_noise": "1e-3",
+      "bayes_gp_var": 1.0,
+      "bayes_pool": 256,
+      "bayes_rng_seed": 20260211,
+      "drop_if_weight_lt": 0.0,
+      "grid_epochs": 3,
+      "knob_specs": {
+        "routing_delta": {
+          "clamp_hi": 1.0,
+          "clamp_lo": 0.0,
+          "hi": 0.08,
+          "kind": "float",
+          "lo": 0.005,
+          "padding_ratio": 0.15,
+          "step": 0.001,
+          "top_quantile": 0.2
+        }
+      },
+      "knobs": [
+        "routing_delta"
+      ],
+      "max_m_choice": 0,
+      "max_m_float": 7,
+      "max_retries": 3,
+      "rng_seed": 2026,
+      "sens_samples_per_knob": 40,
+      "sens_seed": 12,
+      "sensitivity_epochs": 1
+    },
+    "lr_grid": {
+      "baseline_points": 15,
+      "clamp_max_lr": "1e-2",
+      "clamp_min_lr": "1e-6",
+      "extend_factor": 1.6,
+      "max_lr": "7e-3",
+      "min_lr": "1e-5",
+      "neighbor_points": 9
+    },
+    "ratio_bayes": 0.3,
+    "ratio_grid": 0.5,
+    "ratio_sensitivity": 0.2,
+    "use_bayes": false
+  },
+  "io": {
+    "overwrite": "resume",
+    "root": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta",
+    "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.476e-04__400d72a05d/s24"
+  },
+  "log": {
+    "csv": true,
+    "swanlab": {
+      "enabled": false,
+      "project": "ShakeAlign_LoRA"
+    }
+  },
+  "method": {
+    "baseline_R": {
+      "lora": {
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 128
+      }
+    },
+    "baseline_r": {
+      "lora": {
+        "alpha": 2.0,
+        "dropout": 0.1,
+        "r": 16
+      }
+    },
+    "name": "ours",
+    "ours": {
+      "ablate": {
+        "interp": false
+      },
+      "compensation": {
+        "enabled": true,
+        "ridge_lambda": 0.0001
+      },
+      "compression": {
+        "enabled": false,
+        "every_steps": 0,
+        "qr": {
+          "enabled": true
+        },
+        "svd": {
+          "enabled": true
+        },
+        "target_rank": null
+      },
+      "ema_H": 1,
+      "gate0_noise": {
+        "kappa": 10.0,
+        "tau": -10.0
+      },
+      "history": {
+        "enabled": false,
+        "exp_beta": 0.7,
+        "weighting": "exp",
+        "window_steps": 1
+      },
+      "lora": {
+        "R": 128,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 16
+      },
+      "pulling": {
+        "gamma_pull": 0.35,
+        "k_pull": 8.0
+      },
+      "routing_delta": 0.035250000000000004,
+      "trigger_gate0": {
+        "tau_D": 0.0038053,
+        "tau_N": 0.6
+      },
+      "votes": 8,
+      "voting": {
+        "allow_tail": true,
+        "keep_single_votes": true,
+        "samples_per_vote": 8
+      }
+    }
+  },
+  "model": {
+    "name": "roberta-base"
+  },
+  "stage": "train",
+  "task": {
+    "max_len": 128,
+    "name": "glue/rte"
+  },
+  "train": {
+    "batch_size": 32,
+    "epochs": 3,
+    "eval": {
+      "every_steps": 50,
+      "first_step": false,
+      "max_batches": 0,
+      "strategy": "per_epoch"
+    },
+    "lr": 0.00014759590069374914,
+    "max_grad_norm": 1.0,
+    "seed": 24,
+    "warmup_ratio": 0.1,
+    "weight_decay": 0.0
+  }
+}

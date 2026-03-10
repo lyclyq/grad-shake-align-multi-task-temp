@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily auto-push timer for grad-shake-align backup
+
+[Timer]
+OnCalendar=*-*-* 23:00:00
+Persistent=true
+Unit=grad-shake-align-auto-push.service
+
+[Install]
+WantedBy=timers.target

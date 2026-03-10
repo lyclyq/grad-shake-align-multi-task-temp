@@ -1,0 +1,20 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_bert",
+    "task.name=glue/mrpc",
+    "model.name=bert-base-uncased",
+    "hpo.budget.total_trials=400",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_bert/hpo__glue_mrpc__bert-base-uncased__ours__ep1__bs32__lr2e-5__hpo__20260220-105707__2bb1b956/trial_runs/baseline_search/baseline_r/i4/s2",
+    "io.overwrite=resume",
+    "method.baseline_r.lora.alpha=2.0",
+    "method.baseline_r.lora.dropout=0.1",
+    "method.baseline_r.lora.r=32",
+    "method.name=baseline_r",
+    "train.epochs=3",
+    "train.lr=5.144496422295101e-05",
+    "train.seed=2",
+    "train.warmup_ratio=0.1"
+  ],
+  "schedule_path": null
+}

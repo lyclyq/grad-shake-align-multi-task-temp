@@ -1,0 +1,4 @@
+step,train/loss,train/num_tasks,train/grad_solver_cagrad,train/cagrad_c,epoch,step_in_epoch,probe/is_eval,val/acc,val/loss,train/acc,train/loss_eval,gap/train_minus_val
+1,0.6844184100627899,2.0,1.0,0.4,1,1,0.0,,,,,
+2,0.6691619455814362,2.0,1.0,0.4,1,2,0.0,,,,,
+2,,,,,1,,1.0,0.4375,0.70795077085495,0.5625,0.6870622932910919,0.125

@@ -1,0 +1,91 @@
+{
+  "budget": {
+    "alloc": {
+      "bayes_configs": 0,
+      "bayes_trials": 0,
+      "grid_configs": 24,
+      "grid_trials": 48,
+      "n_seeds_refine": 2,
+      "sensitivity_configs": 6,
+      "sensitivity_trials": 6
+    },
+    "deducted": {
+      "baseline_search_trials": 0
+    },
+    "meta": {
+      "source": "total_trials",
+      "trials_per_gpu_hour": null
+    },
+    "not_counted": {
+      "alpha_probe": {
+        "alpha_probe_trials": 8,
+        "counted_in_budget": false,
+        "enabled": true,
+        "n_seeds": 2,
+        "num_alpha": 2,
+        "num_lr": 2,
+        "seeds": [
+          12,
+          24
+        ]
+      },
+      "baseline_search_trials": 30
+    },
+    "remaining_after_baseline": 30,
+    "total_trials": 30,
+    "unit": "configs",
+    "use_bayes": false
+  },
+  "lr": {
+    "baseline_points": 15,
+    "clamp_max_lr": 0.01,
+    "clamp_min_lr": 1e-06,
+    "extend_factor": 1.6,
+    "max_lr": 0.007,
+    "max_lr_ext": 0.01,
+    "min_lr": 1e-05,
+    "min_lr_ext": 6.25e-06,
+    "neighbor_points": 9
+  },
+  "stages": [
+    {
+      "budget_trials": 30,
+      "counted_in_budget": false,
+      "name": "baseline_search"
+    },
+    {
+      "budget_trials": 6,
+      "configs": 6,
+      "counted_in_budget": true,
+      "name": "sensitivity"
+    },
+    {
+      "counted_in_budget": false,
+      "meta": {
+        "alpha_probe_trials": 8,
+        "counted_in_budget": false,
+        "enabled": true,
+        "n_seeds": 2,
+        "num_alpha": 2,
+        "num_lr": 2,
+        "seeds": [
+          12,
+          24
+        ]
+      },
+      "name": "alpha_probe"
+    },
+    {
+      "budget_trials": 48,
+      "configs": 24,
+      "counted_in_budget": true,
+      "name": "grid2"
+    },
+    {
+      "budget_trials": 0,
+      "configs": 0,
+      "counted_in_budget": false,
+      "name": "bayes_refine"
+    }
+  ]
+}

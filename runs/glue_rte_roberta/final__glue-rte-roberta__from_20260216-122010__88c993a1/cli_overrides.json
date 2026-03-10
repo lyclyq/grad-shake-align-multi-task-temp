@@ -1,0 +1,11 @@
+{
+  "set_args": [
+    "task.name=glue/rte",
+    "model.name=roberta-base",
+    "io.run_dir=runs/glue_rte_roberta/final__glue-rte-roberta__from_20260216-122010__88c993a1",
+    "io.overwrite=force",
+    "train.eval.strategy=dense_early",
+    "train.eval.dense_early_per_epoch=8",
+    "train.eval.dense_early_epochs=2"
+  ]
+}

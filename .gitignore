@@ -45,6 +45,5 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-runs/
 tests_v2/log/
 .hf_cache/

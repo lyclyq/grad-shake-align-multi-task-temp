@@ -1,0 +1,22 @@
+Traceback (most recent call last):
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 76, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 16, in main
+    from src.config import load_config_with_cli_overrides, validate_config
+  File "/home/lyclyq/Optimization/grad-shake-align/src/config.py", line 9, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+python scripts/run.py train --config configs/base.yaml --schedule configs/schedules/final.yaml --set task.name=glue/mrpc --set model.name=distilbert-base-uncased --set io.run_dir=runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4 --set io.overwrite=force --set train.eval.strategy=dense_early --set train.eval.dense_early_per_epoch=8 --set train.eval.dense_early_epochs=2 --set method.name=baseline_r --set method.baseline_r.lora.r=32 --set train.seed=2 --set train.epochs=10 --set train.warmup_ratio=0.1 --set train.lr=1.7931286244813644e-05 --set io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_r/s2 --set io.overwrite=resume --trial_tag final_baseline_r_s2
+Traceback (most recent call last):
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 76, in <module>
+    raise SystemExit(main())
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 63, in main
+    run_final(
+  File "/home/lyclyq/Optimization/grad-shake-align/src/final.py", line 465, in run_final
+    _run_one(
+  File "/home/lyclyq/Optimization/grad-shake-align/src/final.py", line 256, in _run_one
+    subprocess.run(cmd, check=True, env=os.environ.copy())
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/subprocess.py", line 528, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['python', 'scripts/run.py', 'train', '--config', 'configs/base.yaml', '--schedule', 'configs/schedules/final.yaml', '--set', 'task.name=glue/mrpc', '--set', 'model.name=distilbert-base-uncased', '--set', 'io.run_dir=runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4', '--set', 'io.overwrite=force', '--set', 'train.eval.strategy=dense_early', '--set', 'train.eval.dense_early_per_epoch=8', '--set', 'train.eval.dense_early_epochs=2', '--set', 'method.name=baseline_r', '--set', 'method.baseline_r.lora.r=32', '--set', 'train.seed=2', '--set', 'train.epochs=10', '--set', 'train.warmup_ratio=0.1', '--set', 'train.lr=1.7931286244813644e-05', '--set', 'io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_r/s2', '--set', 'io.overwrite=resume', '--trial_tag', 'final_baseline_r_s2']' returned non-zero exit status 1.

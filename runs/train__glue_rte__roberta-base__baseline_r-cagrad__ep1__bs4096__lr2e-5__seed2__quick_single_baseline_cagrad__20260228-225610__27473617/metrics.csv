@@ -1,0 +1,2 @@
+step,val/acc,val/loss,epoch,probe/is_eval,train/acc,train/loss_eval,gap/train_minus_val
+0,0.4729241877256318,0.6945549845695496,1,1.0,0.0,0.0,-0.4729241877256318

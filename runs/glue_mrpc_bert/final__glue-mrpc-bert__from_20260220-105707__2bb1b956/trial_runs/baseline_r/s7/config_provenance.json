@@ -1,0 +1,21 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "task.name=glue/mrpc",
+    "model.name=bert-base-uncased",
+    "io.run_dir=runs/glue_mrpc_bert/final__glue-mrpc-bert__from_20260220-105707__2bb1b956",
+    "io.overwrite=force",
+    "train.eval.strategy=dense_early",
+    "train.eval.dense_early_per_epoch=8",
+    "train.eval.dense_early_epochs=2",
+    "method.name=baseline_r",
+    "method.baseline_r.lora.r=32",
+    "train.seed=7",
+    "train.epochs=10",
+    "train.warmup_ratio=0.1",
+    "train.lr=8.713819960639625e-05",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_bert/final__glue-mrpc-bert__from_20260220-105707__2bb1b956/trial_runs/baseline_r/s7",
+    "io.overwrite=resume"
+  ],
+  "schedule_path": "configs/schedules/final.yaml"
+}

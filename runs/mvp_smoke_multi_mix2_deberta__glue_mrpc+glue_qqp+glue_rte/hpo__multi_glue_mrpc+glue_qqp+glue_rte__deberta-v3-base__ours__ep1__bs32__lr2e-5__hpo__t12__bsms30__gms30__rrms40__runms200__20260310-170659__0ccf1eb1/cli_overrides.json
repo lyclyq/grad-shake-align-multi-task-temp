@@ -1,0 +1,22 @@
+{
+  "set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/mvp_smoke_multi_mix2_deberta__glue_mrpc+glue_qqp+glue_rte",
+    "model.name=deberta-v3-base",
+    "task.multi.enabled=true",
+    "task.multi.datasets=[\"glue/mrpc\", \"glue/qqp\", \"glue/rte\"]",
+    "train.multi.steps_mode=max_steps",
+    "train.max_steps=200",
+    "hpo.coord.top_k=2",
+    "hpo.coord.refine_radix=3",
+    "hpo.coord.bayes_trials=48",
+    "hpo.use_bayes=false",
+    "train.eval.strategy=steps",
+    "train.eval.every_steps=10",
+    "train.eval.first_step=true",
+    "log.swanlab.enabled=false",
+    "hpo.budget.total_trials=12",
+    "hpo.grid.baseline_search_max_steps=30",
+    "hpo.grid.grid_max_steps=30",
+    "hpo.grid.rerank.max_steps=40"
+  ]
+}

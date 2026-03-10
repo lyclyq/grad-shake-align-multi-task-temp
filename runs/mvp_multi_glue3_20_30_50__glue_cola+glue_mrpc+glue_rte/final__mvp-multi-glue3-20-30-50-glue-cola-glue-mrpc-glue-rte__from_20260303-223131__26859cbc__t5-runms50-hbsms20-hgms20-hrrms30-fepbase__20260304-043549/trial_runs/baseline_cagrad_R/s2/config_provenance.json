@@ -1,0 +1,26 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50__glue_cola+glue_mrpc+glue_rte",
+    "task.name=glue/rte",
+    "model.name=roberta-base",
+    "task.multi.enabled=true",
+    "task.multi.datasets=[\"glue/cola\", \"glue/mrpc\", \"glue/rte\"]",
+    "train.multi.steps_mode=max_steps",
+    "train.max_steps=50",
+    "final.seeds=[2, 3, 5, 7, 11]",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50__glue_cola+glue_mrpc+glue_rte/final__mvp-multi-glue3-20-30-50-glue-cola-glue-mrpc-glue-rte__from_20260303-223131__26859cbc__t5-runms50-hbsms20-hgms20-hrrms30-fepbase__20260304-043549",
+    "io.overwrite=resume",
+    "method.name=baseline_R",
+    "method.baseline_R.lora.r=128",
+    "method.baseline_R.grad_solver=cagrad",
+    "method.baseline_R.cagrad.c=0.6",
+    "train.seed=2",
+    "train.epochs=10",
+    "train.warmup_ratio=0.1",
+    "train.lr=0.00014759590069374914",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50__glue_cola+glue_mrpc+glue_rte/final__mvp-multi-glue3-20-30-50-glue-cola-glue-mrpc-glue-rte__from_20260303-223131__26859cbc__t5-runms50-hbsms20-hgms20-hrrms30-fepbase__20260304-043549/trial_runs/baseline_cagrad_R/s2",
+    "io.overwrite=resume"
+  ],
+  "schedule_path": "configs/schedules/final.yaml"
+}

@@ -1,0 +1,2766 @@
+{
+  "created_at": 1772326287,
+  "items": [
+    {
+      "idx": 0,
+      "last_rc": 1,
+      "last_update": 1772326294,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i0/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "failed",
+      "trial_tag": "bl_search__baseline_r__i0__s2",
+      "tries": 3
+    },
+    {
+      "idx": 1,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i0/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i0__s3",
+      "tries": 0
+    },
+    {
+      "idx": 2,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i0/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i0",
+      "tries": 0
+    },
+    {
+      "idx": 3,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i1/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i1__s2",
+      "tries": 0
+    },
+    {
+      "idx": 4,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i1/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i1__s3",
+      "tries": 0
+    },
+    {
+      "idx": 5,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i1/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i1",
+      "tries": 0
+    },
+    {
+      "idx": 6,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i2/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i2__s2",
+      "tries": 0
+    },
+    {
+      "idx": 7,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i2/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i2__s3",
+      "tries": 0
+    },
+    {
+      "idx": 8,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i2/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i2",
+      "tries": 0
+    },
+    {
+      "idx": 9,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i3/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i3__s2",
+      "tries": 0
+    },
+    {
+      "idx": 10,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i3/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i3__s3",
+      "tries": 0
+    },
+    {
+      "idx": 11,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i3/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i3",
+      "tries": 0
+    },
+    {
+      "idx": 12,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i4/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i4__s2",
+      "tries": 0
+    },
+    {
+      "idx": 13,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i4/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i4__s3",
+      "tries": 0
+    },
+    {
+      "idx": 14,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i4/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i4",
+      "tries": 0
+    },
+    {
+      "idx": 15,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i5/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i5__s2",
+      "tries": 0
+    },
+    {
+      "idx": 16,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i5/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i5__s3",
+      "tries": 0
+    },
+    {
+      "idx": 17,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i5/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i5",
+      "tries": 0
+    },
+    {
+      "idx": 18,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i6/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i6__s2",
+      "tries": 0
+    },
+    {
+      "idx": 19,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i6/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i6__s3",
+      "tries": 0
+    },
+    {
+      "idx": 20,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i6/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i6",
+      "tries": 0
+    },
+    {
+      "idx": 21,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i7/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i7__s2",
+      "tries": 0
+    },
+    {
+      "idx": 22,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i7/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i7__s3",
+      "tries": 0
+    },
+    {
+      "idx": 23,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i7/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i7",
+      "tries": 0
+    },
+    {
+      "idx": 24,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i8/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i8__s2",
+      "tries": 0
+    },
+    {
+      "idx": 25,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i8/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i8__s3",
+      "tries": 0
+    },
+    {
+      "idx": 26,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i8/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i8",
+      "tries": 0
+    },
+    {
+      "idx": 27,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0007172514497925467,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i9/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i9__s2",
+      "tries": 0
+    },
+    {
+      "idx": 28,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0007172514497925467,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i9/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i9__s3",
+      "tries": 0
+    },
+    {
+      "idx": 29,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0007172514497925467,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i9/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i9",
+      "tries": 0
+    },
+    {
+      "idx": 30,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0012148905329030643,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i10/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i10__s2",
+      "tries": 0
+    },
+    {
+      "idx": 31,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0012148905329030643,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i10/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i10__s3",
+      "tries": 0
+    },
+    {
+      "idx": 32,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0012148905329030643,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i10/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i10",
+      "tries": 0
+    },
+    {
+      "idx": 33,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.002057798568918039,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i11/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i11__s2",
+      "tries": 0
+    },
+    {
+      "idx": 34,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.002057798568918039,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i11/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i11__s3",
+      "tries": 0
+    },
+    {
+      "idx": 35,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.002057798568918039,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i11/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i11",
+      "tries": 0
+    },
+    {
+      "idx": 36,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.003485527984255851,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i12/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i12__s2",
+      "tries": 0
+    },
+    {
+      "idx": 37,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.003485527984255851,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i12/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i12__s3",
+      "tries": 0
+    },
+    {
+      "idx": 38,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.003485527984255851,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i12/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i12",
+      "tries": 0
+    },
+    {
+      "idx": 39,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.005903836027749967,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i13/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i13__s2",
+      "tries": 0
+    },
+    {
+      "idx": 40,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.005903836027749967,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i13/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i13__s3",
+      "tries": 0
+    },
+    {
+      "idx": 41,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.005903836027749967,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i13/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i13",
+      "tries": 0
+    },
+    {
+      "idx": 42,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.01,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i14/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i14__s2",
+      "tries": 0
+    },
+    {
+      "idx": 43,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.01,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i14/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i14__s3",
+      "tries": 0
+    },
+    {
+      "idx": 44,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 32
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.01,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_r/i14/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_r__i14",
+      "tries": 0
+    },
+    {
+      "idx": 45,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i0/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i0__s2",
+      "tries": 0
+    },
+    {
+      "idx": 46,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i0/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i0__s3",
+      "tries": 0
+    },
+    {
+      "idx": 47,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i0/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i0",
+      "tries": 0
+    },
+    {
+      "idx": 48,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i1/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i1__s2",
+      "tries": 0
+    },
+    {
+      "idx": 49,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i1/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i1__s3",
+      "tries": 0
+    },
+    {
+      "idx": 50,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i1/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i1",
+      "tries": 0
+    },
+    {
+      "idx": 51,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i2/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i2__s2",
+      "tries": 0
+    },
+    {
+      "idx": 52,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i2/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i2__s3",
+      "tries": 0
+    },
+    {
+      "idx": 53,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i2/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i2",
+      "tries": 0
+    },
+    {
+      "idx": 54,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i3/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i3__s2",
+      "tries": 0
+    },
+    {
+      "idx": 55,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i3/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i3__s3",
+      "tries": 0
+    },
+    {
+      "idx": 56,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i3/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i3",
+      "tries": 0
+    },
+    {
+      "idx": 57,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i4/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i4__s2",
+      "tries": 0
+    },
+    {
+      "idx": 58,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i4/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i4__s3",
+      "tries": 0
+    },
+    {
+      "idx": 59,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i4/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i4",
+      "tries": 0
+    },
+    {
+      "idx": 60,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i5/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i5__s2",
+      "tries": 0
+    },
+    {
+      "idx": 61,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i5/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i5__s3",
+      "tries": 0
+    },
+    {
+      "idx": 62,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i5/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i5",
+      "tries": 0
+    },
+    {
+      "idx": 63,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i6/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i6__s2",
+      "tries": 0
+    },
+    {
+      "idx": 64,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i6/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i6__s3",
+      "tries": 0
+    },
+    {
+      "idx": 65,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i6/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i6",
+      "tries": 0
+    },
+    {
+      "idx": 66,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i7/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i7__s2",
+      "tries": 0
+    },
+    {
+      "idx": 67,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i7/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i7__s3",
+      "tries": 0
+    },
+    {
+      "idx": 68,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i7/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i7",
+      "tries": 0
+    },
+    {
+      "idx": 69,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i8/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i8__s2",
+      "tries": 0
+    },
+    {
+      "idx": 70,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i8/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i8__s3",
+      "tries": 0
+    },
+    {
+      "idx": 71,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i8/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i8",
+      "tries": 0
+    },
+    {
+      "idx": 72,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0007172514497925467,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i9/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i9__s2",
+      "tries": 0
+    },
+    {
+      "idx": 73,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0007172514497925467,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i9/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i9__s3",
+      "tries": 0
+    },
+    {
+      "idx": 74,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0007172514497925467,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i9/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i9",
+      "tries": 0
+    },
+    {
+      "idx": 75,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0012148905329030643,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i10/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i10__s2",
+      "tries": 0
+    },
+    {
+      "idx": 76,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0012148905329030643,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i10/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i10__s3",
+      "tries": 0
+    },
+    {
+      "idx": 77,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0012148905329030643,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i10/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i10",
+      "tries": 0
+    },
+    {
+      "idx": 78,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.002057798568918039,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i11/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i11__s2",
+      "tries": 0
+    },
+    {
+      "idx": 79,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.002057798568918039,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i11/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i11__s3",
+      "tries": 0
+    },
+    {
+      "idx": 80,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.002057798568918039,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i11/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i11",
+      "tries": 0
+    },
+    {
+      "idx": 81,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.003485527984255851,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i12/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i12__s2",
+      "tries": 0
+    },
+    {
+      "idx": 82,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.003485527984255851,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i12/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i12__s3",
+      "tries": 0
+    },
+    {
+      "idx": 83,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.003485527984255851,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i12/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i12",
+      "tries": 0
+    },
+    {
+      "idx": 84,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.005903836027749967,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i13/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i13__s2",
+      "tries": 0
+    },
+    {
+      "idx": 85,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.005903836027749967,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i13/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i13__s3",
+      "tries": 0
+    },
+    {
+      "idx": 86,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.005903836027749967,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i13/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i13",
+      "tries": 0
+    },
+    {
+      "idx": 87,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.01,
+          "max_steps": 20,
+          "seed": 2,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i14/s2",
+      "seed": 2,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i14__s2",
+      "tries": 0
+    },
+    {
+      "idx": 88,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.01,
+          "max_steps": 20,
+          "seed": 3,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i14/s3",
+      "seed": 3,
+      "stage": "baseline_search",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i14__s3",
+      "tries": 0
+    },
+    {
+      "idx": 89,
+      "last_rc": null,
+      "last_update": 0,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "grad_solver": "avg",
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.01,
+          "max_steps": 20,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue_3/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260301-115127__15cac825/trial_runs/baseline_search/baseline_R/i14/agg",
+      "seed": null,
+      "stage": "baseline_search_agg",
+      "status": "pending",
+      "trial_tag": "bl_search__baseline_R__i14",
+      "tries": 0
+    }
+  ],
+  "updated_at": 1772326294
+}

@@ -1,0 +1,20 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_roberta",
+    "task.name=glue/mrpc",
+    "model.name=roberta-base",
+    "hpo.budget.total_trials=400",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_roberta/hpo__glue_mrpc__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260221-043749__7bb35083/trial_runs/baseline_search/baseline_R/i2/s2",
+    "io.overwrite=resume",
+    "method.baseline_R.lora.alpha=16.0",
+    "method.baseline_R.lora.dropout=0.1",
+    "method.baseline_R.lora.r=128",
+    "method.name=baseline_R",
+    "train.epochs=3",
+    "train.lr=1.7931286244813644e-05",
+    "train.seed=2",
+    "train.warmup_ratio=0.1"
+  ],
+  "schedule_path": null
+}

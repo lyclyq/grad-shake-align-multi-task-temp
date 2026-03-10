@@ -1,0 +1,725 @@
+{
+  "baseline_lr_R": 5.144496422295101e-05,
+  "baseline_lr_r": 5.144496422295101e-05,
+  "best_path": "runs/glue_rte_deberta/hpo__glue_rte__microsoft_deberta-v3-base__ours__ep1__bs32__lr2e-5__hpo__20260219-103833__9af0be3b/best_hparams.json",
+  "final_epochs": 10,
+  "final_seeds": [
+    2,
+    3,
+    5,
+    7,
+    11
+  ],
+  "fixed_warmup_ratio": 0.1,
+  "ours_R": 128,
+  "ours_lr": 3.0372263322576627e-05,
+  "ours_r": 32,
+  "plan_path": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/hpo__glue_rte__microsoft_deberta-v3-base__ours__ep1__bs32__lr2e-5__hpo__20260219-103833__9af0be3b/grid_plan.json",
+  "repro_runs": [
+    {
+      "lora": {
+        "R": null,
+        "alpha": 2.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "baseline_r",
+      "method_cfg": {
+        "lora": {
+          "alpha": 2.0,
+          "dropout": 0.1,
+          "r": 32
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/baseline_r/s2",
+      "seed": 2,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 5.144496422295101e-05,
+        "seed": 2,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": null,
+        "alpha": 2.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "baseline_r",
+      "method_cfg": {
+        "lora": {
+          "alpha": 2.0,
+          "dropout": 0.1,
+          "r": 32
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/baseline_r/s3",
+      "seed": 3,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 5.144496422295101e-05,
+        "seed": 3,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": null,
+        "alpha": 2.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "baseline_r",
+      "method_cfg": {
+        "lora": {
+          "alpha": 2.0,
+          "dropout": 0.1,
+          "r": 32
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/baseline_r/s5",
+      "seed": 5,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 5.144496422295101e-05,
+        "seed": 5,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": null,
+        "alpha": 2.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "baseline_r",
+      "method_cfg": {
+        "lora": {
+          "alpha": 2.0,
+          "dropout": 0.1,
+          "r": 32
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/baseline_r/s7",
+      "seed": 7,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 5.144496422295101e-05,
+        "seed": 7,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": null,
+        "alpha": 2.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "baseline_r",
+      "method_cfg": {
+        "lora": {
+          "alpha": 2.0,
+          "dropout": 0.1,
+          "r": 32
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/baseline_r/s11",
+      "seed": 11,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 5.144496422295101e-05,
+        "seed": 11,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": null,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 128
+      },
+      "method": "baseline_R",
+      "method_cfg": {
+        "lora": {
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 128
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/baseline_R/s2",
+      "seed": 2,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 5.144496422295101e-05,
+        "seed": 2,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": null,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 128
+      },
+      "method": "baseline_R",
+      "method_cfg": {
+        "lora": {
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 128
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/baseline_R/s3",
+      "seed": 3,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 5.144496422295101e-05,
+        "seed": 3,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": null,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 128
+      },
+      "method": "baseline_R",
+      "method_cfg": {
+        "lora": {
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 128
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/baseline_R/s5",
+      "seed": 5,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 5.144496422295101e-05,
+        "seed": 5,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": null,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 128
+      },
+      "method": "baseline_R",
+      "method_cfg": {
+        "lora": {
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 128
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/baseline_R/s7",
+      "seed": 7,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 5.144496422295101e-05,
+        "seed": 7,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": null,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 128
+      },
+      "method": "baseline_R",
+      "method_cfg": {
+        "lora": {
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 128
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/baseline_R/s11",
+      "seed": 11,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 5.144496422295101e-05,
+        "seed": 11,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": 128,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "ours",
+      "method_cfg": {
+        "ablate": {
+          "interp": false
+        },
+        "compensation": {
+          "enabled": true,
+          "ridge_lambda": 0.0001
+        },
+        "compression": {
+          "enabled": false,
+          "every_steps": 0,
+          "qr": {
+            "enabled": true
+          },
+          "svd": {
+            "enabled": true
+          },
+          "target_rank": null
+        },
+        "ema_H": 1,
+        "gate0_noise": {
+          "kappa": 10.0,
+          "tau": -10.0
+        },
+        "history": {
+          "enabled": false,
+          "exp_beta": 0.7,
+          "weighting": "exp",
+          "window_steps": 1
+        },
+        "lora": {
+          "R": 128,
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 32
+        },
+        "pulling": {
+          "gamma_pull": 0.35,
+          "k_pull": 8.0
+        },
+        "routing_delta": 0.005,
+        "trigger_gate0": {
+          "tau_D": 0.0038053,
+          "tau_N": 0.6
+        },
+        "votes": 8,
+        "voting": {
+          "allow_tail": true,
+          "keep_single_votes": true,
+          "samples_per_vote": 8
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/ours/s2",
+      "seed": 2,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 3.0372263322576627e-05,
+        "seed": 2,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": 128,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "ours",
+      "method_cfg": {
+        "ablate": {
+          "interp": false
+        },
+        "compensation": {
+          "enabled": true,
+          "ridge_lambda": 0.0001
+        },
+        "compression": {
+          "enabled": false,
+          "every_steps": 0,
+          "qr": {
+            "enabled": true
+          },
+          "svd": {
+            "enabled": true
+          },
+          "target_rank": null
+        },
+        "ema_H": 1,
+        "gate0_noise": {
+          "kappa": 10.0,
+          "tau": -10.0
+        },
+        "history": {
+          "enabled": false,
+          "exp_beta": 0.7,
+          "weighting": "exp",
+          "window_steps": 1
+        },
+        "lora": {
+          "R": 128,
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 32
+        },
+        "pulling": {
+          "gamma_pull": 0.35,
+          "k_pull": 8.0
+        },
+        "routing_delta": 0.005,
+        "trigger_gate0": {
+          "tau_D": 0.0038053,
+          "tau_N": 0.6
+        },
+        "votes": 8,
+        "voting": {
+          "allow_tail": true,
+          "keep_single_votes": true,
+          "samples_per_vote": 8
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/ours/s3",
+      "seed": 3,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 3.0372263322576627e-05,
+        "seed": 3,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": 128,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "ours",
+      "method_cfg": {
+        "ablate": {
+          "interp": false
+        },
+        "compensation": {
+          "enabled": true,
+          "ridge_lambda": 0.0001
+        },
+        "compression": {
+          "enabled": false,
+          "every_steps": 0,
+          "qr": {
+            "enabled": true
+          },
+          "svd": {
+            "enabled": true
+          },
+          "target_rank": null
+        },
+        "ema_H": 1,
+        "gate0_noise": {
+          "kappa": 10.0,
+          "tau": -10.0
+        },
+        "history": {
+          "enabled": false,
+          "exp_beta": 0.7,
+          "weighting": "exp",
+          "window_steps": 1
+        },
+        "lora": {
+          "R": 128,
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 32
+        },
+        "pulling": {
+          "gamma_pull": 0.35,
+          "k_pull": 8.0
+        },
+        "routing_delta": 0.005,
+        "trigger_gate0": {
+          "tau_D": 0.0038053,
+          "tau_N": 0.6
+        },
+        "votes": 8,
+        "voting": {
+          "allow_tail": true,
+          "keep_single_votes": true,
+          "samples_per_vote": 8
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/ours/s5",
+      "seed": 5,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 3.0372263322576627e-05,
+        "seed": 5,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": 128,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "ours",
+      "method_cfg": {
+        "ablate": {
+          "interp": false
+        },
+        "compensation": {
+          "enabled": true,
+          "ridge_lambda": 0.0001
+        },
+        "compression": {
+          "enabled": false,
+          "every_steps": 0,
+          "qr": {
+            "enabled": true
+          },
+          "svd": {
+            "enabled": true
+          },
+          "target_rank": null
+        },
+        "ema_H": 1,
+        "gate0_noise": {
+          "kappa": 10.0,
+          "tau": -10.0
+        },
+        "history": {
+          "enabled": false,
+          "exp_beta": 0.7,
+          "weighting": "exp",
+          "window_steps": 1
+        },
+        "lora": {
+          "R": 128,
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 32
+        },
+        "pulling": {
+          "gamma_pull": 0.35,
+          "k_pull": 8.0
+        },
+        "routing_delta": 0.005,
+        "trigger_gate0": {
+          "tau_D": 0.0038053,
+          "tau_N": 0.6
+        },
+        "votes": 8,
+        "voting": {
+          "allow_tail": true,
+          "keep_single_votes": true,
+          "samples_per_vote": 8
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/ours/s7",
+      "seed": 7,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 3.0372263322576627e-05,
+        "seed": 7,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "lora": {
+        "R": 128,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "ours",
+      "method_cfg": {
+        "ablate": {
+          "interp": false
+        },
+        "compensation": {
+          "enabled": true,
+          "ridge_lambda": 0.0001
+        },
+        "compression": {
+          "enabled": false,
+          "every_steps": 0,
+          "qr": {
+            "enabled": true
+          },
+          "svd": {
+            "enabled": true
+          },
+          "target_rank": null
+        },
+        "ema_H": 1,
+        "gate0_noise": {
+          "kappa": 10.0,
+          "tau": -10.0
+        },
+        "history": {
+          "enabled": false,
+          "exp_beta": 0.7,
+          "weighting": "exp",
+          "window_steps": 1
+        },
+        "lora": {
+          "R": 128,
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 32
+        },
+        "pulling": {
+          "gamma_pull": 0.35,
+          "k_pull": 8.0
+        },
+        "routing_delta": 0.005,
+        "trigger_gate0": {
+          "tau_D": 0.0038053,
+          "tau_N": 0.6
+        },
+        "votes": 8,
+        "voting": {
+          "allow_tail": true,
+          "keep_single_votes": true,
+          "samples_per_vote": 8
+        }
+      },
+      "model": {
+        "name": "microsoft/deberta-v3-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/ours/s11",
+      "seed": 11,
+      "task": {
+        "max_len": 128,
+        "name": "glue/rte"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 10,
+        "lr": 3.0372263322576627e-05,
+        "seed": 11,
+        "warmup_ratio": 0.1
+      }
+    }
+  ]
+}

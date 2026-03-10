@@ -1,0 +1,10 @@
+{
+  "best_epoch": 1.0,
+  "best_val_acc": 0.4375,
+  "train_final": 0.5625,
+  "train_max": 0.5625,
+  "val_avg": 0.4375,
+  "val_avg_last3ep": 0.4375,
+  "val_final": 0.4375,
+  "val_max": 0.4375
+}

@@ -1,0 +1,19 @@
+{
+  "baseline_lr_R": 3.0372263322576627e-05,
+  "baseline_lr_r": 3.0372263322576627e-05,
+  "best_path": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-101158__ec26deb4/best_hparams.json",
+  "final_epochs": 10,
+  "final_seeds": [
+    2,
+    3,
+    5,
+    7,
+    11
+  ],
+  "fixed_warmup_ratio": 0.1,
+  "ours_R": 128,
+  "ours_lr": 6.249999999999997e-06,
+  "ours_r": 16,
+  "plan_path": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-101158__ec26deb4/grid_plan.json",
+  "repro_runs": []
+}

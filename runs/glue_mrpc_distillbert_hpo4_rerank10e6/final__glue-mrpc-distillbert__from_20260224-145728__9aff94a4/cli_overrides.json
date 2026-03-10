@@ -1,0 +1,11 @@
+{
+  "set_args": [
+    "task.name=glue/mrpc",
+    "model.name=distilbert-base-uncased",
+    "io.run_dir=runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4",
+    "io.overwrite=force",
+    "train.eval.strategy=dense_early",
+    "train.eval.dense_early_per_epoch=8",
+    "train.eval.dense_early_epochs=2"
+  ]
+}

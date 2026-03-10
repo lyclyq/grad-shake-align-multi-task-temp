@@ -1,0 +1,45 @@
+{
+  "budget": {
+    "baseline_tag_budget": 6,
+    "bayes_trials": 48,
+    "cagrad_tag_budget": 6,
+    "method_orders": {
+      "baseline": [],
+      "cagrad": [
+        "cagrad_c"
+      ],
+      "ours": [
+        "tau_D",
+        "gamma_pull",
+        "k_pull",
+        "routing_delta"
+      ]
+    },
+    "refine_radix": 3,
+    "shared_order": [
+      "lr",
+      "warmup_ratio"
+    ],
+    "top_k": 2,
+    "total_trials_per_family": 12
+  },
+  "hpo_train_schedule": {
+    "bayes": {
+      "epochs": 6,
+      "max_steps": 40,
+      "trials": 48
+    },
+    "coord_search": {
+      "configured_max_steps": 30,
+      "epochs": 3,
+      "max_steps": 30
+    },
+    "global_train_max_steps": 200,
+    "local_refine": {
+      "configured_max_steps": 40,
+      "epochs": 6,
+      "max_steps": 40
+    },
+    "mode": "max_steps"
+  }
+}

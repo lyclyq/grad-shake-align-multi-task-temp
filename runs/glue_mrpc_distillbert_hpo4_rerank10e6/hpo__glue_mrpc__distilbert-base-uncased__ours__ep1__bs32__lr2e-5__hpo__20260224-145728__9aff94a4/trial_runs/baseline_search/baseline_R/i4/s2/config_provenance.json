@@ -1,0 +1,28 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6",
+    "task.name=glue/mrpc",
+    "model.name=distilbert-base-uncased",
+    "hpo.budget.total_trials=400",
+    "hpo.grid.baseline_search_epochs=4",
+    "hpo.grid.grid_epochs=4",
+    "hpo.grid.rerank.enabled=true",
+    "hpo.grid.rerank.top_k=10",
+    "hpo.grid.rerank.epochs=6",
+    "hpo.bandit.score.w_final=0.5",
+    "hpo.bandit.score.w_max=0.4",
+    "hpo.bandit.score.w_avg=0.1",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/hpo__glue_mrpc__distilbert-base-uncased__ours__ep1__bs32__lr2e-5__hpo__20260224-145728__9aff94a4/trial_runs/baseline_search/baseline_R/i4/s2",
+    "io.overwrite=resume",
+    "method.baseline_R.lora.alpha=16.0",
+    "method.baseline_R.lora.dropout=0.1",
+    "method.baseline_R.lora.r=128",
+    "method.name=baseline_R",
+    "train.epochs=4",
+    "train.lr=5.144496422295101e-05",
+    "train.seed=2",
+    "train.warmup_ratio=0.1"
+  ],
+  "schedule_path": null
+}

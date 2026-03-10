@@ -1,0 +1,31 @@
+{
+  "best_path": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/hpo__glue_rte__microsoft_deberta-v3-base__ours__ep1__bs32__lr2e-5__hpo__20260217-192653__9af0be3b/best_hparams.json",
+  "debug_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/hpo__glue_rte__microsoft_deberta-v3-base__ours__ep1__bs32__lr2e-5__hpo__20260217-192653__9af0be3b",
+  "debug_hash": "9af0be3b",
+  "debug_name": "hpo__glue_rte__microsoft_deberta-v3-base__ours__ep1__bs32__lr2e-5__hpo__20260217-192653__9af0be3b",
+  "debug_timestamp": "20260217-192653",
+  "final_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260217-192653__9af0be3b",
+  "sets": {
+    "global": [
+      "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta",
+      "task.name=glue/rte",
+      "model.name=microsoft/deberta-v3-base"
+    ],
+    "hpo_only": [
+      "hpo.budget.total_trials=400"
+    ],
+    "ours_only": []
+  },
+  "spec": {
+    "ablate_interp": false,
+    "dataset": "glue/rte",
+    "final_epochs": null,
+    "final_seeds": [],
+    "history_enabled": false,
+    "model": "microsoft/deberta-v3-base",
+    "ours_R": null,
+    "ours_r": null,
+    "runs_group": "glue_rte_deberta",
+    "total_trials": 400
+  }
+}

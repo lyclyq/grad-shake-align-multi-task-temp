@@ -1,0 +1,126 @@
+{
+  "baseline": {
+    "best_lr_by_variant": {
+      "baseline_R": 8.046330436316312e-05,
+      "baseline_r": 8.046330436316312e-05
+    },
+    "lr_grid_meta": {
+      "baseline_points": 15,
+      "clamp_max_lr": 0.01,
+      "clamp_min_lr": 1e-06,
+      "extend_factor": 1.6,
+      "max_lr": 0.005,
+      "max_lr_ext": 0.008,
+      "min_lr": 1e-05,
+      "min_lr_ext": 6.25e-06
+    },
+    "lrs_union": [
+      1.7368693679664227e-05,
+      2.8954143676249765e-05,
+      4.8267443222081226e-05,
+      8.046330436316312e-05,
+      0.00013413478976398636,
+      0.00022360679774997895,
+      0.0003727593720314938
+    ],
+    "neighbor_points": 7,
+    "variants": [
+      {
+        "r": 32,
+        "tag": "baseline_r"
+      },
+      {
+        "r": 128,
+        "tag": "baseline_R"
+      }
+    ]
+  },
+  "bayes_trials_planned": 0,
+  "budget": {
+    "alloc_trials": {
+      "bayes_trials": 0,
+      "grid_trials": 160,
+      "sens_trials": 40
+    },
+    "grid_candidates_B": 80,
+    "meta": {
+      "source": "total_trials",
+      "trials_per_gpu_hour": 50.0
+    },
+    "n_seeds": 2,
+    "ratios": {
+      "bayes": 0.0,
+      "grid": 0.8,
+      "sens": 0.2
+    },
+    "total_trials": 200
+  },
+  "grid": {
+    "B": 80,
+    "L": 7,
+    "grid_epochs": 3,
+    "knob_values": {
+      "routing_delta": [
+        -0.12030088512880574,
+        0.07201442347596759,
+        0.26432973208074095,
+        0.45664504068551426,
+        0.6489603492902876,
+        0.8412756578950609,
+        1.0335909664998344
+      ]
+    },
+    "refine_seeds": [
+      12,
+      24
+    ]
+  },
+  "sensitivity": {
+    "active_knobs": [
+      {
+        "choices": null,
+        "hi": 1.0335909664998344,
+        "kind": "float",
+        "lo": -0.12030088512880574,
+        "m": 7,
+        "name": "routing_delta",
+        "values": [
+          -0.12030088512880574,
+          0.07201442347596759,
+          0.26432973208074095,
+          0.45664504068551426,
+          0.6489603492902876,
+          0.8412756578950609,
+          1.0335909664998344
+        ],
+        "weight": 0.0902527075812275
+      }
+    ],
+    "derived_knob_ranges": [
+      {
+        "choices": null,
+        "hi": 1.0335909664998344,
+        "kind": "float",
+        "lo": -0.12030088512880574,
+        "name": "routing_delta",
+        "weight": 0.0902527075812275
+      }
+    ],
+    "drop_if_weight_lt": 0.0,
+    "forced_knobs": [
+      "routing_delta"
+    ],
+    "sens_records_count": 40,
+    "sens_trials_emitted_target": 40,
+    "solve_meta": {
+      "B": 80,
+      "L": 7,
+      "dropped_knobs": [],
+      "final_total_points": 49,
+      "per_knob_m": {
+        "routing_delta": 7
+      }
+    }
+  },
+  "use_bayes": false
+}

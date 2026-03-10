@@ -1,0 +1,16 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "task.name=glue/rte",
+    "method.name=baseline_r",
+    "method.baseline_r.grad_solver=cagrad",
+    "method.baseline_r.cagrad.c=0.4",
+    "train.epochs=1",
+    "train.batch_size=4096",
+    "train.eval.max_batches=1",
+    "train.eval.train_max_batches=1",
+    "io.root=runs",
+    "io.overwrite=force"
+  ],
+  "schedule_path": null
+}

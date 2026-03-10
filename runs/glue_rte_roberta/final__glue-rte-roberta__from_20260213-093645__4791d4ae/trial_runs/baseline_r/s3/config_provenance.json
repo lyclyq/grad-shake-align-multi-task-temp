@@ -1,0 +1,17 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/final__glue-rte-roberta__from_20260213-093645__4791d4ae",
+    "io.overwrite=resume",
+    "method.name=baseline_r",
+    "method.baseline_r.lora.r=32",
+    "train.seed=3",
+    "train.epochs=10",
+    "train.warmup_ratio=0.1",
+    "train.lr=3.0372263322576627e-05",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/final__glue-rte-roberta__from_20260213-093645__4791d4ae/trial_runs/baseline_r/s3",
+    "io.overwrite=resume"
+  ],
+  "schedule_path": "configs/schedules/final.yaml"
+}

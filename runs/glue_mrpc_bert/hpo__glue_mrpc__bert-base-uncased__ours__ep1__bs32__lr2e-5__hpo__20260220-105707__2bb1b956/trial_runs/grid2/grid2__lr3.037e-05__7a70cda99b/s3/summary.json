@@ -1,0 +1,15 @@
+{
+  "best_epoch": 2.0,
+  "best_val_acc": 0.875,
+  "train_final": 0.9770992366412213,
+  "train_max": 0.9770992366412213,
+  "train_r_only_final": 0.9760087241003271,
+  "train_r_only_max": 0.9760087241003271,
+  "val_avg": 0.852124183006536,
+  "val_avg_last3ep": 0.852124183006536,
+  "val_final": 0.8651960784313726,
+  "val_max": 0.875,
+  "val_r_only_avg_last3ep": 0.8513071895424836,
+  "val_r_only_final": 0.8602941176470589,
+  "val_r_only_max": 0.8700980392156863
+}

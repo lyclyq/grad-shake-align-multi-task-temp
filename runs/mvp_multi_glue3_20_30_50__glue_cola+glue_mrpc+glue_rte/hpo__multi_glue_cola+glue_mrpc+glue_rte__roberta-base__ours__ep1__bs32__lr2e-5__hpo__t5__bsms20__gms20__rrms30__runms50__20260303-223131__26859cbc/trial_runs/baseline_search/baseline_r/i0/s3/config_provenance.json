@@ -1,0 +1,29 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50__glue_cola+glue_mrpc+glue_rte",
+    "task.name=glue/rte",
+    "model.name=roberta-base",
+    "task.multi.enabled=true",
+    "task.multi.datasets=[\"glue/cola\", \"glue/mrpc\", \"glue/rte\"]",
+    "train.multi.steps_mode=max_steps",
+    "train.max_steps=50",
+    "hpo.budget.total_trials=5",
+    "hpo.grid.baseline_search_max_steps=20",
+    "hpo.grid.grid_max_steps=20",
+    "hpo.grid.rerank.max_steps=30",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50__glue_cola+glue_mrpc+glue_rte/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t5__bsms20__gms20__rrms30__runms50__20260303-223131__26859cbc/trial_runs/baseline_search/baseline_r/i0/s3",
+    "io.overwrite=resume",
+    "method.baseline_r.grad_solver=avg",
+    "method.baseline_r.lora.alpha=2.0",
+    "method.baseline_r.lora.dropout=0.1",
+    "method.baseline_r.lora.r=32",
+    "method.name=baseline_r",
+    "train.epochs=3",
+    "train.lr=6.249999999999997e-06",
+    "train.max_steps=20",
+    "train.seed=3",
+    "train.warmup_ratio=0.1"
+  ],
+  "schedule_path": null
+}

@@ -1,0 +1,8 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta",
+    "hpo.budget.total_trials=300"
+  ],
+  "schedule_path": null
+}

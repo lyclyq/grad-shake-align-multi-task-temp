@@ -1,0 +1,11 @@
+{
+  "set_args": [
+    "task.name=glue/rte",
+    "model.name=microsoft/deberta-v3-base",
+    "io.run_dir=runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b",
+    "io.overwrite=force",
+    "train.eval.strategy=dense_early",
+    "train.eval.dense_early_per_epoch=8",
+    "train.eval.dense_early_epochs=2"
+  ]
+}

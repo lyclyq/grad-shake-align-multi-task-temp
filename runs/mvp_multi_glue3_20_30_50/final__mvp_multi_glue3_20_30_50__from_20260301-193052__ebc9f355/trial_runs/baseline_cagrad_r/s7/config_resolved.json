@@ -1,0 +1,274 @@
+{
+  "_provenance": {
+    "base_config_path": "configs/base.yaml",
+    "cli_set_args": [
+      "io.run_dir=runs/mvp_multi_glue3_20_30_50/final__mvp_multi_glue3_20_30_50__from_20260301-193052__ebc9f355",
+      "io.overwrite=resume",
+      "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50",
+      "task.name=glue/rte",
+      "model.name=roberta-base",
+      "task.multi.enabled=true",
+      "task.multi.datasets=[\"glue/cola\",\"glue/mrpc\",\"glue/rte\"]",
+      "train.multi.steps_mode=max_steps",
+      "train.max_steps=50",
+      "method.name=baseline_r",
+      "method.baseline_r.lora.r=32",
+      "method.baseline_r.grad_solver=cagrad",
+      "method.baseline_r.cagrad.c=0.6",
+      "train.seed=7",
+      "train.epochs=10",
+      "train.warmup_ratio=0.1",
+      "train.lr=0.00014759590069374914",
+      "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50/final__mvp_multi_glue3_20_30_50__from_20260301-193052__ebc9f355/trial_runs/baseline_cagrad_r/s7",
+      "io.overwrite=resume"
+    ],
+    "schedule_path": "configs/schedules/final.yaml"
+  },
+  "debug": {
+    "assert_hi_zero_init": true,
+    "dump_gates": true,
+    "dump_grad_norms": true,
+    "dump_history": false,
+    "dump_init": true,
+    "dump_votes": true,
+    "enabled": false,
+    "max_blocks_to_print": 3,
+    "print_every_steps": 80
+  },
+  "final": {
+    "epochs": 10,
+    "seeds": [
+      2,
+      3,
+      5,
+      7,
+      11
+    ]
+  },
+  "hpo": {
+    "bandit": {
+      "fixed_warmup_ratio": 0.1,
+      "refine_seeds": [
+        2,
+        3
+      ],
+      "score": {
+        "w_avg": 0.1,
+        "w_final": 0.4,
+        "w_max": 0.5
+      }
+    },
+    "baseline_variants": [
+      {
+        "tag": "baseline_r"
+      },
+      {
+        "tag": "baseline_R"
+      }
+    ],
+    "budget": {
+      "total_trials": 400
+    },
+    "cagrad": {
+      "c_grid": [
+        0.2,
+        0.4,
+        0.6
+      ]
+    },
+    "grid": {
+      "alpha_probe": {
+        "enabled": true,
+        "epochs": 3,
+        "num_alpha": 2,
+        "num_lr": 2,
+        "seeds": [
+          2,
+          3
+        ]
+      },
+      "baseline_search_epochs": 3,
+      "baseline_search_max_steps": 200,
+      "bayes_ei_xi": 0.01,
+      "bayes_gp_length": 0.6,
+      "bayes_gp_noise": "1e-3",
+      "bayes_gp_var": 1.0,
+      "bayes_pool": 256,
+      "bayes_rng_seed": 20260211,
+      "drop_if_weight_lt": 0.0,
+      "grid_epochs": 3,
+      "grid_max_steps": 200,
+      "knob_specs": {
+        "routing_delta": {
+          "clamp_hi": 1.0,
+          "clamp_lo": 0.0,
+          "hi": 0.08,
+          "kind": "float",
+          "lo": 0.005,
+          "padding_ratio": 0.15,
+          "step": 0.001,
+          "top_quantile": 0.2
+        }
+      },
+      "knobs": [
+        "routing_delta"
+      ],
+      "max_m_choice": 0,
+      "max_m_float": 7,
+      "max_retries": 3,
+      "rerank": {
+        "enabled": true,
+        "epochs": 6,
+        "max_steps": 500,
+        "top_k": 10
+      },
+      "rng_seed": 2026,
+      "sens_samples_per_knob": 40,
+      "sens_seed": 2,
+      "sensitivity_epochs": 1
+    },
+    "lr_grid": {
+      "baseline_points": 15,
+      "clamp_max_lr": "1e-2",
+      "clamp_min_lr": "1e-6",
+      "extend_factor": 1.6,
+      "max_lr": "7e-3",
+      "min_lr": "1e-5",
+      "neighbor_points": 9
+    },
+    "ratio_bayes": 0.3,
+    "ratio_grid": 0.5,
+    "ratio_sensitivity": 0.2,
+    "use_bayes": false
+  },
+  "io": {
+    "overwrite": "resume",
+    "root": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50",
+    "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50/final__mvp_multi_glue3_20_30_50__from_20260301-193052__ebc9f355/trial_runs/baseline_cagrad_r/s7"
+  },
+  "log": {
+    "csv": true,
+    "swanlab": {
+      "enabled": false,
+      "project": "ShakeAlign_LoRA"
+    }
+  },
+  "method": {
+    "baseline_R": {
+      "cagrad": {
+        "c": 0.4
+      },
+      "grad_solver": "avg",
+      "lora": {
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 128
+      }
+    },
+    "baseline_r": {
+      "cagrad": {
+        "c": 0.6
+      },
+      "grad_solver": "cagrad",
+      "lora": {
+        "alpha": 2.0,
+        "dropout": 0.1,
+        "r": 32
+      }
+    },
+    "name": "baseline_r",
+    "ours": {
+      "ablate": {
+        "interp": false
+      },
+      "compensation": {
+        "enabled": true,
+        "ridge_lambda": "1e-4"
+      },
+      "compression": {
+        "enabled": false,
+        "every_steps": 0,
+        "qr": {
+          "enabled": true
+        },
+        "svd": {
+          "enabled": true
+        },
+        "target_rank": null
+      },
+      "ema_H": 1,
+      "gate0_noise": {
+        "kappa": 10.0,
+        "tau": -10.0
+      },
+      "history": {
+        "enabled": false,
+        "exp_beta": 0.7,
+        "weighting": "exp",
+        "window_steps": 1
+      },
+      "lora": {
+        "R": 128,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "pulling": {
+        "gamma_pull": 0.35,
+        "k_pull": 8.0
+      },
+      "routing_delta": 0.02,
+      "trigger_gate0": {
+        "tau_D": 0.0038053,
+        "tau_N": 0.6
+      },
+      "votes": 8,
+      "voting": {
+        "allow_tail": true,
+        "keep_single_votes": true,
+        "samples_per_vote": 8
+      }
+    }
+  },
+  "model": {
+    "name": "roberta-base"
+  },
+  "stage": "train",
+  "task": {
+    "max_len": 128,
+    "multi": {
+      "datasets": [
+        "glue/cola",
+        "glue/mrpc",
+        "glue/rte"
+      ],
+      "enabled": true
+    },
+    "name": "glue/rte"
+  },
+  "train": {
+    "batch_size": 32,
+    "epochs": 10,
+    "eval": {
+      "compute_train_acc": true,
+      "dense_early_epochs": 2,
+      "dense_early_per_epoch": 8,
+      "every_steps": 50,
+      "first_step": false,
+      "log_r_only": true,
+      "max_batches": 0,
+      "strategy": "dense_early",
+      "train_max_batches": 0
+    },
+    "lr": 0.00014759590069374914,
+    "max_grad_norm": 1.0,
+    "max_steps": 50,
+    "multi": {
+      "drop_last": true,
+      "steps_mode": "max_steps"
+    },
+    "seed": 7,
+    "warmup_ratio": 0.1,
+    "weight_decay": 0.0
+  }
+}

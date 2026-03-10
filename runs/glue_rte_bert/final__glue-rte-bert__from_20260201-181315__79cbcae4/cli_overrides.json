@@ -1,0 +1,11 @@
+{
+  "set_args": [
+    "task.name=glue/rte",
+    "model.name=bert-base-uncased",
+    "io.run_dir=runs/glue_rte_bert/final__glue-rte-bert__from_20260201-181315__79cbcae4",
+    "io.overwrite=resume",
+    "train.eval.strategy=dense_early",
+    "train.eval.dense_early_per_epoch=8",
+    "train.eval.dense_early_epochs=2"
+  ]
+}

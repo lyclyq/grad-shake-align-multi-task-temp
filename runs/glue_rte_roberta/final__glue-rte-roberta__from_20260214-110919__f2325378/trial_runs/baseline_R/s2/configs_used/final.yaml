@@ -1,0 +1,24 @@
+# configs/schedules/final.yaml
+stage: final
+
+train:
+  epochs: 10
+  warmup_ratio: 0.1
+
+  eval:
+    strategy: dense_early
+    dense_early_per_epoch: 8
+    dense_early_epochs: 2
+
+    max_batches: 0
+    compute_train_acc: true
+    train_max_batches: 0
+
+    log_r_only: true
+
+    every_steps: 50
+    first_step: false
+
+final:
+  epochs: 10
+  seeds: [2, 3, 5, 7, 11]

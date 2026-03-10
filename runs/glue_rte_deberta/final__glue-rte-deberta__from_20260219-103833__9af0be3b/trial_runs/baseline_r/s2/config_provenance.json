@@ -1,0 +1,21 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "task.name=glue/rte",
+    "model.name=microsoft/deberta-v3-base",
+    "io.run_dir=runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b",
+    "io.overwrite=force",
+    "train.eval.strategy=dense_early",
+    "train.eval.dense_early_per_epoch=8",
+    "train.eval.dense_early_epochs=2",
+    "method.name=baseline_r",
+    "method.baseline_r.lora.r=32",
+    "train.seed=2",
+    "train.epochs=10",
+    "train.warmup_ratio=0.1",
+    "train.lr=5.144496422295101e-05",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_deberta/final__glue-rte-deberta__from_20260219-103833__9af0be3b/trial_runs/baseline_r/s2",
+    "io.overwrite=resume"
+  ],
+  "schedule_path": "configs/schedules/final.yaml"
+}

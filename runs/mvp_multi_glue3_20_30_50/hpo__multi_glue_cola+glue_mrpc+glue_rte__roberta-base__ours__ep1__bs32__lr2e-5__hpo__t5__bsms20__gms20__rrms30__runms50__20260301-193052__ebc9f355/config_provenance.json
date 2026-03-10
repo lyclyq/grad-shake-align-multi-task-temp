@@ -1,0 +1,17 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50",
+    "task.name=glue/rte",
+    "model.name=roberta-base",
+    "task.multi.enabled=true",
+    "task.multi.datasets=[\"glue/cola\",\"glue/mrpc\",\"glue/rte\"]",
+    "train.multi.steps_mode=max_steps",
+    "train.max_steps=50",
+    "hpo.budget.total_trials=5",
+    "hpo.grid.baseline_search_max_steps=20",
+    "hpo.grid.grid_max_steps=20",
+    "hpo.grid.rerank.max_steps=30"
+  ],
+  "schedule_path": null
+}

@@ -1,0 +1,45 @@
+[INFO] trial_runs_dir = /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs
+
+== baseline_r ==
+dir: /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_r
+found 5 files
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_r/s11/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_r/s2/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_r/s3/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_r/s5/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_r/s7/metrics.csv points=10
+
+== baseline_R ==
+dir: /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_R
+found 5 files
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_R/s11/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_R/s2/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_R/s3/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_R/s5/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/baseline_R/s7/metrics.csv points=10
+
+== ours ==
+dir: /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/ours
+found 5 files
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/ours/s11/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/ours/s2/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/ours/s3/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/ours/s5/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/ours/s7/metrics.csv points=10
+
+== ours ==
+dir: /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/ours
+found 5 files
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/ours/s11/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/ours/s2/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/ours/s3/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/ours/s5/metrics.csv points=10
+[OK] /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/ours/s7/metrics.csv points=10
+
+[OK] saved figure -> /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/_plots/compare_4lines_val_acc.png
+[OK] saved figure -> /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/_plots/compare_4lines_dense_val_acc_first2ep.png
+[OK] saved figure -> /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/_plots/compare_4lines_dense_train_acc_first2ep.png
+[OK] saved figure -> /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/_plots/compare_4lines_dense_train_loss_first2ep.png
+[OK] saved figure -> /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/_plots/ours_gate0_trigger_rate_dense.png
+[OK] saved figure -> /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/_plots/ours_pull_direction_dense.png
+[OK] saved figure -> /home/lyclyq/Optimization/grad-shake-align/runs/glue_mrpc_distillbert_hpo4_rerank10e6/final__glue-mrpc-distillbert__from_20260224-145728__9aff94a4/trial_runs/_plots/ours_pull_strength_alpha_dense.png

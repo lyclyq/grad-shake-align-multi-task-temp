@@ -1,0 +1,5594 @@
+{
+  "created_at": 1770873848,
+  "items": [
+    {
+      "idx": 0,
+      "last_rc": 0,
+      "last_update": 1770873989,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i0/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i0",
+      "tries": 1
+    },
+    {
+      "idx": 1,
+      "last_rc": 0,
+      "last_update": 1770874105,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i1/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i1",
+      "tries": 1
+    },
+    {
+      "idx": 2,
+      "last_rc": 0,
+      "last_update": 1770874218,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i2/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i2",
+      "tries": 1
+    },
+    {
+      "idx": 3,
+      "last_rc": 0,
+      "last_update": 1770874333,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i3/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i3",
+      "tries": 1
+    },
+    {
+      "idx": 4,
+      "last_rc": 0,
+      "last_update": 1770874447,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i4/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i4",
+      "tries": 1
+    },
+    {
+      "idx": 5,
+      "last_rc": 0,
+      "last_update": 1770874560,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i5/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i5",
+      "tries": 1
+    },
+    {
+      "idx": 6,
+      "last_rc": 0,
+      "last_update": 1770874673,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i6/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i6",
+      "tries": 1
+    },
+    {
+      "idx": 7,
+      "last_rc": 0,
+      "last_update": 1770874783,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i7/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i7",
+      "tries": 1
+    },
+    {
+      "idx": 8,
+      "last_rc": 0,
+      "last_update": 1770874895,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i8/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i8",
+      "tries": 1
+    },
+    {
+      "idx": 9,
+      "last_rc": 0,
+      "last_update": 1770875008,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0007172514497925467,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i9/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i9",
+      "tries": 1
+    },
+    {
+      "idx": 10,
+      "last_rc": 0,
+      "last_update": 1770875126,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0012148905329030643,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i10/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i10",
+      "tries": 1
+    },
+    {
+      "idx": 11,
+      "last_rc": 0,
+      "last_update": 1770875237,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.002057798568918039,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i11/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i11",
+      "tries": 1
+    },
+    {
+      "idx": 12,
+      "last_rc": 0,
+      "last_update": 1770875347,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.003485527984255851,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i12/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i12",
+      "tries": 1
+    },
+    {
+      "idx": 13,
+      "last_rc": 0,
+      "last_update": 1770875456,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.005903836027749967,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i13/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i13",
+      "tries": 1
+    },
+    {
+      "idx": 14,
+      "last_rc": 0,
+      "last_update": 1770875571,
+      "override": {
+        "method": {
+          "baseline_r": {
+            "lora": {
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            }
+          },
+          "name": "baseline_r"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.01,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_r/i14/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_r__i14",
+      "tries": 1
+    },
+    {
+      "idx": 15,
+      "last_rc": 0,
+      "last_update": 1770875698,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i0/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i0",
+      "tries": 1
+    },
+    {
+      "idx": 16,
+      "last_rc": 0,
+      "last_update": 1770875825,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i1/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i1",
+      "tries": 1
+    },
+    {
+      "idx": 17,
+      "last_rc": 0,
+      "last_update": 1770875947,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i2/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i2",
+      "tries": 1
+    },
+    {
+      "idx": 18,
+      "last_rc": 0,
+      "last_update": 1770876067,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i3/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i3",
+      "tries": 1
+    },
+    {
+      "idx": 19,
+      "last_rc": 0,
+      "last_update": 1770876194,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i4/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i4",
+      "tries": 1
+    },
+    {
+      "idx": 20,
+      "last_rc": 0,
+      "last_update": 1770876324,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i5/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i5",
+      "tries": 1
+    },
+    {
+      "idx": 21,
+      "last_rc": 0,
+      "last_update": 1770876446,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i6/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i6",
+      "tries": 1
+    },
+    {
+      "idx": 22,
+      "last_rc": 0,
+      "last_update": 1770876573,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i7/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i7",
+      "tries": 1
+    },
+    {
+      "idx": 23,
+      "last_rc": 0,
+      "last_update": 1770876702,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i8/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i8",
+      "tries": 1
+    },
+    {
+      "idx": 24,
+      "last_rc": 0,
+      "last_update": 1770876825,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0007172514497925467,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i9/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i9",
+      "tries": 1
+    },
+    {
+      "idx": 25,
+      "last_rc": 0,
+      "last_update": 1770876957,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.0012148905329030643,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i10/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i10",
+      "tries": 1
+    },
+    {
+      "idx": 26,
+      "last_rc": 0,
+      "last_update": 1770877080,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.002057798568918039,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i11/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i11",
+      "tries": 1
+    },
+    {
+      "idx": 27,
+      "last_rc": 0,
+      "last_update": 1770877203,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.003485527984255851,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i12/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i12",
+      "tries": 1
+    },
+    {
+      "idx": 28,
+      "last_rc": 0,
+      "last_update": 1770877327,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.005903836027749967,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i13/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i13",
+      "tries": 1
+    },
+    {
+      "idx": 29,
+      "last_rc": 0,
+      "last_update": 1770877450,
+      "override": {
+        "method": {
+          "baseline_R": {
+            "lora": {
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 128
+            }
+          },
+          "name": "baseline_R"
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.01,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/baseline_search/baseline_R/i14/s12",
+      "seed": 12,
+      "stage": "baseline_search",
+      "status": "done",
+      "trial_tag": "bl_search__baseline_R__i14",
+      "tries": 1
+    },
+    {
+      "idx": 30,
+      "last_rc": 0,
+      "last_update": 1770877536,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.018000000000000002,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 1,
+          "lr": 5.144496422295101e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/sensitivity/routing_delta/j0/s12",
+      "seed": 12,
+      "stage": "sensitivity",
+      "status": "done",
+      "trial_tag": "sens__routing_delta__j0__s12",
+      "tries": 1
+    },
+    {
+      "idx": 31,
+      "last_rc": 0,
+      "last_update": 1770877620,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.053,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 1,
+          "lr": 5.144496422295101e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/sensitivity/routing_delta/j1/s12",
+      "seed": 12,
+      "stage": "sensitivity",
+      "status": "done",
+      "trial_tag": "sens__routing_delta__j1__s12",
+      "tries": 1
+    },
+    {
+      "idx": 32,
+      "last_rc": 0,
+      "last_update": 1770877709,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.04,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 1,
+          "lr": 5.144496422295101e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/sensitivity/routing_delta/j2/s12",
+      "seed": 12,
+      "stage": "sensitivity",
+      "status": "done",
+      "trial_tag": "sens__routing_delta__j2__s12",
+      "tries": 1
+    },
+    {
+      "idx": 33,
+      "last_rc": 0,
+      "last_update": 1770877798,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.033,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 1,
+          "lr": 5.144496422295101e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/sensitivity/routing_delta/j3/s12",
+      "seed": 12,
+      "stage": "sensitivity",
+      "status": "done",
+      "trial_tag": "sens__routing_delta__j3__s12",
+      "tries": 1
+    },
+    {
+      "idx": 34,
+      "last_rc": 0,
+      "last_update": 1770877884,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.032,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 1,
+          "lr": 5.144496422295101e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/sensitivity/routing_delta/j4/s12",
+      "seed": 12,
+      "stage": "sensitivity",
+      "status": "done",
+      "trial_tag": "sens__routing_delta__j4__s12",
+      "tries": 1
+    },
+    {
+      "idx": 35,
+      "last_rc": 0,
+      "last_update": 1770877976,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.064,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 1,
+          "lr": 5.144496422295101e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/sensitivity/routing_delta/j5/s12",
+      "seed": 12,
+      "stage": "sensitivity",
+      "status": "done",
+      "trial_tag": "sens__routing_delta__j5__s12",
+      "tries": 1
+    },
+    {
+      "idx": 38,
+      "last_rc": 0,
+      "last_update": 1770878193,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.025500000000000002,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/alpha_probe/a0/lr_3.037e-05/s12",
+      "seed": 12,
+      "stage": "alpha_probe",
+      "status": "done",
+      "trial_tag": "alpha_probe__a0__lr3.037e-05__s12__f019b2ec2e",
+      "tries": 1
+    },
+    {
+      "idx": 39,
+      "last_rc": 0,
+      "last_update": 1770878408,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 2.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.025500000000000002,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/alpha_probe/a0/lr_3.037e-05/s24",
+      "seed": 24,
+      "stage": "alpha_probe",
+      "status": "done",
+      "trial_tag": "alpha_probe__a0__lr3.037e-05__s24__576465cce6",
+      "tries": 1
+    },
+    {
+      "idx": 42,
+      "last_rc": 0,
+      "last_update": 1770878619,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.025500000000000002,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/alpha_probe/a1/lr_3.037e-05/s12",
+      "seed": 12,
+      "stage": "alpha_probe",
+      "status": "done",
+      "trial_tag": "alpha_probe__a1__lr3.037e-05__s12__58e935f3b8",
+      "tries": 1
+    },
+    {
+      "idx": 43,
+      "last_rc": 0,
+      "last_update": 1770878831,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.025500000000000002,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/alpha_probe/a1/lr_3.037e-05/s24",
+      "seed": 24,
+      "stage": "alpha_probe",
+      "status": "done",
+      "trial_tag": "alpha_probe__a1__lr3.037e-05__s24__f3e3c90581",
+      "tries": 1
+    },
+    {
+      "idx": 44,
+      "last_rc": 0,
+      "last_update": 1770879044,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr6.250e-06__5d172cac27/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr6.250e-06__5d172cac27__s12",
+      "tries": 1
+    },
+    {
+      "idx": 45,
+      "last_rc": 0,
+      "last_update": 1770879261,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr6.250e-06__5d172cac27/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr6.250e-06__5d172cac27__s24",
+      "tries": 1
+    },
+    {
+      "idx": 46,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr6.250e-06__5d172cac27/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr6.250e-06__5d172cac27",
+      "tries": 0
+    },
+    {
+      "idx": 47,
+      "last_rc": 0,
+      "last_update": 1770894365,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr6.250e-06__7aac0ff275/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr6.250e-06__7aac0ff275__s12",
+      "tries": 1
+    },
+    {
+      "idx": 48,
+      "last_rc": 0,
+      "last_update": 1770894576,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr6.250e-06__7aac0ff275/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr6.250e-06__7aac0ff275__s24",
+      "tries": 1
+    },
+    {
+      "idx": 49,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 6.249999999999997e-06,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr6.250e-06__7aac0ff275/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr6.250e-06__7aac0ff275",
+      "tries": 0
+    },
+    {
+      "idx": 50,
+      "last_rc": 0,
+      "last_update": 1770897423,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.059e-05__f25a2adc0f/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr1.059e-05__f25a2adc0f__s12",
+      "tries": 1
+    },
+    {
+      "idx": 51,
+      "last_rc": 0,
+      "last_update": 1770897641,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.059e-05__f25a2adc0f/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr1.059e-05__f25a2adc0f__s24",
+      "tries": 1
+    },
+    {
+      "idx": 52,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.059e-05__f25a2adc0f/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr1.059e-05__f25a2adc0f",
+      "tries": 0
+    },
+    {
+      "idx": 53,
+      "last_rc": 0,
+      "last_update": 1770899897,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.059e-05__9baea09f96/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr1.059e-05__9baea09f96__s12",
+      "tries": 1
+    },
+    {
+      "idx": 54,
+      "last_rc": 0,
+      "last_update": 1770900117,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.059e-05__9baea09f96/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr1.059e-05__9baea09f96__s24",
+      "tries": 1
+    },
+    {
+      "idx": 55,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.058633737560282e-05,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.059e-05__9baea09f96/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr1.059e-05__9baea09f96",
+      "tries": 0
+    },
+    {
+      "idx": 56,
+      "last_rc": 0,
+      "last_update": 1770900363,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.793e-05__bfb907cce8/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr1.793e-05__bfb907cce8__s12",
+      "tries": 1
+    },
+    {
+      "idx": 57,
+      "last_rc": 0,
+      "last_update": 1770900577,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.793e-05__bfb907cce8/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr1.793e-05__bfb907cce8__s24",
+      "tries": 1
+    },
+    {
+      "idx": 58,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.793e-05__bfb907cce8/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr1.793e-05__bfb907cce8",
+      "tries": 0
+    },
+    {
+      "idx": 59,
+      "last_rc": 0,
+      "last_update": 1770900788,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.793e-05__3f489e46fd/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr1.793e-05__3f489e46fd__s12",
+      "tries": 1
+    },
+    {
+      "idx": 60,
+      "last_rc": 0,
+      "last_update": 1770901003,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.793e-05__3f489e46fd/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr1.793e-05__3f489e46fd__s24",
+      "tries": 1
+    },
+    {
+      "idx": 61,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 1.7931286244813644e-05,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.793e-05__3f489e46fd/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr1.793e-05__3f489e46fd",
+      "tries": 0
+    },
+    {
+      "idx": 62,
+      "last_rc": 0,
+      "last_update": 1770901210,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr3.037e-05__51b24a9996/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr3.037e-05__51b24a9996__s12",
+      "tries": 1
+    },
+    {
+      "idx": 63,
+      "last_rc": 0,
+      "last_update": 1770901421,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr3.037e-05__51b24a9996/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr3.037e-05__51b24a9996__s24",
+      "tries": 1
+    },
+    {
+      "idx": 64,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr3.037e-05__51b24a9996/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr3.037e-05__51b24a9996",
+      "tries": 0
+    },
+    {
+      "idx": 65,
+      "last_rc": 0,
+      "last_update": 1770901635,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr3.037e-05__4f74046035/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr3.037e-05__4f74046035__s12",
+      "tries": 1
+    },
+    {
+      "idx": 66,
+      "last_rc": 0,
+      "last_update": 1770901846,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr3.037e-05__4f74046035/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr3.037e-05__4f74046035__s24",
+      "tries": 1
+    },
+    {
+      "idx": 67,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 3.0372263322576627e-05,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr3.037e-05__4f74046035/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr3.037e-05__4f74046035",
+      "tries": 0
+    },
+    {
+      "idx": 68,
+      "last_rc": 0,
+      "last_update": 1770902056,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr5.144e-05__1c5833af17/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr5.144e-05__1c5833af17__s12",
+      "tries": 1
+    },
+    {
+      "idx": 69,
+      "last_rc": 0,
+      "last_update": 1770902264,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr5.144e-05__1c5833af17/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr5.144e-05__1c5833af17__s24",
+      "tries": 1
+    },
+    {
+      "idx": 70,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr5.144e-05__1c5833af17/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr5.144e-05__1c5833af17",
+      "tries": 0
+    },
+    {
+      "idx": 71,
+      "last_rc": 0,
+      "last_update": 1770902478,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr5.144e-05__6a7af87557/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr5.144e-05__6a7af87557__s12",
+      "tries": 1
+    },
+    {
+      "idx": 72,
+      "last_rc": 0,
+      "last_update": 1770902688,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr5.144e-05__6a7af87557/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr5.144e-05__6a7af87557__s24",
+      "tries": 1
+    },
+    {
+      "idx": 73,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 5.144496422295101e-05,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr5.144e-05__6a7af87557/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr5.144e-05__6a7af87557",
+      "tries": 0
+    },
+    {
+      "idx": 74,
+      "last_rc": 0,
+      "last_update": 1770902905,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr8.714e-05__2f8a7c24ca/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr8.714e-05__2f8a7c24ca__s12",
+      "tries": 1
+    },
+    {
+      "idx": 75,
+      "last_rc": 0,
+      "last_update": 1770903122,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr8.714e-05__2f8a7c24ca/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr8.714e-05__2f8a7c24ca__s24",
+      "tries": 1
+    },
+    {
+      "idx": 76,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr8.714e-05__2f8a7c24ca/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr8.714e-05__2f8a7c24ca",
+      "tries": 0
+    },
+    {
+      "idx": 77,
+      "last_rc": 0,
+      "last_update": 1770903340,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr8.714e-05__50218f37eb/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr8.714e-05__50218f37eb__s12",
+      "tries": 1
+    },
+    {
+      "idx": 78,
+      "last_rc": 0,
+      "last_update": 1770903558,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr8.714e-05__50218f37eb/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr8.714e-05__50218f37eb__s24",
+      "tries": 1
+    },
+    {
+      "idx": 79,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 8.713819960639625e-05,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr8.714e-05__50218f37eb/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr8.714e-05__50218f37eb",
+      "tries": 0
+    },
+    {
+      "idx": 80,
+      "last_rc": 0,
+      "last_update": 1770903777,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.476e-04__d684dfafe0/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr1.476e-04__d684dfafe0__s12",
+      "tries": 1
+    },
+    {
+      "idx": 81,
+      "last_rc": 0,
+      "last_update": 1770903993,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.476e-04__d684dfafe0/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr1.476e-04__d684dfafe0__s24",
+      "tries": 1
+    },
+    {
+      "idx": 82,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.476e-04__d684dfafe0/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr1.476e-04__d684dfafe0",
+      "tries": 0
+    },
+    {
+      "idx": 83,
+      "last_rc": 0,
+      "last_update": 1770904214,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.476e-04__400d72a05d/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr1.476e-04__400d72a05d__s12",
+      "tries": 1
+    },
+    {
+      "idx": 84,
+      "last_rc": 0,
+      "last_update": 1770904433,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.476e-04__400d72a05d/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr1.476e-04__400d72a05d__s24",
+      "tries": 1
+    },
+    {
+      "idx": 85,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00014759590069374914,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr1.476e-04__400d72a05d/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr1.476e-04__400d72a05d",
+      "tries": 0
+    },
+    {
+      "idx": 86,
+      "last_rc": 0,
+      "last_update": 1770904655,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr2.500e-04__c2f5b61575/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr2.500e-04__c2f5b61575__s12",
+      "tries": 1
+    },
+    {
+      "idx": 87,
+      "last_rc": 0,
+      "last_update": 1770904876,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr2.500e-04__c2f5b61575/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr2.500e-04__c2f5b61575__s24",
+      "tries": 1
+    },
+    {
+      "idx": 88,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr2.500e-04__c2f5b61575/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr2.500e-04__c2f5b61575",
+      "tries": 0
+    },
+    {
+      "idx": 89,
+      "last_rc": 0,
+      "last_update": 1770905097,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr2.500e-04__20e67f6719/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr2.500e-04__20e67f6719__s12",
+      "tries": 1
+    },
+    {
+      "idx": 90,
+      "last_rc": 0,
+      "last_update": 1770905316,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr2.500e-04__20e67f6719/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr2.500e-04__20e67f6719__s24",
+      "tries": 1
+    },
+    {
+      "idx": 91,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00024999999999999995,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr2.500e-04__20e67f6719/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr2.500e-04__20e67f6719",
+      "tries": 0
+    },
+    {
+      "idx": 92,
+      "last_rc": 0,
+      "last_update": 1770905540,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr4.235e-04__cf9451af86/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr4.235e-04__cf9451af86__s12",
+      "tries": 1
+    },
+    {
+      "idx": 93,
+      "last_rc": 0,
+      "last_update": 1770905759,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr4.235e-04__cf9451af86/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr4.235e-04__cf9451af86__s24",
+      "tries": 1
+    },
+    {
+      "idx": 94,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.015750000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr4.235e-04__cf9451af86/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr4.235e-04__cf9451af86",
+      "tries": 0
+    },
+    {
+      "idx": 95,
+      "last_rc": 0,
+      "last_update": 1770905984,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "seed": 12,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr4.235e-04__648c753daa/s12",
+      "seed": 12,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr4.235e-04__648c753daa__s12",
+      "tries": 1
+    },
+    {
+      "idx": 96,
+      "last_rc": 0,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "seed": 24,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr4.235e-04__648c753daa/s24",
+      "seed": 24,
+      "stage": "grid2",
+      "status": "done",
+      "trial_tag": "grid2__lr4.235e-04__648c753daa__s24",
+      "tries": 1
+    },
+    {
+      "idx": 97,
+      "last_rc": null,
+      "last_update": 1770906207,
+      "override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 16
+            },
+            "pulling": {
+              "gamma_pull": 0.35,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.035250000000000004,
+            "trigger_gate0": {
+              "tau_D": 0.0038053,
+              "tau_N": 0.6
+            },
+            "votes": 8,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 8
+            }
+          }
+        },
+        "train": {
+          "epochs": 3,
+          "lr": 0.00042345349502411297,
+          "warmup_ratio": 0.1
+        }
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/glue_rte_roberta/hpo__glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__20260212-162408__6f51eca8/trial_runs/grid2/grid2__lr4.235e-04__648c753daa/agg",
+      "seed": null,
+      "stage": "grid2_agg",
+      "status": "done",
+      "trial_tag": "grid2__lr4.235e-04__648c753daa",
+      "tries": 0
+    }
+  ],
+  "updated_at": 1770906207
+}

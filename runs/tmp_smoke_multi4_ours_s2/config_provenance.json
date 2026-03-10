@@ -1,0 +1,21 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.overwrite=force",
+    "io.run_dir=runs/tmp_smoke_multi4_ours_s2",
+    "model.name=roberta-base",
+    "task.name=glue/rte",
+    "task.multi.enabled=true",
+    "task.multi.datasets=[\"glue/cola\",\"glue/mrpc\",\"glue/rte\",\"glue/sst2\"]",
+    "train.multi.steps_mode=max_steps",
+    "train.max_steps=2",
+    "train.epochs=1",
+    "train.seed=2",
+    "train.eval.strategy=steps",
+    "train.eval.every_steps=1",
+    "train.eval.first_step=true",
+    "method.name=ours",
+    "train.lr=8.713819960639625e-05"
+  ],
+  "schedule_path": null
+}

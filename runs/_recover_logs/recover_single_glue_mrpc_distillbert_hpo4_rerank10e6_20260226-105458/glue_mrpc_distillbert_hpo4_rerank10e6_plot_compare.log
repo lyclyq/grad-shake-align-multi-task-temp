@@ -1,0 +1,22 @@
+/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 76, in <module>
+    raise SystemExit(main())
+  File "/home/lyclyq/Optimization/grad-shake-align/scripts/run.py", line 17, in main
+    from src.runner import run_train
+  File "/home/lyclyq/Optimization/grad-shake-align/src/runner.py", line 13, in <module>
+    from .data_glue import load_glue
+  File "/home/lyclyq/Optimization/grad-shake-align/src/data_glue.py", line 8, in <module>
+    from transformers import AutoTokenizer, DataCollatorWithPadding
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/transformers/__init__.py", line 950, in <module>
+    import_structure = define_import_structure(Path(__file__).parent / "models", prefix="models")
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/transformers/utils/import_utils.py", line 2851, in define_import_structure
+    import_structure = create_import_structure_from_path(module_path)
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/transformers/utils/import_utils.py", line 2564, in create_import_structure_from_path
+    import_structure[f] = create_import_structure_from_path(os.path.join(module_path, f))
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/transformers/utils/import_utils.py", line 2687, in create_import_structure_from_path
+    for _all_object in fetch__all__(file_content):
+  File "/home/lyclyq/miniconda3/envs/optimization/lib/python3.9/site-packages/transformers/utils/import_utils.py", line 2469, in fetch__all__
+    if line.startswith("__all__"):
+KeyboardInterrupt

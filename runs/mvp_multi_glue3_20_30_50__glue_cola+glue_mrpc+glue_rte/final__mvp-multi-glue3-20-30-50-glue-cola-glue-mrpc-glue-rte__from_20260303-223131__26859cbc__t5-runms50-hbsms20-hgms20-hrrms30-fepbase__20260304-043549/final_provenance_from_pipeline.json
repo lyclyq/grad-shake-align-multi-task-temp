@@ -1,0 +1,62 @@
+{
+  "best_path": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50__glue_cola+glue_mrpc+glue_rte/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t5__bsms20__gms20__rrms30__runms50__20260303-223131__26859cbc/best_hparams.json",
+  "debug_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50__glue_cola+glue_mrpc+glue_rte/hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t5__bsms20__gms20__rrms30__runms50__20260303-223131__26859cbc",
+  "debug_hash": "26859cbc",
+  "debug_name": "hpo__multi_glue_cola+glue_mrpc+glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t5__bsms20__gms20__rrms30__runms50__20260303-223131__26859cbc",
+  "debug_timestamp": "20260303-223131",
+  "final_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50__glue_cola+glue_mrpc+glue_rte/final__mvp-multi-glue3-20-30-50-glue-cola-glue-mrpc-glue-rte__from_20260303-223131__26859cbc__t5-runms50-hbsms20-hgms20-hrrms30-fepbase__20260304-043549",
+  "sets": {
+    "global": [
+      "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/mvp_multi_glue3_20_30_50__glue_cola+glue_mrpc+glue_rte",
+      "task.name=glue/rte",
+      "model.name=roberta-base",
+      "task.multi.enabled=true",
+      "task.multi.datasets=[\"glue/cola\", \"glue/mrpc\", \"glue/rte\"]",
+      "train.multi.steps_mode=max_steps",
+      "train.max_steps=50"
+    ],
+    "hpo_only": [
+      "hpo.budget.total_trials=5",
+      "hpo.grid.baseline_search_max_steps=20",
+      "hpo.grid.grid_max_steps=20",
+      "hpo.grid.rerank.max_steps=30"
+    ],
+    "ours_only": []
+  },
+  "spec": {
+    "ablate_interp": false,
+    "dataset": "glue/rte",
+    "epochs": null,
+    "final_epochs": null,
+    "final_seeds": [
+      2,
+      3,
+      5,
+      7,
+      11
+    ],
+    "history_enabled": false,
+    "hpo_baseline_epochs": null,
+    "hpo_baseline_max_steps": 20,
+    "hpo_grid_epochs": null,
+    "hpo_grid_max_steps": 20,
+    "hpo_rerank_max_steps": 30,
+    "max_steps": 50,
+    "model": "roberta-base",
+    "multi_datasets": [
+      "glue/cola",
+      "glue/mrpc",
+      "glue/rte"
+    ],
+    "multi_drop_last": null,
+    "multi_enabled": true,
+    "multi_steps_mode": "max_steps",
+    "ours_R": null,
+    "ours_r": null,
+    "rerank_enabled": null,
+    "rerank_epochs": null,
+    "rerank_top_k": null,
+    "runs_group": "mvp_multi_glue3_20_30_50__glue_cola+glue_mrpc+glue_rte",
+    "total_trials": 5
+  }
+}
