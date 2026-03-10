@@ -205,6 +205,26 @@ def _parse_datasets_arg(s: Optional[str]) -> List[str]:
     return out
 
 
+def _parse_mixtures_arg(s: Optional[str]) -> List[List[str]]:
+    if s is None:
+        return []
+    ss = str(s).strip()
+    if not ss:
+        return []
+    vals = json.loads(ss)
+    if not isinstance(vals, list):
+        raise argparse.ArgumentTypeError("--multi_mixtures must be a JSON list")
+    out: List[List[str]] = []
+    for i, item in enumerate(vals):
+        if not isinstance(item, list):
+            raise argparse.ArgumentTypeError(f"--multi_mixtures[{i}] must be a list")
+        row = [str(x).strip() for x in item if str(x).strip()]
+        if not row:
+            raise argparse.ArgumentTypeError(f"--multi_mixtures[{i}] must be non-empty")
+        out.append(row)
+    return out
+
+
 def _get_nested(obj: Any, dotted: str) -> Any:
     cur = obj
     for k in dotted.split("."):
@@ -294,6 +314,12 @@ def build_argparser() -> argparse.ArgumentParser:
         help="Override task.multi.datasets via --set. Accept JSON list or comma list.",
     )
     p.add_argument(
+        "--multi_mixtures",
+        type=str,
+        default=None,
+        help="Batch mode: JSON list of dataset lists. Each mixture launches one pipeline run.",
+    )
+    p.add_argument(
         "--multi_steps_mode",
         type=str,
         choices=["max_steps", "epochs"],
@@ -346,6 +372,7 @@ def build_argparser() -> argparse.ArgumentParser:
 
     p.add_argument("--ablate_interp", action="store_true")
     p.add_argument("--history_enabled", action="store_true")
+    p.add_argument("--with_ablations", action="store_true")
     p.add_argument(
         "--set",
         action="append",
@@ -365,6 +392,32 @@ def build_argparser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = build_argparser().parse_args()
+    mixtures = _parse_mixtures_arg(args.multi_mixtures)
+    if mixtures:
+        raw_argv = list(sys.argv[1:])
+        strip_next_for = {"--multi_mixtures", "--multi_datasets", "--multi_enabled"}
+        filtered: List[str] = []
+        skip = False
+        for tok in raw_argv:
+            if skip:
+                skip = False
+                continue
+            if tok in strip_next_for:
+                skip = True
+                continue
+            filtered.append(tok)
+        for mix in mixtures:
+            cmd = [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                *filtered,
+                "--multi_enabled", "true",
+                "--multi_datasets", json.dumps(mix),
+            ]
+            print(f"[PIPE][BATCH] mixture={mix}")
+            subprocess.run(cmd, cwd=str(ROOT), check=True)
+        return 0
+
     base_cfg = "configs/base.yaml"
     final_schedule = "configs/schedules/final.yaml"
 
@@ -518,8 +571,12 @@ def main() -> int:
 
     # HPO-ONLY
     hpo_sets_only: List[str] = []
+    # If CLI provides --trials, use it as budget cap.
+    # If CLI omits --trials, run the full cartesian grid (unbounded).
     if spec.trials is not None:
         hpo_sets_only.append(f"hpo.budget.total_trials={spec.trials}")
+    else:
+        hpo_sets_only.append("hpo.budget.total_trials=0")
     if spec.rerank_enabled is not None:
         hpo_sets_only.append(f"hpo.grid.rerank.enabled={str(spec.rerank_enabled).lower()}")
     if spec.rerank_top_k is not None:
@@ -591,6 +648,8 @@ def main() -> int:
         cmd_final += ["--set", f"final.epochs={spec.final_epochs}"]
     if spec.final_seeds:
         cmd_final += ["--set", "final.seeds=" + json.dumps(spec.final_seeds)]
+    if bool(args.with_ablations):
+        cmd_final += ["--set", "final.ablations.enabled=true"]
 
     # deterministic final_dir + resume semantics
     cmd_final += ["--set", f"io.run_dir={str(final_dir)}"]
@@ -636,6 +695,7 @@ def main() -> int:
                     "final_seeds": spec.final_seeds,
                     "ablate_interp": spec.ablate_interp,
                     "history_enabled": spec.history_enabled,
+                    "with_ablations": bool(args.with_ablations),
                 },
                 "sets": {
                     "global": common_sets_global,
@@ -663,6 +723,10 @@ def main() -> int:
     # final paper-style 4-line + ours diagnostics
     plot_4lines_cmd = ["python", "scripts/plot_final_4lines_abs.py", str(trial_runs), "val/acc"]
     sh(plot_4lines_cmd)
+
+    if bool(args.with_ablations):
+        plot_ablate_cmd = ["python", "scripts/plot_ablation_compare.py", str(trial_runs)]
+        sh(plot_ablate_cmd)
 
     return 0
 

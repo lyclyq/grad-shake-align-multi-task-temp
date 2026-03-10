@@ -50,6 +50,8 @@ log:
   swanlab:
     enabled: false
     project: ShakeAlign_LoRA
+    timeout_s: 30
+    max_failures: 3
 
 debug:
   enabled: false
@@ -118,12 +120,16 @@ method:
 
     trigger_gate0:
       tau_N: 0.60
-      tau_D: 0.0038053
+      # Tuned on multi-task MVP sweep (seeds 2,3,5; max_steps=50).
+      tau_D: 0.0033914772
 
-    routing_delta: 0.02
+    # Fixed default (also better in our multi-task MVP comparison).
+    # HPO no longer tunes this knob (see hpo.grid.knobs).
+    routing_delta: 0.005
 
     pulling:
-      gamma_pull: 0.35
+      # Tuned on multi-task MVP sweep.
+      gamma_pull: 0.30
       k_pull: 8.0
 
     voting:
@@ -189,8 +195,61 @@ hpo:
       w_final: 0.4
       w_avg: 0.1
 
+  coord:
+    shared_order: [lr, warmup_ratio]
+    method_orders:
+      baseline: []
+      cagrad: [cagrad_c]
+      ours: [tau_D, gamma_pull, k_pull, routing_delta]
+    top_k: 3
+    refine_radix: 3
+    bayes_trials: 48
+    param_specs:
+      lr:
+        path: train.lr
+        scale: log
+        lower: 2e-6
+        center: 8e-5
+        upper: 1e-3
+      warmup_ratio:
+        path: train.warmup_ratio
+        scale: linear
+        lower: 0.0
+        center: 0.1
+        upper: 0.2
+      cagrad_c:
+        path_template: method.{tag}.cagrad.c
+        scale: linear
+        lower: 0.1
+        center: 0.4
+        upper: 0.8
+      tau_D:
+        path: method.ours.trigger_gate0.tau_D
+        scale: log
+        lower: 0.0015
+        center: 0.0033914772
+        upper: 0.008
+      gamma_pull:
+        path: method.ours.pulling.gamma_pull
+        scale: linear
+        lower: 0.15
+        center: 0.30
+        upper: 0.45
+      k_pull:
+        path: method.ours.pulling.k_pull
+        scale: linear
+        lower: 6.0
+        center: 8.0
+        upper: 10.0
+      routing_delta:
+        path: method.ours.routing_delta
+        scale: log
+        lower: 0.002
+        center: 0.005
+        upper: 0.02
+
   grid:
-    knobs: ["routing_delta"]
+    knobs: [tau_D, gamma_pull, k_pull, routing_delta]
     drop_if_weight_lt: 0.0
 
     baseline_search_epochs: 3
@@ -226,12 +285,19 @@ hpo:
       epochs: 3
 
     knob_specs:
+      tau_D:
+        kind: float
+        lo: 0.0015
+        hi: 0.008
+      gamma_pull:
+        kind: float
+        lo: 0.15
+        hi: 0.45
+      k_pull:
+        kind: float
+        lo: 6.0
+        hi: 10.0
       routing_delta:
         kind: float
-        lo: 0.005
-        hi: 0.08
-        step: 0.001
-        top_quantile: 0.2
-        padding_ratio: 0.15
-        clamp_lo: 0.0
-        clamp_hi: 1.0
+        lo: 0.002
+        hi: 0.02

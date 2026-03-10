@@ -19,7 +19,6 @@ import numpy as np
 import yaml
 
 from .artifacts import make_run_name, prepare_run_dir, dump_json
-from .hpo_budget import build_grid_plan, make_lr_candidates_from_plan, lr_neighborhood_from_plan
 
 
 TRIALS_HEADER = [
@@ -739,8 +738,648 @@ def _score_mean_for_tags(trials_csv: Path, tags: List[str]) -> Optional[float]:
 
 
 # -----------------------------
-# Main entry
+# Coordinate-descent HPO
 # -----------------------------
+@dataclass
+class ParamSpec:
+    key: str
+    path: str
+    scale: str
+    lower: float
+    center: float
+    upper: float
+
+
+def _cfg_get_path(obj: Dict[str, Any], dotted: str) -> Any:
+    cur: Any = obj
+    for part in str(dotted).split("."):
+        if not isinstance(cur, dict):
+            raise KeyError(dotted)
+        cur = cur[part]
+    return cur
+
+
+def _cfg_set_path(obj: Dict[str, Any], dotted: str, value: Any) -> None:
+    cur = obj
+    parts = str(dotted).split(".")
+    for part in parts[:-1]:
+        nxt = cur.get(part, None)
+        if not isinstance(nxt, dict):
+            nxt = {}
+            cur[part] = nxt
+        cur = nxt
+    cur[parts[-1]] = value
+
+
+def _safe_stage_slug(x: str) -> str:
+    out = []
+    for ch in str(x):
+        if ch.isalnum():
+            out.append(ch.lower())
+        else:
+            out.append("_")
+    s = "".join(out).strip("_")
+    return s or "param"
+
+
+def _half_up_div(num: int, den: int) -> int:
+    num = int(num)
+    den = max(1, int(den))
+    return max(1, int(math.floor(float(num) / float(den) + 0.5)))
+
+
+def _trans(x: float, scale: str) -> float:
+    if scale == "log":
+        return float(math.log10(max(1e-20, float(x))))
+    return float(x)
+
+
+def _inv_trans(x: float, scale: str) -> float:
+    if scale == "log":
+        return float(10.0 ** float(x))
+    return float(x)
+
+
+def _make_anchor_grid(*, count: int, lower: float, center: float, upper: float, scale: str, rng: np.random.Generator) -> List[float]:
+    lower = float(lower)
+    center = float(center)
+    upper = float(upper)
+    if lower > upper:
+        lower, upper = upper, lower
+    center = min(max(center, lower), upper)
+    count = max(1, int(count))
+
+    if count == 1:
+        return [float(center)]
+    if count == 2:
+        boundary = float(rng.choice([lower, upper]))
+        out = [float(center), boundary]
+        if out[0] == out[1]:
+            out = [float(center), float(lower if boundary != lower else upper)]
+        return out
+
+    t_lo = _trans(lower, scale)
+    t_ce = _trans(center, scale)
+    t_hi = _trans(upper, scale)
+    extra = max(0, count - 3)
+
+    span_left = max(1e-12, abs(t_ce - t_lo))
+    span_right = max(1e-12, abs(t_hi - t_ce))
+    frac_left = span_left / (span_left + span_right)
+    extra_left = int(round(extra * frac_left))
+    extra_left = max(0, min(extra, extra_left))
+    extra_right = extra - extra_left
+
+    left_raw = np.linspace(t_lo, t_ce, num=extra_left + 2).tolist()[:-1]
+    right_raw = np.linspace(t_ce, t_hi, num=extra_right + 2).tolist()[1:]
+    vals_t = left_raw + [t_ce] + right_raw
+
+    out: List[float] = []
+    for v in vals_t:
+        x = float(_inv_trans(v, scale))
+        x = min(max(x, lower), upper)
+        if not out or abs(out[-1] - x) > 1e-15:
+            out.append(x)
+
+    anchors = [float(lower), float(center), float(upper)]
+    for a in anchors:
+        if all(abs(a - z) > 1e-15 for z in out):
+            out.append(float(a))
+    out = sorted({float(x) for x in out})
+
+    while len(out) > count:
+        removable = [i for i, x in enumerate(out) if all(abs(x - a) > 1e-15 for a in anchors)]
+        if not removable:
+            break
+        best_i = removable[len(removable) // 2]
+        out.pop(best_i)
+
+    if len(out) < count:
+        dense = np.linspace(t_lo, t_hi, num=max(count * 8, count + 2)).tolist()
+        for v in dense:
+            x = float(_inv_trans(v, scale))
+            x = min(max(x, lower), upper)
+            if all(abs(x - z) > 1e-15 for z in out):
+                out.append(x)
+            if len(out) >= count:
+                break
+        out = sorted(out)
+
+    if len(out) > count:
+        out = out[:count]
+    return [float(x) for x in out]
+
+
+def _param_local_grid(*, best_value: float, previous_values: List[float], lower: float, upper: float, scale: str, radix: int) -> List[float]:
+    radix = max(1, int(radix))
+    if radix == 1:
+        return [float(best_value)]
+
+    prev_sorted = sorted({float(x) for x in previous_values})
+    t_best = _trans(best_value, scale)
+    t_prev = [_trans(x, scale) for x in prev_sorted]
+    nearest = [abs(tp - t_best) for tp in t_prev if abs(tp - t_best) > 1e-15]
+    if nearest:
+        base_step = min(nearest) * 0.5
+    else:
+        base_step = max(abs(_trans(upper, scale) - _trans(lower, scale)) / 8.0, 1e-6)
+
+    radius = radix // 2
+    offsets = list(range(-radius, radius + 1))
+    if len(offsets) > radix:
+        offsets = offsets[:radix]
+    if len(offsets) < radix:
+        while len(offsets) < radix:
+            offsets.append(offsets[-1] + 1)
+
+    vals: List[float] = []
+    for off in offsets:
+        tv = t_best + float(off) * base_step
+        x = _inv_trans(tv, scale)
+        x = min(max(float(x), float(lower)), float(upper))
+        vals.append(float(x))
+
+    out = sorted({float(x) for x in vals})
+    if all(abs(float(best_value) - x) > 1e-15 for x in out):
+        out.append(float(best_value))
+        out = sorted(out)
+    return out
+
+
+def _spec_from_cfg(cfg: Dict[str, Any], key: str, tag: Optional[str] = None) -> ParamSpec:
+    spec_root = _cfg_get_path(cfg, "hpo.coord.param_specs")
+    raw = json.loads(json.dumps(spec_root[key]))
+    if "path" in raw:
+        path = str(raw["path"])
+    else:
+        path = str(raw["path_template"]).format(tag=str(tag or ""))
+    return ParamSpec(
+        key=str(key),
+        path=path,
+        scale=str(raw["scale"]).strip().lower(),
+        lower=float(raw["lower"]),
+        center=float(raw["center"]),
+        upper=float(raw["upper"]),
+    )
+
+
+def _method_param_specs(cfg: Dict[str, Any], *, family: str, tag: Optional[str] = None) -> List[ParamSpec]:
+    coord = _cfg_get_path(cfg, "hpo.coord")
+    shared_order = [str(x) for x in coord["shared_order"]]
+    method_orders = coord["method_orders"]
+    private_order = [str(x) for x in method_orders[family]]
+    ordered = shared_order + private_order
+    return [_spec_from_cfg(cfg, x, tag=tag) for x in ordered]
+
+
+def _method_base_override(cfg: Dict[str, Any], *, family: str, tag: Optional[str] = None, stage_epochs: int, stage_max_steps: int) -> Dict[str, Any]:
+    tr = {
+        "epochs": int(stage_epochs),
+        "max_steps": int(stage_max_steps),
+    }
+    if family == "ours":
+        return {
+            "method": {"name": "ours", "ours": json.loads(json.dumps(cfg["method"]["ours"]))},
+            "train": tr,
+        }
+
+    assert tag is not None
+    blk = json.loads(json.dumps(cfg["method"][tag]))
+    blk["grad_solver"] = "cagrad" if family == "cagrad" else "avg"
+    return {
+        "method": {"name": tag, tag: blk},
+        "train": tr,
+    }
+
+
+def _apply_centers(override: Dict[str, Any], specs: List[ParamSpec]) -> None:
+    for sp in specs:
+        _cfg_set_path(override, sp.path, float(sp.center))
+
+
+def _run_seed_aggregate(
+    *,
+    trials_csv: Path,
+    base_config_path: str,
+    schedule_path: Optional[str],
+    set_args: List[str],
+    hpo_run_dir: Path,
+    score_weights: Tuple[float, float, float],
+    seed_stage: str,
+    agg_stage: str,
+    base_tag: str,
+    override_seedless: Dict[str, Any],
+    seeds: List[int],
+    run_root: Path,
+) -> Dict[str, Any]:
+    for sd in seeds:
+        trial_tag = f"{base_tag}__s{sd}"
+        if not _is_done_in_trials_csv(trials_csv, trial_tag):
+            ov = json.loads(json.dumps(override_seedless))
+            ov.setdefault("train", {})
+            ov["train"]["seed"] = int(sd)
+            rc = _run_one_trial(
+                base_config_path=base_config_path,
+                schedule_path=schedule_path,
+                base_set_args=set_args,
+                trial_override=ov,
+                trial_tag=trial_tag,
+                stage=seed_stage,
+                hpo_run_dir=hpo_run_dir,
+                score_weights=score_weights,
+                run_dir=run_root / f"s{sd}",
+                overwrite_mode="resume",
+            )
+            if rc != 0 and (not _is_done_in_trials_csv(trials_csv, trial_tag)):
+                raise RuntimeError(f"[HPO] trial failed: stage={seed_stage} tag={trial_tag} rc={rc}")
+
+    if not _is_done_in_trials_csv(trials_csv, base_tag):
+        row = _aggregate_seed_trial(
+            trials_csv=trials_csv,
+            base_trial_tag=base_tag,
+            stage=agg_stage,
+            seeds=seeds,
+            trial_cfg_json=json.dumps(override_seedless, sort_keys=True),
+        )
+        if row is None:
+            raise RuntimeError(f"[HPO] failed to aggregate seeds for {base_tag}")
+
+    rows = _read_all_rows(trials_csv)
+    agg = _row_by_trial_tag(rows, base_tag)
+    if agg is None:
+        raise RuntimeError(f"[HPO] missing aggregate row for {base_tag}")
+    return agg
+
+
+def _select_best(cands: List[Dict[str, Any]]) -> Dict[str, Any]:
+    best = None
+    best_score = float("-inf")
+    for c in cands:
+        try:
+            s = float(c["row"].get("score", "-inf"))
+        except Exception:
+            s = float("-inf")
+        if best is None or s > best_score:
+            best = c
+            best_score = s
+    if best is None:
+        raise RuntimeError("[HPO] empty candidate list")
+    return best
+
+
+def _score_variance(rows: List[Dict[str, Any]]) -> float:
+    vals: List[float] = []
+    for r in rows:
+        try:
+            vals.append(float(r.get("score", "-inf")))
+        except Exception:
+            continue
+    if len(vals) <= 1:
+        return 0.0
+    return float(np.var(np.asarray(vals, dtype=float)))
+
+
+def _run_coordinate_descent(
+    *,
+    cfg: Dict[str, Any],
+    base_config_path: str,
+    schedule_path: Optional[str],
+    set_args: List[str],
+    hpo_run_dir: Path,
+    trials_csv: Path,
+    score_weights: Tuple[float, float, float],
+    rng: np.random.Generator,
+    family: str,
+    tag: Optional[str],
+    budget_trials: int,
+    seeds: List[int],
+    stage_epochs: int,
+    stage_max_steps: int,
+) -> Dict[str, Any]:
+    specs = _method_param_specs(cfg, family=family, tag=tag)
+    if not specs:
+        raise RuntimeError(f"[HPO] no params for family={family} tag={tag}")
+
+    current = _method_base_override(cfg, family=family, tag=tag, stage_epochs=stage_epochs, stage_max_steps=stage_max_steps)
+    _apply_centers(current, specs)
+
+    points_per_param = _half_up_div(int(budget_trials), len(specs))
+    points_per_param = max(1, int(points_per_param))
+
+    sweeps: List[Dict[str, Any]] = []
+    current_best_row: Optional[Dict[str, Any]] = None
+
+    for pi, sp in enumerate(specs):
+        values = _make_anchor_grid(
+            count=points_per_param,
+            lower=sp.lower,
+            center=float(_cfg_get_path(current, sp.path)),
+            upper=sp.upper,
+            scale=sp.scale,
+            rng=rng,
+        )
+        candidates: List[Dict[str, Any]] = []
+        for vi, val in enumerate(values):
+            ov = json.loads(json.dumps(current))
+            _cfg_set_path(ov, sp.path, float(val))
+            base_tag = f"{family}__{tag or 'ours'}__cd__p{pi:02d}__{_safe_stage_slug(sp.key)}__v{vi:02d}"
+            stage_seed = "baseline_search" if family == "baseline" else "baseline_cagrad_search" if family == "cagrad" else "coord_search"
+            stage_agg = "baseline_search.agg" if family == "baseline" else "baseline_cagrad_search.agg" if family == "cagrad" else "coord_search.agg"
+            row = _run_seed_aggregate(
+                trials_csv=trials_csv,
+                base_config_path=base_config_path,
+                schedule_path=schedule_path,
+                set_args=set_args,
+                hpo_run_dir=hpo_run_dir,
+                score_weights=score_weights,
+                seed_stage=stage_seed,
+                agg_stage=stage_agg,
+                base_tag=base_tag,
+                override_seedless=ov,
+                seeds=seeds,
+                run_root=hpo_run_dir / "trial_runs" / family / (tag or "ours") / "coord" / f"p{pi:02d}_{_safe_stage_slug(sp.key)}" / f"v{vi:02d}",
+            )
+            candidates.append({"value": float(val), "override": ov, "row": row})
+
+        best = _select_best(candidates)
+        current = json.loads(json.dumps(best["override"]))
+        current_best_row = dict(best["row"])
+        sweeps.append(
+            {
+                "param_key": sp.key,
+                "param_path": sp.path,
+                "scale": sp.scale,
+                "lower": float(sp.lower),
+                "upper": float(sp.upper),
+                "chosen_value": float(best["value"]),
+                "candidate_values": [float(c["value"]) for c in candidates],
+                "score_variance": float(_score_variance([c["row"] for c in candidates])),
+                "best_score": float(best["row"].get("score", "-inf")),
+                "best_trial_tag": str(best["row"].get("trial_tag", "")),
+            }
+        )
+
+    if current_best_row is None:
+        raise RuntimeError(f"[HPO] coordinate descent produced no result for family={family} tag={tag}")
+
+    return {
+        "family": family,
+        "tag": tag,
+        "final_override": current,
+        "best_row": current_best_row,
+        "points_per_param": int(points_per_param),
+        "sweeps": sweeps,
+    }
+
+
+def _run_local_refine(
+    *,
+    cfg: Dict[str, Any],
+    base_config_path: str,
+    schedule_path: Optional[str],
+    set_args: List[str],
+    hpo_run_dir: Path,
+    trials_csv: Path,
+    score_weights: Tuple[float, float, float],
+    family: str,
+    tag: Optional[str],
+    coord_result: Dict[str, Any],
+    seeds: List[int],
+    stage_epochs: int,
+    stage_max_steps: int,
+    top_k: int,
+    radix: int,
+) -> Dict[str, Any]:
+    sweeps = list(coord_result["sweeps"])
+    ranked = sorted(sweeps, key=lambda x: float(x.get("score_variance", 0.0)), reverse=True)
+    top = ranked[: max(0, int(top_k))]
+    if not top:
+        return {"enabled": False, "best_row": coord_result["best_row"], "best_override": coord_result["final_override"], "top_params": []}
+
+    grids: List[Tuple[Dict[str, Any], List[float]]] = []
+    for sw in top:
+        grids.append(
+            (
+                sw,
+                _param_local_grid(
+                    best_value=float(sw["chosen_value"]),
+                    previous_values=[float(x) for x in sw["candidate_values"]],
+                    lower=float(sw["lower"]),
+                    upper=float(sw["upper"]),
+                    scale=str(sw["scale"]),
+                    radix=int(radix),
+                ),
+            )
+        )
+
+    base_override = json.loads(json.dumps(coord_result["final_override"]))
+    best_row = coord_result["best_row"]
+    best_override = base_override
+    emitted = 0
+    keys = [g[0]["param_path"] for g in grids]
+    values_product = itertools.product(*[g[1] for g in grids])
+    for combo_idx, vals in enumerate(values_product):
+        ov = json.loads(json.dumps(base_override))
+        assign = {}
+        for path, val in zip(keys, vals):
+            _cfg_set_path(ov, path, float(val))
+            assign[path] = float(val)
+        base_tag = f"{family}__{tag or 'ours'}__local__{combo_idx:03d}__{_stable_hash(assign)}"
+        row = _run_seed_aggregate(
+            trials_csv=trials_csv,
+            base_config_path=base_config_path,
+            schedule_path=schedule_path,
+            set_args=set_args,
+            hpo_run_dir=hpo_run_dir,
+            score_weights=score_weights,
+            seed_stage="local_refine",
+            agg_stage="local_refine.agg",
+            base_tag=base_tag,
+            override_seedless=ov,
+            seeds=seeds,
+            run_root=hpo_run_dir / "trial_runs" / family / (tag or "ours") / "local_refine" / f"combo{combo_idx:03d}",
+        )
+        emitted += 1
+        try:
+            if float(row.get("score", "-inf")) > float(best_row.get("score", "-inf")):
+                best_row = row
+                best_override = ov
+        except Exception:
+            pass
+
+    return {
+        "enabled": True,
+        "best_row": best_row,
+        "best_override": best_override,
+        "top_params": [
+            {
+                "param_key": str(sw["param_key"]),
+                "param_path": str(sw["param_path"]),
+                "score_variance": float(sw["score_variance"]),
+                "local_values": [float(x) for x in vals],
+            }
+            for sw, vals in grids
+        ],
+        "configs": int(emitted),
+    }
+
+
+def _run_bayes_after_refine(
+    *,
+    cfg: Dict[str, Any],
+    base_config_path: str,
+    schedule_path: Optional[str],
+    set_args: List[str],
+    hpo_run_dir: Path,
+    trials_csv: Path,
+    score_weights: Tuple[float, float, float],
+    family: str,
+    tag: Optional[str],
+    coord_result: Dict[str, Any],
+    refine_result: Dict[str, Any],
+    seeds: List[int],
+    stage_epochs: int,
+    stage_max_steps: int,
+    trials_budget: int,
+) -> Dict[str, Any]:
+    if not bool(cfg["hpo"]["use_bayes"]) or int(trials_budget) <= 0:
+        return {"enabled": False}
+
+    top_params = list(refine_result.get("top_params", []) or [])
+    if not top_params:
+        return {"enabled": False}
+
+    knob_space: List[KnobRange] = []
+    path_to_scale: Dict[str, str] = {}
+    for tp in top_params:
+        path = str(tp["param_path"])
+        sw = next(x for x in coord_result["sweeps"] if str(x["param_path"]) == path)
+        knob_space.append(
+            KnobRange(
+                name=path,
+                kind="float",
+                lo=float(sw["lower"]),
+                hi=float(sw["upper"]),
+                weight=float(sw["score_variance"]),
+            )
+        )
+        path_to_scale[path] = str(sw["scale"])
+
+    def _encode(assign: Dict[str, float]) -> List[float]:
+        out: List[float] = []
+        for k in knob_space:
+            lo = _trans(float(k.lo), path_to_scale[k.name])
+            hi = _trans(float(k.hi), path_to_scale[k.name])
+            x = _trans(float(assign[k.name]), path_to_scale[k.name])
+            if abs(hi - lo) < 1e-12:
+                out.append(0.5)
+            else:
+                out.append((x - lo) / (hi - lo))
+        return out
+
+    rows = _read_all_rows(trials_csv)
+    X_data: List[List[float]] = []
+    y_data: List[float] = []
+    seen = set()
+    for r in rows:
+        if str(r.get("stage", "")) != "local_refine.agg":
+            continue
+        tt = str(r.get("trial_tag", ""))
+        if not tt.startswith(f"{family}__{tag or 'ours'}__local__"):
+            continue
+        cfgj = json.loads(str(r.get("trial_cfg_json", "{}")))
+        assign: Dict[str, float] = {}
+        ok = True
+        for tp in top_params:
+            path = str(tp["param_path"])
+            try:
+                assign[path] = float(_cfg_get_path(cfgj, path))
+            except Exception:
+                ok = False
+                break
+        if not ok:
+            continue
+        key = json.dumps(assign, sort_keys=True)
+        if key in seen:
+            continue
+        seen.add(key)
+        X_data.append(_encode(assign))
+        y_data.append(float(r.get("score", "-inf")))
+
+    if not X_data:
+        return {"enabled": False}
+
+    X = np.asarray(X_data, dtype=float)
+    y = np.asarray(y_data, dtype=float)
+    grid_cfg = cfg["hpo"]["grid"]
+    bo_rng = np.random.default_rng(int(grid_cfg["bayes_rng_seed"]))
+    pool = int(grid_cfg["bayes_pool"])
+    length = float(grid_cfg["bayes_gp_length"])
+    var = float(grid_cfg["bayes_gp_var"])
+    noise = float(grid_cfg["bayes_gp_noise"])
+    xi = float(grid_cfg["bayes_ei_xi"])
+
+    base_override = json.loads(json.dumps(refine_result["best_override"]))
+    best_row = refine_result["best_row"]
+    best_override = base_override
+    proposals: List[Dict[str, Any]] = []
+
+    for t in range(int(trials_budget)):
+        pool_assigns: List[Dict[str, float]] = []
+        pool_vecs: List[List[float]] = []
+        for _ in range(pool):
+            assign: Dict[str, float] = {}
+            for k in knob_space:
+                lo = float(k.lo)
+                hi = float(k.hi)
+                scale = path_to_scale[k.name]
+                if scale == "log":
+                    tv = bo_rng.uniform(_trans(lo, scale), _trans(hi, scale))
+                    assign[k.name] = float(_inv_trans(tv, scale))
+                else:
+                    assign[k.name] = float(bo_rng.uniform(lo, hi))
+            pool_assigns.append(assign)
+            pool_vecs.append(_encode(assign))
+
+        Xcand = np.asarray(pool_vecs, dtype=float)
+        mu, sigma = _gp_posterior(X, y, Xcand, length=length, var=var, noise=noise)
+        ei = _expected_improvement(mu, sigma, best=float(np.max(y)), xi=xi)
+        pick = int(np.argmax(ei))
+        assign_pick = dict(pool_assigns[pick])
+        ov = json.loads(json.dumps(base_override))
+        for path, val in assign_pick.items():
+            _cfg_set_path(ov, path, float(val))
+        base_tag = f"{family}__{tag or 'ours'}__bayes__t{t:02d}__{_stable_hash(assign_pick)}"
+        row = _run_seed_aggregate(
+            trials_csv=trials_csv,
+            base_config_path=base_config_path,
+            schedule_path=schedule_path,
+            set_args=set_args,
+            hpo_run_dir=hpo_run_dir,
+            score_weights=score_weights,
+            seed_stage="bayes",
+            agg_stage="bayes.agg",
+            base_tag=base_tag,
+            override_seedless=ov,
+            seeds=seeds,
+            run_root=hpo_run_dir / "trial_runs" / family / (tag or "ours") / "bayes" / f"t{t:02d}",
+        )
+        proposals.append({"trial_tag": base_tag, "assign": assign_pick, "ei": float(ei[pick])})
+        X = np.vstack([X, np.asarray(_encode(assign_pick), dtype=float)])
+        y = np.append(y, float(row.get("score", "-inf")))
+        if float(row.get("score", "-inf")) > float(best_row.get("score", "-inf")):
+            best_row = row
+            best_override = ov
+
+    return {
+        "enabled": True,
+        "best_row": best_row,
+        "best_override": best_override,
+        "proposals": proposals,
+        "configs": int(trials_budget),
+    }
+
+
 def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[str], set_args: List[str]) -> None:
     _assert_capacity_unified(cfg)
 
@@ -782,9 +1421,6 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
     )
     dump_json(hpo_run_dir / "cli_overrides.json", {"set_args": list(set_args or [])})
 
-    plan = build_grid_plan(cfg)
-    _atomic_write_json(plan_path, plan)
-
     hpo_cfg = cfg["hpo"]
     bandit = hpo_cfg["bandit"]
     score_cfg = bandit["score"]
@@ -793,26 +1429,22 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
     w_avg = float(score_cfg["w_avg"])
     score_weights = (w_max, w_final, w_avg)
 
-    fixed_wu = float(bandit["fixed_warmup_ratio"])
-
     refine_seeds = [int(x) for x in bandit["refine_seeds"]]
     if len(refine_seeds) < 2:
         raise RuntimeError("[HPO] hpo.bandit.refine_seeds must have at least 2 seeds")
     refine_seeds = refine_seeds[:2]
-    n_seeds = max(1, len(refine_seeds))
-
     tags = _baseline_tags(cfg)
 
     grid_cfg = hpo_cfg["grid"]
-    grid_epochs = int(grid_cfg["grid_epochs"])
-    baseline_search_epochs = int(grid_cfg["baseline_search_epochs"])
-    baseline_search_max_steps_cfg = int(grid_cfg.get("baseline_search_max_steps", 0) or 0)
-    grid_max_steps_cfg = int(grid_cfg.get("grid_max_steps", 0) or 0)
+    coord_cfg = hpo_cfg["coord"]
+    coord_epochs = int(grid_cfg["baseline_search_epochs"])
+    coord_max_steps_cfg = int(grid_cfg.get("baseline_search_max_steps", 0) or 0)
     rerank_cfg = grid_cfg["rerank"]
-    rerank_enabled = bool(rerank_cfg["enabled"])
-    rerank_top_k = int(rerank_cfg["top_k"])
-    rerank_epochs = int(rerank_cfg["epochs"])
-    rerank_max_steps_cfg = int(rerank_cfg.get("max_steps", 0) or 0)
+    top_k = int(coord_cfg["top_k"])
+    refine_radix = int(coord_cfg["refine_radix"])
+    refine_epochs = int(rerank_cfg["epochs"])
+    refine_max_steps_cfg = int(rerank_cfg.get("max_steps", 0) or 0)
+    bayes_trials = int(coord_cfg.get("bayes_trials", 48))
 
     task_cfg = cfg.get("task", {}) if isinstance(cfg.get("task", {}), dict) else {}
     multi_cfg = task_cfg.get("multi", {}) if isinstance(task_cfg.get("multi", {}), dict) else {}
@@ -836,1090 +1468,220 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
             "(set stage-specific *_max_steps or train.max_steps > 0)."
         )
 
-    baseline_search_max_steps = _resolve_stage_max_steps("baseline_search", baseline_search_max_steps_cfg)
-    grid_max_steps = _resolve_stage_max_steps("grid2/bayes", grid_max_steps_cfg)
-    rerank_max_steps = _resolve_stage_max_steps("rerank", rerank_max_steps_cfg)
+    coord_max_steps = _resolve_stage_max_steps("coord_search", coord_max_steps_cfg)
+    refine_max_steps = _resolve_stage_max_steps("local_refine", refine_max_steps_cfg)
 
     hpo_train_schedule = {
         "mode": "max_steps" if hpo_use_max_steps else "epochs",
         "global_train_max_steps": int(global_train_max_steps),
-        "baseline_search": {
-            "epochs": int(baseline_search_epochs),
-            "max_steps": int(baseline_search_max_steps),
-            "configured_max_steps": int(baseline_search_max_steps_cfg),
+        "coord_search": {
+            "epochs": int(coord_epochs),
+            "max_steps": int(coord_max_steps),
+            "configured_max_steps": int(coord_max_steps_cfg),
         },
-        "grid2": {
-            "epochs": int(grid_epochs),
-            "max_steps": int(grid_max_steps),
-            "configured_max_steps": int(grid_max_steps_cfg),
+        "local_refine": {
+            "epochs": int(refine_epochs),
+            "max_steps": int(refine_max_steps),
+            "configured_max_steps": int(refine_max_steps_cfg),
         },
-        "rerank": {
-            "epochs": int(rerank_epochs),
-            "max_steps": int(rerank_max_steps),
-            "configured_max_steps": int(rerank_max_steps_cfg),
+        "bayes": {
+            "epochs": int(refine_epochs),
+            "max_steps": int(refine_max_steps),
+            "trials": int(bayes_trials),
         },
     }
     print(f"[HPO][SCHEDULE] mode={hpo_train_schedule['mode']} schedule={hpo_train_schedule}")
+    total_trials = int(hpo_cfg["budget"]["total_trials"])
+    family_budget = max(1, total_trials)
+    baseline_tag_budget = _half_up_div(family_budget, len(tags))
+    cagrad_tag_budget = _half_up_div(family_budget, len(tags))
+    rng = np.random.default_rng(int(grid_cfg["rng_seed"]))
 
-    max_retries = int(grid_cfg["max_retries"])
+    chosen_ours_alpha: Optional[float] = float(_baseline_lora_from_method(cfg, "baseline_R")["alpha"])
+    coord_plan = {
+        "budget": {
+            "total_trials_per_family": int(family_budget),
+            "baseline_tag_budget": int(baseline_tag_budget),
+            "cagrad_tag_budget": int(cagrad_tag_budget),
+            "shared_order": list(coord_cfg["shared_order"]),
+            "method_orders": json.loads(json.dumps(coord_cfg["method_orders"])),
+            "top_k": int(top_k),
+            "refine_radix": int(refine_radix),
+            "bayes_trials": int(bayes_trials),
+        },
+        "hpo_train_schedule": hpo_train_schedule,
+    }
+    _atomic_write_json(plan_path, coord_plan)
+    _atomic_write_json(status_path, {"status": "running", "updated_at": int(time.time())})
 
-    def _make_train_override(
-        *,
-        lr: float,
-        epochs: int,
-        stage_max_steps: int,
-        seed: Optional[int] = None,
-    ) -> Dict[str, Any]:
-        tr: Dict[str, Any] = {
-            "lr": float(lr),
-            "warmup_ratio": float(fixed_wu),
-            "epochs": int(epochs),
-        }
-        if seed is not None:
-            tr["seed"] = int(seed)
-        if hpo_use_max_steps:
-            tr["max_steps"] = int(stage_max_steps)
-        return tr
-
-    full_lrs = make_lr_candidates_from_plan(plan)
-
-    forced_knobs = grid_cfg["knobs"]
-    if not isinstance(forced_knobs, list) or not forced_knobs:
-        raise ValueError("cfg.hpo.grid.knobs must be a non-empty list")
-    forced_knobs = [str(x) for x in forced_knobs]
-    if any(k == "lora" for k in forced_knobs):
-        raise RuntimeError("[HPO] forbidden knob name: 'lora'")
-
-    drop_if_weight_lt = float(grid_cfg["drop_if_weight_lt"])
-    knob_specs_all = grid_cfg["knob_specs"]
-    if not isinstance(knob_specs_all, dict):
-        raise RuntimeError("[HPO] hpo.grid.knob_specs must be a dict")
-
-    # -----------------------
-    # Build plan_status items deterministically
-    # -----------------------
-    st = _load_plan_status(status_path)
-
-    items: List[PlanItem] = []
-    idx = 0
-
-    # baseline search (2-seed aggregate aligned to refine_seeds)
-    baseline_search_seeds = [int(x) for x in refine_seeds]
+    baseline_results: Dict[str, Dict[str, Any]] = {}
+    baseline_refine_results: Dict[str, Dict[str, Any]] = {}
     for tag in tags:
-        lora = _baseline_lora_from_method(cfg, tag)
-        for i, lr in enumerate(full_lrs):
-            base_tag = f"bl_search__{tag}__i{i}"
-
-            for sd in baseline_search_seeds:
-                trial_tag = f"{base_tag}__s{sd}"
-                run_dir = str(hpo_run_dir / "trial_runs" / "baseline_search" / tag / f"i{i}" / f"s{sd}")
-                override = {
-                    "method": {
-                        "name": tag,
-                        tag: {
-                            "lora": {"r": int(lora["r"]), "alpha": float(lora["alpha"]), "dropout": float(lora["dropout"])},
-                            "grad_solver": "avg",
-                        },
-                    },
-                    "train": _make_train_override(
-                        lr=float(lr),
-                        epochs=int(baseline_search_epochs),
-                        stage_max_steps=int(baseline_search_max_steps),
-                        seed=int(sd),
-                    ),
-                }
-                items.append(
-                    PlanItem(
-                        idx=idx,
-                        stage="baseline_search",
-                        trial_tag=trial_tag,
-                        seed=int(sd),
-                        run_dir=run_dir,
-                        override=override,
-                    )
-                )
-                idx += 1
-
-            run_dir_agg = str(hpo_run_dir / "trial_runs" / "baseline_search" / tag / f"i{i}" / "agg")
-            override_agg = {
-                "method": {
-                    "name": tag,
-                    tag: {
-                        "lora": {"r": int(lora["r"]), "alpha": float(lora["alpha"]), "dropout": float(lora["dropout"])},
-                        "grad_solver": "avg",
-                    },
-                },
-                "train": _make_train_override(
-                    lr=float(lr),
-                    epochs=int(baseline_search_epochs),
-                    stage_max_steps=int(baseline_search_max_steps),
-                    seed=None,
-                ),
-            }
-            items.append(
-                PlanItem(
-                    idx=idx,
-                    stage="baseline_search_agg",
-                    trial_tag=base_tag,
-                    seed=None,
-                    run_dir=run_dir_agg,
-                    override=override_agg,
-                )
-            )
-            idx += 1
-
-    if not st.get("items"):
-        for it in items:
-            _update_item(st, it)
-        _save_plan_status(status_path, st)
-
-    # -----------------------
-    # Executor loop (resume-safe)
-    # -----------------------
-    def _execute_one(it: Dict[str, Any]) -> None:
-        nonlocal st
-        trial_tag = str(it["trial_tag"])
-        stage = str(it["stage"])
-        run_dir = Path(str(it["run_dir"]))
-        override = it.get("override", {})
-        tries = int(it.get("tries", 0))
-
-        if _is_done_in_trials_csv(trials_csv, trial_tag):
-            it["status"] = "done"
-            it["last_update"] = int(time.time())
-            _save_plan_status(status_path, st)
-            return
-
-        if tries >= max_retries:
-            return
-
-        it["status"] = "running"
-        it["tries"] = tries + 1
-        it["last_update"] = int(time.time())
-        _save_plan_status(status_path, st)
-
-        rc = _run_one_trial(
+        baseline_results[tag] = _run_coordinate_descent(
+            cfg=cfg,
             base_config_path=base_config_path,
             schedule_path=schedule_path,
-            base_set_args=set_args,
-            trial_override=override,
-            trial_tag=trial_tag,
-            stage=stage,
+            set_args=set_args,
             hpo_run_dir=hpo_run_dir,
+            trials_csv=trials_csv,
             score_weights=score_weights,
-            run_dir=run_dir,
-            overwrite_mode="resume",
-        )
-        it["last_rc"] = int(rc)
-        it["last_update"] = int(time.time())
-
-        if _is_done_in_trials_csv(trials_csv, trial_tag):
-            it["status"] = "done"
-        else:
-            it["status"] = "failed"
-        _save_plan_status(status_path, st)
-
-    # -----------------------
-    # 0) Run baseline search
-    # -----------------------
-    while True:
-        st = _load_plan_status(status_path)
-        nxt = _next_pending_item_by_stage(st, ["baseline_search"])
-        if nxt is None:
-            break
-        _execute_one(nxt)
-
-    st = _load_plan_status(status_path)
-    items_list = st.get("items", []) if isinstance(st.get("items", []), list) else []
-    baseline_search_agg_items = [it for it in items_list if str(it.get("stage")) == "baseline_search_agg"]
-
-    for it in sorted(baseline_search_agg_items, key=lambda x: int(x.get("idx", 10**9))):
-        base_tag = str(it["trial_tag"])
-        if _is_done_in_trials_csv(trials_csv, base_tag):
-            it["status"] = "done"
-            it["last_update"] = int(time.time())
-            _save_plan_status(status_path, st)
-            continue
-
-        seeds_done = True
-        for sd in baseline_search_seeds:
-            seed_tag = f"{base_tag}__s{sd}"
-            if not _is_done_in_trials_csv(trials_csv, seed_tag):
-                seeds_done = False
-                break
-        if not seeds_done:
-            continue
-
-        ov = it.get("override", {})
-        trial_cfg_json = json.dumps(ov, sort_keys=True)
-        _ = _aggregate_seed_trial(
-            trials_csv=trials_csv,
-            base_trial_tag=base_tag,
-            stage="baseline_search.agg",
-            seeds=baseline_search_seeds,
-            trial_cfg_json=trial_cfg_json,
-        )
-        if _is_done_in_trials_csv(trials_csv, base_tag):
-            it["status"] = "done"
-            it["last_update"] = int(time.time())
-            _save_plan_status(status_path, st)
-
-    st = _load_plan_status(status_path)
-    pending_search = [
-        it for it in st.get("items", [])
-        if str(it.get("stage")) in {"baseline_search", "baseline_search_agg"} and str(it.get("status")) != "done"
-    ]
-    if pending_search:
-        print(f"[HPO][STOP] baseline_search not finished. pending={len(pending_search)}")
-        return
-
-    rows = _read_all_rows(trials_csv)
-    best_lr_by_tag: Dict[str, float] = {}
-    for tag in tags:
-        best = None
-        best_s = float("-inf")
-        for r in rows:
-            if str(r.get("stage", "")) != "baseline_search.agg":
-                continue
-            if not str(r.get("trial_tag", "")).startswith(f"bl_search__{tag}__"):
-                continue
-            try:
-                s = float(r.get("score", "-inf"))
-            except Exception:
-                continue
-            if s > best_s:
-                best_s = s
-                best = r
-        if best is None:
-            raise RuntimeError(f"[HPO] baseline_search produced no finished row for tag={tag}")
-        try:
-            cfgj = json.loads(best.get("trial_cfg_json", "{}"))
-            best_lr_by_tag[tag] = float(cfgj["train"]["lr"])
-        except Exception as e:
-            raise RuntimeError(f"[HPO] failed to parse baseline search lr for tag={tag}") from e
-
-    best_refined_lr_by_tag: Dict[str, float] = {k: float(v) for k, v in best_lr_by_tag.items()}
-
-    lrs_union: List[float] = []
-    for tag in tags:
-        lrs_union.extend(lr_neighborhood_from_plan(plan, best_refined_lr_by_tag[tag]))
-    out_lr: List[float] = []
-    seen_lr = set()
-    for x in lrs_union:
-        fx = float(x)
-        if fx not in seen_lr:
-            out_lr.append(fx)
-            seen_lr.add(fx)
-    if not out_lr:
-        raise RuntimeError("[HPO] empty lrs_union from baseline best lr neighborhoods")
-    lrs_union = out_lr
-
-    # -----------------------
-    # 0.5) baseline-cagrad small full grid (not budgeted)
-    # -----------------------
-    hpo_cagrad_cfg = ((cfg.get("hpo", {}) or {}).get("cagrad", {}) or {})
-    cagrad_grid = list(hpo_cagrad_cfg.get("c_grid", [0.2, 0.4, 0.6]) or [])
-    if not cagrad_grid:
-        cagrad_grid = [0.2, 0.4, 0.6]
-    cagrad_grid = [float(x) for x in cagrad_grid]
-
-    st = _load_plan_status(status_path)
-    existing = _plan_index(st)
-    idx0 = max([int(it.get("idx", 0)) for it in st.get("items", [])] + [0]) + 1
-
-    for tag in tags:
-        lora = _baseline_lora_from_method(cfg, tag)
-        lr_triplet = _lr_neighbors_one_step(full_lrs, best_refined_lr_by_tag[tag])
-        for lr in lr_triplet:
-            for cval in cagrad_grid:
-                base_tag = f"bl_cagrad__{tag}__lr{lr:.3e}__c{cval:.3f}"
-                for sd in baseline_search_seeds:
-                    trial_tag = f"{base_tag}__s{sd}"
-                    key = f"{trial_tag}__seed_{sd}"
-                    if key in existing:
-                        continue
-                    run_dir = str(
-                        hpo_run_dir
-                        / "trial_runs"
-                        / "baseline_cagrad"
-                        / tag
-                        / f"lr{lr:.3e}".replace("+", "")
-                        / f"c{cval:.3f}"
-                        / f"s{sd}"
-                    )
-                    override = {
-                        "method": {
-                            "name": tag,
-                            tag: {
-                                "lora": {"r": int(lora["r"]), "alpha": float(lora["alpha"]), "dropout": float(lora["dropout"])},
-                                "grad_solver": "cagrad",
-                                "cagrad": {"c": float(cval)},
-                            },
-                        },
-                        "train": _make_train_override(
-                            lr=float(lr),
-                            epochs=int(baseline_search_epochs),
-                            stage_max_steps=int(baseline_search_max_steps),
-                            seed=int(sd),
-                        ),
-                    }
-                    _update_item(
-                        st,
-                        PlanItem(
-                            idx=idx0,
-                            stage="baseline_cagrad_search",
-                            trial_tag=trial_tag,
-                            seed=int(sd),
-                            run_dir=run_dir,
-                            override=override,
-                        ),
-                    )
-                    idx0 += 1
-
-                keyagg = f"{base_tag}__agg"
-                if keyagg not in existing:
-                    run_dir = str(
-                        hpo_run_dir
-                        / "trial_runs"
-                        / "baseline_cagrad"
-                        / tag
-                        / f"lr{lr:.3e}".replace("+", "")
-                        / f"c{cval:.3f}"
-                        / "agg"
-                    )
-                    override2 = {
-                        "method": {
-                            "name": tag,
-                            tag: {
-                                "lora": {"r": int(lora["r"]), "alpha": float(lora["alpha"]), "dropout": float(lora["dropout"])},
-                                "grad_solver": "cagrad",
-                                "cagrad": {"c": float(cval)},
-                            },
-                        },
-                        "train": _make_train_override(
-                            lr=float(lr),
-                            epochs=int(baseline_search_epochs),
-                            stage_max_steps=int(baseline_search_max_steps),
-                            seed=None,
-                        ),
-                    }
-                    _update_item(
-                        st,
-                        PlanItem(
-                            idx=idx0,
-                            stage="baseline_cagrad_search_agg",
-                            trial_tag=base_tag,
-                            seed=None,
-                            run_dir=run_dir,
-                            override=override2,
-                        ),
-                    )
-                    idx0 += 1
-    _save_plan_status(status_path, st)
-
-    while True:
-        st = _load_plan_status(status_path)
-        nxt = _next_pending_item_by_stage(st, ["baseline_cagrad_search"])
-        if nxt is None:
-            break
-        _execute_one(nxt)
-
-    st = _load_plan_status(status_path)
-    items_list = st.get("items", []) if isinstance(st.get("items", []), list) else []
-    cagrad_agg_items = [it for it in items_list if str(it.get("stage")) == "baseline_cagrad_search_agg"]
-
-    for it in sorted(cagrad_agg_items, key=lambda x: int(x.get("idx", 10**9))):
-        base_tag = str(it["trial_tag"])
-        if _is_done_in_trials_csv(trials_csv, base_tag):
-            it["status"] = "done"
-            it["last_update"] = int(time.time())
-            _save_plan_status(status_path, st)
-            continue
-
-        seeds_done = True
-        for sd in baseline_search_seeds:
-            seed_tag = f"{base_tag}__s{sd}"
-            if not _is_done_in_trials_csv(trials_csv, seed_tag):
-                seeds_done = False
-                break
-        if not seeds_done:
-            continue
-
-        ov = it.get("override", {})
-        trial_cfg_json = json.dumps(ov, sort_keys=True)
-        _ = _aggregate_seed_trial(
-            trials_csv=trials_csv,
-            base_trial_tag=base_tag,
-            stage="baseline_cagrad_search.agg",
-            seeds=baseline_search_seeds,
-            trial_cfg_json=trial_cfg_json,
-        )
-        if _is_done_in_trials_csv(trials_csv, base_tag):
-            it["status"] = "done"
-            it["last_update"] = int(time.time())
-            _save_plan_status(status_path, st)
-
-    st = _load_plan_status(status_path)
-    pending_cagrad = [
-        it for it in st.get("items", [])
-        if str(it.get("stage")) in {"baseline_cagrad_search", "baseline_cagrad_search_agg"} and str(it.get("status")) != "done"
-    ]
-    if pending_cagrad:
-        print(f"[HPO][STOP] baseline_cagrad_search not finished. pending={len(pending_cagrad)}")
-        return
-
-    rows = _read_all_rows(trials_csv)
-    best_cagrad_by_tag: Dict[str, Dict[str, float]] = {}
-    for tag in tags:
-        best = None
-        best_s = float("-inf")
-        for r in rows:
-            if str(r.get("stage", "")) != "baseline_cagrad_search.agg":
-                continue
-            if not str(r.get("trial_tag", "")).startswith(f"bl_cagrad__{tag}__"):
-                continue
-            try:
-                s = float(r.get("score", "-inf"))
-            except Exception:
-                continue
-            if s > best_s:
-                best_s = s
-                best = r
-        if best is None:
-            raise RuntimeError(f"[HPO] baseline_cagrad_search produced no finished row for tag={tag}")
-        try:
-            cfgj = json.loads(best.get("trial_cfg_json", "{}"))
-            lr_best = float(cfgj["train"]["lr"])
-            c_best = float(cfgj["method"][tag]["cagrad"]["c"])
-            best_cagrad_by_tag[tag] = {"lr": lr_best, "c": c_best}
-        except Exception as e:
-            raise RuntimeError(f"[HPO] failed to parse baseline-cagrad best params for tag={tag}") from e
-
-    # -----------------------
-    # 1) Direct grid space from knob specs (no sensitivity stage)
-    # -----------------------
-    budget_alloc = plan["budget"]["alloc"]
-    knob_ranges: List[KnobRange] = []
-    for kn in forced_knobs:
-        spec = knob_specs_all.get(kn, None)
-        if not isinstance(spec, dict):
-            raise RuntimeError(f"[HPO] missing knob spec: hpo.grid.knob_specs.{kn}")
-        kind = str(spec["kind"])
-        weight = 1.0
-        if weight < drop_if_weight_lt:
-            continue
-        if kind == "choice":
-            choices = spec.get("choices", None)
-            if not isinstance(choices, list) or not choices:
-                raise RuntimeError(f"[HPO] choice knob '{kn}' must provide non-empty choices")
-            knob_ranges.append(KnobRange(name=kn, kind="choice", choices=[float(x) for x in choices], weight=weight))
-        elif kind == "float":
-            lo = float(spec["lo"])
-            hi = float(spec["hi"])
-            if lo > hi:
-                lo, hi = hi, lo
-            clamp_lo = spec.get("clamp_lo", None)
-            clamp_hi = spec.get("clamp_hi", None)
-            if clamp_lo is not None:
-                lo = max(float(clamp_lo), lo)
-            if clamp_hi is not None:
-                hi = min(float(clamp_hi), hi)
-            if lo > hi:
-                lo, hi = hi, lo
-            knob_ranges.append(KnobRange(name=kn, kind="float", lo=float(lo), hi=float(hi), weight=weight))
-        else:
-            raise RuntimeError(f"[HPO] unsupported knob kind for {kn}: {kind}")
-
-    # -----------------------
-    # 1.5) ours alpha fixed to baseline_R alpha
-    # -----------------------
-    chosen_ours_alpha: Optional[float] = float(_baseline_lora_from_method(cfg, "baseline_R")["alpha"])
-    alpha_probe_report: Dict[str, Any] = {
-        "enabled": False,
-        "stage": "alpha_probe",
-        "mode": "fixed_baseline_R",
-        "chosen_ours_alpha": chosen_ours_alpha,
-    }
-
-    # -----------------------
-    # 2) grid2 cartesian (budgeted)
-    # -----------------------
-    budget_alloc = plan["budget"]["alloc"]
-    grid_trials = int(budget_alloc["grid_trials"])
-    grid_configs = int(budget_alloc["grid_configs"])
-
-    L = max(1, len(lrs_union))
-    B = max(1, int(grid_configs))
-
-    max_m_float = int(grid_cfg["max_m_float"])
-    max_m_choice = int(grid_cfg["max_m_choice"])
-
-    active_knobs, solve_meta = _solve_grid_points(L=L, B=B, knobs=knob_ranges, max_m_float=max_m_float, max_m_choice=max_m_choice)
-
-    knob_values: Dict[str, List[float]] = {}
-    for k in active_knobs:
-        vs = _make_knob_values(k)
-        if vs:
-            knob_values[k.name] = vs
-
-    knob_names = list(knob_values.keys())
-    knob_lists = [knob_values[k] for k in knob_names]
-    if not knob_names:
-        knob_lists = [[]]
-
-    if knob_names:
-        all_assigns = [{k: float(v) for k, v in zip(knob_names, vals)} for vals in itertools.product(*knob_lists)]
-    else:
-        all_assigns = [dict()]
-
-    st = _load_plan_status(status_path)
-    existing = _plan_index(st)
-    idx0 = max([int(it.get("idx", 0)) for it in st.get("items", [])] + [0]) + 1
-
-    ours_base_knobs = json.loads(json.dumps(cfg["method"]["ours"]))
-
-    def _grid_trial_base_tag(lr: float, assign: Dict[str, float]) -> str:
-        payload = {"lr": float(lr), "assign": assign, "alpha": chosen_ours_alpha}
-        return f"grid2__lr{lr:.3e}__{_stable_hash(payload)}"
-
-    emitted = 0
-    for lr in lrs_union:
-        for assign in all_assigns:
-            if emitted >= B:
-                break
-            base_tag = _grid_trial_base_tag(float(lr), assign)
-
-            for sd in refine_seeds:
-                trial_tag = f"{base_tag}__s{sd}"
-                key = f"{trial_tag}__seed_{sd}"
-                if key in existing:
-                    continue
-                run_dir = str(hpo_run_dir / "trial_runs" / "grid2" / base_tag / f"s{sd}")
-
-                method_block: Dict[str, Any] = {"name": "ours", "ours": dict(ours_base_knobs, **assign)}
-                if chosen_ours_alpha is not None:
-                    method_block["ours"].setdefault("lora", {})
-                    method_block["ours"]["lora"]["alpha"] = float(chosen_ours_alpha)
-
-                override = {
-                    "method": method_block,
-                    "train": _make_train_override(
-                        lr=float(lr),
-                        epochs=int(grid_epochs),
-                        stage_max_steps=int(grid_max_steps),
-                        seed=int(sd),
-                    ),
-                }
-
-                _update_item(st, PlanItem(idx=idx0, stage="grid2", trial_tag=trial_tag, seed=int(sd), run_dir=run_dir, override=override))
-                idx0 += 1
-
-            agg_tag = base_tag
-            keyagg = f"{agg_tag}__agg"
-            if keyagg not in existing:
-                run_dir = str(hpo_run_dir / "trial_runs" / "grid2" / base_tag / "agg")
-
-                # ✅ override 也统一写入 method.ours.lora.alpha（别再 method.lora 了）
-                method_block2: Dict[str, Any] = {"name": "ours", "ours": dict(ours_base_knobs, **assign)}
-                if chosen_ours_alpha is not None:
-                    method_block2["ours"].setdefault("lora", {})
-                    method_block2["ours"]["lora"]["alpha"] = float(chosen_ours_alpha)
-
-                override2 = {
-                    "method": method_block2,
-                    "train": _make_train_override(
-                        lr=float(lr),
-                        epochs=int(grid_epochs),
-                        stage_max_steps=int(grid_max_steps),
-                        seed=None,
-                    ),
-                }
-                _update_item(st, PlanItem(idx=idx0, stage="grid2_agg", trial_tag=agg_tag, seed=None, run_dir=run_dir, override=override2))
-                idx0 += 1
-
-            emitted += 1
-        if emitted >= B:
-            break
-
-    _save_plan_status(status_path, st)
-
-    while True:
-        st = _load_plan_status(status_path)
-        nxt = _next_pending_item_by_stage(st, ["grid2"])
-        if nxt is None:
-            break
-        _execute_one(nxt)
-
-    st = _load_plan_status(status_path)
-    items_list = st.get("items", []) if isinstance(st.get("items", []), list) else []
-    grid_agg_items = [it for it in items_list if str(it.get("stage")) == "grid2_agg"]
-
-    for it in sorted(grid_agg_items, key=lambda x: int(x.get("idx", 10**9))):
-        base_tag = str(it["trial_tag"])
-        if _is_done_in_trials_csv(trials_csv, base_tag):
-            it["status"] = "done"
-            it["last_update"] = int(time.time())
-            _save_plan_status(status_path, st)
-            continue
-
-        seeds_done = True
-        for sd in refine_seeds:
-            seed_tag = f"{base_tag}__s{sd}"
-            if not _is_done_in_trials_csv(trials_csv, seed_tag):
-                seeds_done = False
-                break
-        if not seeds_done:
-            continue
-
-        ov = it.get("override", {})
-        trial_cfg_json = json.dumps(ov, sort_keys=True)
-
-        _ = _aggregate_seed_trial(
-            trials_csv=trials_csv,
-            base_trial_tag=base_tag,
-            stage="grid2.agg",
+            rng=rng,
+            family="baseline",
+            tag=tag,
+            budget_trials=baseline_tag_budget,
             seeds=refine_seeds,
-            trial_cfg_json=trial_cfg_json,
+            stage_epochs=coord_epochs,
+            stage_max_steps=coord_max_steps,
         )
-        if _is_done_in_trials_csv(trials_csv, base_tag):
-            it["status"] = "done"
-            it["last_update"] = int(time.time())
-            _save_plan_status(status_path, st)
+        baseline_refine_results[tag] = _run_local_refine(
+            cfg=cfg,
+            base_config_path=base_config_path,
+            schedule_path=schedule_path,
+            set_args=set_args,
+            hpo_run_dir=hpo_run_dir,
+            trials_csv=trials_csv,
+            score_weights=score_weights,
+            family="baseline",
+            tag=tag,
+            coord_result=baseline_results[tag],
+            seeds=refine_seeds,
+            stage_epochs=refine_epochs,
+            stage_max_steps=refine_max_steps,
+            top_k=top_k,
+            radix=refine_radix,
+        )
+        if float(baseline_refine_results[tag]["best_row"].get("score", "-inf")) >= float(baseline_results[tag]["best_row"].get("score", "-inf")):
+            baseline_results[tag]["best_row"] = baseline_refine_results[tag]["best_row"]
+            baseline_results[tag]["final_override"] = baseline_refine_results[tag]["best_override"]
 
-    st = _load_plan_status(status_path)
-    items_list = st.get("items", []) if isinstance(st.get("items", []), list) else []
-    pending_grid = [it for it in items_list if str(it.get("stage")) in {"grid2", "grid2_agg"} and str(it.get("status")) != "done"]
-    if pending_grid:
-        print(f"[HPO][STOP] grid2 not finished. pending={len(pending_grid)}")
-        return
+    cagrad_results: Dict[str, Dict[str, Any]] = {}
+    cagrad_refine_results: Dict[str, Dict[str, Any]] = {}
+    for tag in tags:
+        cagrad_results[tag] = _run_coordinate_descent(
+            cfg=cfg,
+            base_config_path=base_config_path,
+            schedule_path=schedule_path,
+            set_args=set_args,
+            hpo_run_dir=hpo_run_dir,
+            trials_csv=trials_csv,
+            score_weights=score_weights,
+            rng=rng,
+            family="cagrad",
+            tag=tag,
+            budget_trials=cagrad_tag_budget,
+            seeds=refine_seeds,
+            stage_epochs=coord_epochs,
+            stage_max_steps=coord_max_steps,
+        )
+        cagrad_refine_results[tag] = _run_local_refine(
+            cfg=cfg,
+            base_config_path=base_config_path,
+            schedule_path=schedule_path,
+            set_args=set_args,
+            hpo_run_dir=hpo_run_dir,
+            trials_csv=trials_csv,
+            score_weights=score_weights,
+            family="cagrad",
+            tag=tag,
+            coord_result=cagrad_results[tag],
+            seeds=refine_seeds,
+            stage_epochs=refine_epochs,
+            stage_max_steps=refine_max_steps,
+            top_k=top_k,
+            radix=refine_radix,
+        )
+        if float(cagrad_refine_results[tag]["best_row"].get("score", "-inf")) >= float(cagrad_results[tag]["best_row"].get("score", "-inf")):
+            cagrad_results[tag]["best_row"] = cagrad_refine_results[tag]["best_row"]
+            cagrad_results[tag]["final_override"] = cagrad_refine_results[tag]["best_override"]
 
-    # -----------------------
-    # 3) bayes refine (optional, budgeted)
-    # -----------------------
-    use_bayes = bool(cfg["hpo"]["use_bayes"])
-    bayes_trials = int(budget_alloc["bayes_trials"])
-    bayes_configs = int(budget_alloc["bayes_configs"])
+    ours_coord = _run_coordinate_descent(
+        cfg=cfg,
+        base_config_path=base_config_path,
+        schedule_path=schedule_path,
+        set_args=set_args,
+        hpo_run_dir=hpo_run_dir,
+        trials_csv=trials_csv,
+        score_weights=score_weights,
+        rng=rng,
+        family="ours",
+        tag=None,
+        budget_trials=family_budget,
+        seeds=refine_seeds,
+        stage_epochs=coord_epochs,
+        stage_max_steps=coord_max_steps,
+    )
+    ours_refine = _run_local_refine(
+        cfg=cfg,
+        base_config_path=base_config_path,
+        schedule_path=schedule_path,
+        set_args=set_args,
+        hpo_run_dir=hpo_run_dir,
+        trials_csv=trials_csv,
+        score_weights=score_weights,
+        family="ours",
+        tag=None,
+        coord_result=ours_coord,
+        seeds=refine_seeds,
+        stage_epochs=refine_epochs,
+        stage_max_steps=refine_max_steps,
+        top_k=top_k,
+        radix=refine_radix,
+    )
+    ours_bayes = _run_bayes_after_refine(
+        cfg=cfg,
+        base_config_path=base_config_path,
+        schedule_path=schedule_path,
+        set_args=set_args,
+        hpo_run_dir=hpo_run_dir,
+        trials_csv=trials_csv,
+        score_weights=score_weights,
+        family="ours",
+        tag=None,
+        coord_result=ours_coord,
+        refine_result=ours_refine,
+        seeds=refine_seeds,
+        stage_epochs=refine_epochs,
+        stage_max_steps=refine_max_steps,
+        trials_budget=bayes_trials,
+    )
 
-    bayes_report: Dict[str, Any] = {"enabled": bool(use_bayes), "configs": int(bayes_configs)}
-    bayes_best_row: Optional[Dict[str, Any]] = None
-
-    if use_bayes and bayes_configs > 0:
-        rows = _read_all_rows(trials_csv)
-        data_X: List[List[float]] = []
-        data_y: List[float] = []
-        seen_cfg = set()
-
-        knob_space = active_knobs
-        choice_maps = {k.name: list(k.choices or []) for k in knob_space if k.kind == "choice"}
-
-        lr_min = float(plan["lr"]["min_lr_ext"])
-        lr_max = float(plan["lr"]["max_lr_ext"])
-
-        def _parse_cfg_from_agg_row(r: Dict[str, Any]) -> Optional[Tuple[float, Dict[str, float], float]]:
-            try:
-                cfgj = json.loads(r.get("trial_cfg_json", "{}"))
-                tr = cfgj.get("train", {})
-                md = cfgj.get("method", {})
-                lr = float(tr.get("lr"))
-                ours = md.get("ours", {})
-                if not isinstance(ours, dict):
-                    ours = {}
-                assign = {k.name: float(ours.get(k.name)) for k in knob_space if k.name in ours}
-                score = float(r.get("score", "-inf"))
-                return lr, assign, score
-            except Exception:
-                return None
-
-        for r in rows:
-            if str(r.get("stage", "")) != "grid2.agg":
-                continue
-            parsed = _parse_cfg_from_agg_row(r)
-            if parsed is None:
-                continue
-            lr, assign, score = parsed
-            key = json.dumps({"lr": lr, "assign": assign}, sort_keys=True)
-            if key in seen_cfg:
-                continue
-            seen_cfg.add(key)
-            vec = _encode_config(lr=lr, knobs=assign, knob_space=knob_space, choice_maps=choice_maps, lr_min=lr_min, lr_max=lr_max)
-            data_X.append(vec)
-            data_y.append(score)
-
-        X = np.asarray(data_X, dtype=float)
-        y = np.asarray(data_y, dtype=float)
-
-        bo_rng = np.random.default_rng(int(grid_cfg["bayes_rng_seed"]))
-        pool = int(grid_cfg["bayes_pool"])
-        length = float(grid_cfg["bayes_gp_length"])
-        var = float(grid_cfg["bayes_gp_var"])
-        noise = float(grid_cfg["bayes_gp_noise"])
-        xi = float(grid_cfg["bayes_ei_xi"])
-
-        lr_candidates = list(lrs_union)
-
-        st = _load_plan_status(status_path)
-        existing = _plan_index(st)
-        idx0 = max([int(it.get("idx", 0)) for it in st.get("items", [])] + [0]) + 1
-
-        proposed: List[Dict[str, Any]] = []
-        for t in range(bayes_configs):
-            pool_lrs: List[float] = []
-            pool_assigns: List[Dict[str, float]] = []
-            pool_vecs: List[List[float]] = []
-
-            for _ in range(pool):
-                lr_s, assign_s = _random_sample_config(bo_rng, lr_candidates=lr_candidates, knob_space=knob_space)
-                vec = _encode_config(lr=lr_s, knobs=assign_s, knob_space=knob_space, choice_maps=choice_maps, lr_min=lr_min, lr_max=lr_max)
-                pool_lrs.append(lr_s)
-                pool_assigns.append(assign_s)
-                pool_vecs.append(vec)
-
-            Xcand = np.asarray(pool_vecs, dtype=float)
-            best_so_far = float(np.max(y)) if y.size else float("-inf")
-            mu, sigma = _gp_posterior(X, y, Xcand, length=length, var=var, noise=noise)
-            ei = _expected_improvement(mu, sigma, best=best_so_far, xi=xi)
-
-            pick = int(np.argmax(ei))
-            lr_pick = float(pool_lrs[pick])
-            assign_pick = dict(pool_assigns[pick])
-
-            payload = {"lr": lr_pick, "assign": assign_pick, "alpha": chosen_ours_alpha, "t": t}
-            base_tag = f"bayes__t{t}__{_stable_hash(payload)}"
-
-            for sd in refine_seeds:
-                trial_tag = f"{base_tag}__s{sd}"
-                key = f"{trial_tag}__seed_{sd}"
-                if key not in existing:
-                    run_dir = str(hpo_run_dir / "trial_runs" / "bayes" / base_tag / f"s{sd}")
-
-                    method_block: Dict[str, Any] = {"name": "ours", "ours": dict(ours_base_knobs, **assign_pick)}
-                    if chosen_ours_alpha is not None:
-                        method_block["ours"].setdefault("lora", {})
-                        method_block["ours"]["lora"]["alpha"] = float(chosen_ours_alpha)
-
-                    override = {
-                        "method": method_block,
-                        "train": _make_train_override(
-                            lr=float(lr_pick),
-                            epochs=int(grid_epochs),
-                            stage_max_steps=int(grid_max_steps),
-                            seed=int(sd),
-                        ),
-                    }
-                    _update_item(st, PlanItem(idx=idx0, stage="bayes", trial_tag=trial_tag, seed=int(sd), run_dir=run_dir, override=override))
-                    idx0 += 1
-
-            agg_tag = base_tag
-            keyagg = f"{agg_tag}__agg"
-            if keyagg not in existing:
-                run_dir = str(hpo_run_dir / "trial_runs" / "bayes" / base_tag / "agg")
-
-                method_block2: Dict[str, Any] = {"name": "ours", "ours": dict(ours_base_knobs, **assign_pick)}
-                if chosen_ours_alpha is not None:
-                    method_block2["ours"].setdefault("lora", {})
-                    method_block2["ours"]["lora"]["alpha"] = float(chosen_ours_alpha)
-
-                override2 = {
-                    "method": method_block2,
-                    "train": _make_train_override(
-                        lr=float(lr_pick),
-                        epochs=int(grid_epochs),
-                        stage_max_steps=int(grid_max_steps),
-                        seed=None,
-                    ),
-                }
-                _update_item(st, PlanItem(idx=idx0, stage="bayes_agg", trial_tag=agg_tag, seed=None, run_dir=run_dir, override=override2))
-                idx0 += 1
-
-            proposed.append({"base_tag": base_tag, "lr": lr_pick, "assign": assign_pick, "ei": float(ei[pick])})
-
-        bayes_report["proposals"] = proposed
-        _save_plan_status(status_path, st)
-
-        while True:
-            st = _load_plan_status(status_path)
-            nxt = _next_pending_item_by_stage(st, ["bayes"])
-            if nxt is None:
-                break
-            _execute_one(nxt)
-
-        st = _load_plan_status(status_path)
-        items_list = st.get("items", []) if isinstance(st.get("items", []), list) else []
-        bayes_agg_items = [it for it in items_list if str(it.get("stage")) == "bayes_agg"]
-
-        for it in sorted(bayes_agg_items, key=lambda x: int(x.get("idx", 10**9))):
-            base_tag = str(it["trial_tag"])
-            if _is_done_in_trials_csv(trials_csv, base_tag):
-                it["status"] = "done"
-                it["last_update"] = int(time.time())
-                _save_plan_status(status_path, st)
-                continue
-
-            seeds_done = True
-            for sd in refine_seeds:
-                seed_tag = f"{base_tag}__s{sd}"
-                if not _is_done_in_trials_csv(trials_csv, seed_tag):
-                    seeds_done = False
-                    break
-            if not seeds_done:
-                continue
-
-            ov = it.get("override", {})
-            trial_cfg_json = json.dumps(ov, sort_keys=True)
-
-            _ = _aggregate_seed_trial(
-                trials_csv=trials_csv,
-                base_trial_tag=base_tag,
-                stage="bayes.agg",
-                seeds=refine_seeds,
-                trial_cfg_json=trial_cfg_json,
-            )
-            if _is_done_in_trials_csv(trials_csv, base_tag):
-                it["status"] = "done"
-                it["last_update"] = int(time.time())
-                _save_plan_status(status_path, st)
-
-        st = _load_plan_status(status_path)
-        items_list = st.get("items", []) if isinstance(st.get("items", []), list) else []
-        pending_bayes = [it for it in items_list if str(it.get("stage")) in {"bayes", "bayes_agg"} and str(it.get("status")) != "done"]
-        if pending_bayes:
-            print(f"[HPO][STOP] bayes not finished. pending={len(pending_bayes)}")
-            return
-
-        rows = _read_all_rows(trials_csv)
-        bayes_best_row = _best_row(rows, stage_prefix="bayes.agg", only_aggregate=True)
-
-    # -----------------------
-    # 4) top-k rerank (optional, not budgeted)
-    # -----------------------
-    rerank_source_stages = ["grid2.agg"] + (["bayes.agg"] if use_bayes else [])
-    rerank_report: Dict[str, Any] = {
-        "enabled": bool(rerank_enabled),
-        "top_k": int(rerank_top_k),
-        "epochs": int(rerank_epochs),
-        "max_steps": int(rerank_max_steps),
-        "source_stages": list(rerank_source_stages),
-        "candidates": 0,
-        "selected": 0,
-        "selected_source_tags": [],
-    }
-    rerank_best_row: Optional[Dict[str, Any]] = None
-
-    if rerank_enabled and rerank_top_k > 0:
-        rows = _read_all_rows(trials_csv)
-        stage_set = set(rerank_source_stages)
-        candidates: List[Tuple[float, Dict[str, Any]]] = []
-        seen_tags = set()
-        for r in rows:
-            stage = str(r.get("stage", ""))
-            if stage not in stage_set:
-                continue
-            seeds = str(r.get("seeds", "")).strip()
-            if "," not in seeds:
-                continue
-            trial_tag = str(r.get("trial_tag", ""))
-            if trial_tag in seen_tags:
-                continue
-            try:
-                s = float(r.get("score", "-inf"))
-            except Exception:
-                continue
-            candidates.append((s, r))
-            seen_tags.add(trial_tag)
-
-        candidates.sort(key=lambda x: float(x[0]), reverse=True)
-        top_rows = [r for _, r in candidates[: int(rerank_top_k)]]
-        rerank_report["candidates"] = int(len(candidates))
-        rerank_report["selected"] = int(len(top_rows))
-        rerank_report["selected_source_tags"] = [str(r.get("trial_tag", "")) for r in top_rows]
-
-        if top_rows:
-            st = _load_plan_status(status_path)
-            existing = _plan_index(st)
-            idx0 = max([int(it.get("idx", 0)) for it in st.get("items", [])] + [0]) + 1
-
-            for rank_i, src_row in enumerate(top_rows):
-                src_tag = str(src_row.get("trial_tag", ""))
-                try:
-                    src_cfg = json.loads(str(src_row.get("trial_cfg_json", "{}")))
-                except Exception as e:
-                    raise RuntimeError(f"[HPO] failed to parse trial_cfg_json for rerank source: {src_tag}") from e
-                if not isinstance(src_cfg, dict):
-                    raise RuntimeError(f"[HPO] rerank source cfg must be dict, got {type(src_cfg)} for {src_tag}")
-                if not isinstance(src_cfg.get("train"), dict):
-                    raise RuntimeError(f"[HPO] rerank source cfg missing train block: {src_tag}")
-
-                base_override = json.loads(json.dumps(src_cfg))
-                base_override["train"]["epochs"] = int(rerank_epochs)
-                if hpo_use_max_steps:
-                    base_override["train"]["max_steps"] = int(rerank_max_steps)
-                else:
-                    base_override["train"].pop("max_steps", None)
-
-                payload = {
-                    "rank": int(rank_i),
-                    "src_trial_tag": src_tag,
-                    "src_cfg": src_row.get("trial_cfg_json", ""),
-                    "rerank_epochs": int(rerank_epochs),
-                    "rerank_max_steps": int(rerank_max_steps),
-                }
-                base_tag = f"rerank__{rank_i:02d}__{_stable_hash(payload)}"
-
-                for sd in refine_seeds:
-                    trial_tag = f"{base_tag}__s{sd}"
-                    key = f"{trial_tag}__seed_{sd}"
-                    if key in existing:
-                        continue
-                    override = json.loads(json.dumps(base_override))
-                    override["train"]["seed"] = int(sd)
-                    run_dir = str(hpo_run_dir / "trial_runs" / "rerank" / base_tag / f"s{sd}")
-                    _update_item(
-                        st,
-                        PlanItem(
-                            idx=idx0,
-                            stage="rerank",
-                            trial_tag=trial_tag,
-                            seed=int(sd),
-                            run_dir=run_dir,
-                            override=override,
-                        ),
-                    )
-                    idx0 += 1
-
-                keyagg = f"{base_tag}__agg"
-                if keyagg not in existing:
-                    override2 = json.loads(json.dumps(base_override))
-                    override2["train"].pop("seed", None)
-                    run_dir = str(hpo_run_dir / "trial_runs" / "rerank" / base_tag / "agg")
-                    _update_item(
-                        st,
-                        PlanItem(
-                            idx=idx0,
-                            stage="rerank_agg",
-                            trial_tag=base_tag,
-                            seed=None,
-                            run_dir=run_dir,
-                            override=override2,
-                        ),
-                    )
-                    idx0 += 1
-
-            _save_plan_status(status_path, st)
-
-            while True:
-                st = _load_plan_status(status_path)
-                nxt = _next_pending_item_by_stage(st, ["rerank"])
-                if nxt is None:
-                    break
-                _execute_one(nxt)
-
-            st = _load_plan_status(status_path)
-            items_list = st.get("items", []) if isinstance(st.get("items", []), list) else []
-            rerank_agg_items = [it for it in items_list if str(it.get("stage")) == "rerank_agg"]
-
-            for it in sorted(rerank_agg_items, key=lambda x: int(x.get("idx", 10**9))):
-                base_tag = str(it["trial_tag"])
-                if _is_done_in_trials_csv(trials_csv, base_tag):
-                    it["status"] = "done"
-                    it["last_update"] = int(time.time())
-                    _save_plan_status(status_path, st)
-                    continue
-
-                seeds_done = True
-                for sd in refine_seeds:
-                    seed_tag = f"{base_tag}__s{sd}"
-                    if not _is_done_in_trials_csv(trials_csv, seed_tag):
-                        seeds_done = False
-                        break
-                if not seeds_done:
-                    continue
-
-                ov = it.get("override", {})
-                trial_cfg_json = json.dumps(ov, sort_keys=True)
-                _ = _aggregate_seed_trial(
-                    trials_csv=trials_csv,
-                    base_trial_tag=base_tag,
-                    stage="rerank.agg",
-                    seeds=refine_seeds,
-                    trial_cfg_json=trial_cfg_json,
-                )
-                if _is_done_in_trials_csv(trials_csv, base_tag):
-                    it["status"] = "done"
-                    it["last_update"] = int(time.time())
-                    _save_plan_status(status_path, st)
-
-            st = _load_plan_status(status_path)
-            items_list = st.get("items", []) if isinstance(st.get("items", []), list) else []
-            pending_rerank = [it for it in items_list if str(it.get("stage")) in {"rerank", "rerank_agg"} and str(it.get("status")) != "done"]
-            if pending_rerank:
-                print(f"[HPO][STOP] rerank not finished. pending={len(pending_rerank)}")
-                return
-
-            rows = _read_all_rows(trials_csv)
-            rerank_best_row = _best_row(rows, stage_prefix="rerank.agg", only_aggregate=True)
-
-    # -----------------------
-    # Final selection + persist best_hparams.json + bundle
-    # -----------------------
-    rows = _read_all_rows(trials_csv)
-    best_grid = _best_row(rows, stage_prefix="grid2.agg", only_aggregate=True)
-
-    best_overall = best_grid
-    best_source = "grid2"
-    if bayes_best_row is not None:
-        try:
-            if float(bayes_best_row.get("score", "-inf")) >= float(best_grid.get("score", "-inf")) if best_grid else True:
-                best_overall = bayes_best_row
-                best_source = "bayes"
-        except Exception:
-            best_overall = bayes_best_row
-            best_source = "bayes"
-
-    if rerank_best_row is not None:
-        best_overall = rerank_best_row
-        best_source = "rerank"
+    best_overall = ours_coord["best_row"]
+    best_source = "coord_search"
+    if float(ours_refine["best_row"].get("score", "-inf")) >= float(best_overall.get("score", "-inf")):
+        best_overall = ours_refine["best_row"]
+        best_source = "local_refine"
+    if ours_bayes.get("enabled", False) and float(ours_bayes["best_row"].get("score", "-inf")) >= float(best_overall.get("score", "-inf")):
+        best_overall = ours_bayes["best_row"]
+        best_source = "bayes"
 
     best_curves_dir.mkdir(parents=True, exist_ok=True)
-    for tag in tags:
-        best = None
-        best_s = float("-inf")
-        for r in rows:
-            if str(r.get("stage", "")) != "baseline_search.agg":
-                continue
-            if not str(r.get("trial_tag", "")).startswith(f"bl_search__{tag}__"):
-                continue
-            try:
-                s = float(r.get("score", "-inf"))
-            except Exception:
-                continue
-            if s > best_s:
-                best_s = s
-                best = r
-        if best:
-            _copy_metrics_csv(best, best_curves_dir / f"best_{tag}.csv")
-
-    for tag in tags:
-        best = None
-        best_s = float("-inf")
-        for r in rows:
-            if str(r.get("stage", "")) != "baseline_cagrad_search.agg":
-                continue
-            if not str(r.get("trial_tag", "")).startswith(f"bl_cagrad__{tag}__"):
-                continue
-            try:
-                s = float(r.get("score", "-inf"))
-            except Exception:
-                continue
-            if s > best_s:
-                best_s = s
-                best = r
-        if best:
-            _copy_metrics_csv(best, best_curves_dir / f"best_baseline_cagrad_{tag}.csv")
+    for tag, res in baseline_results.items():
+        _copy_metrics_csv(res["best_row"], best_curves_dir / f"best_{tag}.csv")
+    for tag, res in cagrad_results.items():
+        _copy_metrics_csv(res["best_row"], best_curves_dir / f"best_baseline_cagrad_{tag}.csv")
+    _copy_metrics_csv(best_overall, best_curves_dir / "best_ours.csv")
 
     if best_overall:
-        _copy_metrics_csv(best_overall, best_curves_dir / "best_ours.csv")
+        baseline_best_lr_refined = {
+            tag: float(_cfg_get_path(res["final_override"], "train.lr"))
+            for tag, res in baseline_results.items()
+        }
+        baseline_cagrad_best_by_tag = {
+            tag: {
+                "lr": float(_cfg_get_path(res["final_override"], "train.lr")),
+                "c": float(_cfg_get_path(res["final_override"], f"method.{tag}.cagrad.c")),
+            }
+            for tag, res in cagrad_results.items()
+        }
+        baseline_best_cfg_by_tag = {
+            tag: json.loads(json.dumps(res["final_override"]))
+            for tag, res in baseline_results.items()
+        }
+        baseline_cagrad_best_cfg_by_tag = {
+            tag: json.loads(json.dumps(res["final_override"]))
+            for tag, res in cagrad_results.items()
+        }
 
-    if best_overall:
         best_obj = {
             "best": best_overall,
             "best_source": best_source,
@@ -1927,16 +1689,24 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
             "plan_path": str(plan_path),
             "status_path": str(status_path),
             "hpo_dir": str(hpo_run_dir),
-            "baseline_best_lr_refined": best_refined_lr_by_tag,
-            "baseline_cagrad_best_by_tag": best_cagrad_by_tag,
-            "lrs_union": [float(x) for x in lrs_union],
+            "baseline_best_lr_refined": baseline_best_lr_refined,
+            "baseline_cagrad_best_by_tag": baseline_cagrad_best_by_tag,
+            "baseline_best_cfg_by_tag": baseline_best_cfg_by_tag,
+            "baseline_cagrad_best_cfg_by_tag": baseline_cagrad_best_cfg_by_tag,
             "hpo_train_schedule": hpo_train_schedule,
             "chosen_ours_alpha": chosen_ours_alpha,
-            "alpha_probe": alpha_probe_report,
-            "grid_solve_meta": solve_meta,
-            "use_bayes": bool(use_bayes),
-            "bayes_report": bayes_report,
-            "rerank_report": rerank_report,
+            "coord_report": {
+                "baseline": {tag: {"points_per_param": int(res["points_per_param"]), "sweeps": res["sweeps"]} for tag, res in baseline_results.items()},
+                "cagrad": {tag: {"points_per_param": int(res["points_per_param"]), "sweeps": res["sweeps"]} for tag, res in cagrad_results.items()},
+                "ours": {"points_per_param": int(ours_coord["points_per_param"]), "sweeps": ours_coord["sweeps"]},
+            },
+            "local_refine_report": {
+                "baseline": baseline_refine_results,
+                "cagrad": cagrad_refine_results,
+                "ours": ours_refine,
+            },
+            "use_bayes": bool(cfg["hpo"]["use_bayes"]),
+            "bayes_report": ours_bayes,
         }
         _atomic_write_json(best_path, best_obj)
         print(f"[HPO][OK] best saved: {best_path}")
@@ -1948,30 +1718,25 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
             "status_path": str(status_path),
             "trials_csv": str(trials_csv),
             "best_curves_dir": str(best_curves_dir),
-            "fixed_warmup_ratio": float(fixed_wu),
             "refine_seeds": refine_seeds,
             "baseline_tags": tags,
             "baseline_lora": {t: _baseline_lora_from_method(cfg, t) for t in tags},
-            "baseline_best_lr_refined": best_refined_lr_by_tag,
-            "baseline_cagrad_best_by_tag": best_cagrad_by_tag,
-            "lrs_union": [float(x) for x in lrs_union],
+            "baseline_best_lr_refined": baseline_best_lr_refined,
+            "baseline_cagrad_best_by_tag": baseline_cagrad_best_by_tag,
+            "baseline_best_cfg_by_tag": baseline_best_cfg_by_tag,
+            "baseline_cagrad_best_cfg_by_tag": baseline_cagrad_best_cfg_by_tag,
             "hpo_train_schedule": hpo_train_schedule,
             "chosen_ours_alpha": chosen_ours_alpha,
-            "alpha_probe": alpha_probe_report,
-            "active_knobs": [
-                {"name": k.name, "kind": k.kind, "lo": k.lo, "hi": k.hi, "choices": k.choices, "weight": float(k.weight), "m": int(k.m)}
-                for k in active_knobs
-            ],
-            "knob_values": knob_values,
-            "grid_solve_meta": solve_meta,
-            "use_bayes": bool(use_bayes),
-            "bayes_report": bayes_report,
-            "rerank_report": rerank_report,
+            "coord_report": best_obj["coord_report"],
+            "local_refine_report": best_obj["local_refine_report"],
+            "use_bayes": bool(cfg["hpo"]["use_bayes"]),
+            "bayes_report": ours_bayes,
             "config_snapshot": str(snapshot_path),
             "config_resolved": cfg,
         }
         _atomic_write_json(bundle_path, bundle)
         print(f"[HPO][OK] bundle saved: {bundle_path}")
+        _atomic_write_json(status_path, {"status": "done", "updated_at": int(time.time())})
     else:
         print("[HPO][WARN] No aggregate rows found; cannot choose best.")
         print(f"[HPO][INFO] trials.csv: {trials_csv}")

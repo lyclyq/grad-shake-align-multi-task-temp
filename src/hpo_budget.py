@@ -88,11 +88,17 @@ def derive_total_trials(cfg: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     meta = {"source": None, "trials_per_gpu_hour": None}
 
     if total_trials is not None:
+        # NOTE: allow total_trials <= 0 to mean "unbounded / full cartesian" (no budget cap).
+        # This is useful for deterministic full-grid sweeps without manually counting configs.
+        t = int(total_trials)
         meta["source"] = "total_trials"
         cm = bud.get("cost_model", None)
         if isinstance(cm, dict) and "trials_per_gpu_hour" in cm:
             meta["trials_per_gpu_hour"] = float(cm["trials_per_gpu_hour"])
-        return max(1, int(total_trials)), meta
+        if t <= 0:
+            meta["source"] = "total_trials_unbounded"
+            return 0, meta
+        return t, meta
 
     if total_gpu_hours is not None:
         cm = _require_dict(bud.get("cost_model", None), "hpo.budget.cost_model")
@@ -216,16 +222,24 @@ def build_grid_plan(cfg: Dict[str, Any]) -> Dict[str, Any]:
     rerank_epochs = int(rerank["epochs"])
     rerank_trials = int(rerank_top_k * n_seeds) if rerank_enabled else 0
 
-    # CONFIG budget for ours-stage search space (|Grid| style)
-    config_budget = int(max(1, total_trials))
-    sens_configs = 0
-    grid_configs = max(1, int(math.floor(config_budget * ratio_grid)))
-    bayes_configs = max(0, int(math.floor(config_budget * ratio_bayes)))
+    # CONFIG budget for ours-stage search space (|Grid| style).
+    # Policy: total_trials <= 0 => unbounded grid (full cartesian); no budgeted bayes stage.
+    unbounded = int(total_trials) <= 0
+    if unbounded:
+        config_budget = 0
+        sens_configs = 0
+        grid_configs = 0
+        bayes_configs = 0
+    else:
+        config_budget = int(max(1, total_trials))
+        sens_configs = 0
+        grid_configs = max(1, int(math.floor(config_budget * ratio_grid)))
+        bayes_configs = max(0, int(math.floor(config_budget * ratio_bayes)))
 
     # runtime seed-runs (for reporting only)
     sens_trials = 0
-    grid_trials = int(grid_configs * n_seeds)
-    bayes_trials = int(bayes_configs * n_seeds)
+    grid_trials = int(grid_configs * n_seeds) if not unbounded else 0
+    bayes_trials = int(bayes_configs * n_seeds) if not unbounded else 0
 
     # for reporting and optional tuning
     plan = {
@@ -234,6 +248,7 @@ def build_grid_plan(cfg: Dict[str, Any]) -> Dict[str, Any]:
             "meta": meta,
             "unit": "configs",
             "use_bayes": bool(use_bayes),
+            "unbounded": bool(unbounded),
             "deducted": {
                 "baseline_search_trials": 0,
             },

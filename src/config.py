@@ -335,6 +335,20 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
     _require_dict(_get_path(cfg, "io"), "io")
     _ensure_str(_get_path(cfg, "io.root"), "io.root")
     _ensure_str(_get_path(cfg, "io.overwrite"), "io.overwrite")
+    _require_dict(_get_path(cfg, "log"), "log")
+    _ensure_bool(_get_path(cfg, "log.csv"), "log.csv")
+    _require_dict(_get_path(cfg, "log.swanlab"), "log.swanlab")
+    _ensure_bool(_get_path(cfg, "log.swanlab.enabled"), "log.swanlab.enabled")
+    _ensure_str(_get_path(cfg, "log.swanlab.project"), "log.swanlab.project")
+    log_swan = _get_path(cfg, "log.swanlab")
+    if "timeout_s" in log_swan:
+        timeout_s = _ensure_float(_get_path(cfg, "log.swanlab.timeout_s"), "log.swanlab.timeout_s")
+        if timeout_s <= 0:
+            raise ValueError("log.swanlab.timeout_s must be > 0")
+    if "max_failures" in log_swan:
+        max_failures = _ensure_int(_get_path(cfg, "log.swanlab.max_failures"), "log.swanlab.max_failures")
+        if max_failures < 1:
+            raise ValueError("log.swanlab.max_failures must be >= 1")
 
     # --- method: STRICT 3-way only ---
     _require_dict(_get_path(cfg, "method"), "method")
@@ -399,10 +413,47 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
         _ensure_float(_get_path(cfg, "hpo.bandit.score.w_final"), "hpo.bandit.score.w_final")
         _ensure_float(_get_path(cfg, "hpo.bandit.score.w_avg"), "hpo.bandit.score.w_avg")
 
+        _require_dict(_get_path(cfg, "hpo.coord"), "hpo.coord")
+        shared_order = _require_list(_get_path(cfg, "hpo.coord.shared_order"), "hpo.coord.shared_order")
+        if not shared_order:
+            raise ValueError("hpo.coord.shared_order must be non-empty")
+        for i, k in enumerate(shared_order):
+            _ensure_str(k, f"hpo.coord.shared_order[{i}]")
+
+        _require_dict(_get_path(cfg, "hpo.coord.method_orders"), "hpo.coord.method_orders")
+        for family in ["baseline", "cagrad", "ours"]:
+            fam_list = _require_list(_get_path(cfg, f"hpo.coord.method_orders.{family}"), f"hpo.coord.method_orders.{family}")
+            for i, k in enumerate(fam_list):
+                _ensure_str(k, f"hpo.coord.method_orders.{family}[{i}]")
+
+        _ensure_int(_get_path(cfg, "hpo.coord.top_k"), "hpo.coord.top_k")
+        _ensure_int(_get_path(cfg, "hpo.coord.refine_radix"), "hpo.coord.refine_radix")
+        _ensure_int(_get_path(cfg, "hpo.coord.bayes_trials"), "hpo.coord.bayes_trials")
+
+        coord_specs = _require_dict(_get_path(cfg, "hpo.coord.param_specs"), "hpo.coord.param_specs")
+        ordered_keys = set([str(x) for x in shared_order])
+        for family in ["baseline", "cagrad", "ours"]:
+            ordered_keys.update([str(x) for x in _get_path(cfg, f"hpo.coord.method_orders.{family}")])
+        for key in sorted(ordered_keys):
+            if key not in coord_specs:
+                raise KeyError(f"Missing required hpo.coord.param_specs.{key}")
+            spec_path = f"hpo.coord.param_specs.{key}"
+            spec = _require_dict(_get_path(cfg, spec_path), spec_path)
+            if "path" in spec:
+                _ensure_str(_get_path(cfg, f"{spec_path}.path"), f"{spec_path}.path")
+            elif "path_template" in spec:
+                _ensure_str(_get_path(cfg, f"{spec_path}.path_template"), f"{spec_path}.path_template")
+            else:
+                raise KeyError(f"{spec_path} must contain either 'path' or 'path_template'")
+            scale = _ensure_str(_get_path(cfg, f"{spec_path}.scale"), f"{spec_path}.scale").strip().lower()
+            if scale not in {"linear", "log"}:
+                raise ValueError(f"{spec_path}.scale must be one of: linear / log")
+            _ensure_float(_get_path(cfg, f"{spec_path}.lower"), f"{spec_path}.lower")
+            _ensure_float(_get_path(cfg, f"{spec_path}.center"), f"{spec_path}.center")
+            _ensure_float(_get_path(cfg, f"{spec_path}.upper"), f"{spec_path}.upper")
+
         _require_dict(_get_path(cfg, "hpo.grid"), "hpo.grid")
         knobs = _require_list(_get_path(cfg, "hpo.grid.knobs"), "hpo.grid.knobs")
-        if not knobs:
-            raise ValueError("hpo.grid.knobs must be non-empty")
         for i, k in enumerate(knobs):
             _ensure_str(k, f"hpo.grid.knobs[{i}]")
         _ensure_float(_get_path(cfg, "hpo.grid.drop_if_weight_lt"), "hpo.grid.drop_if_weight_lt")
@@ -464,8 +515,10 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
             elif kind == "float":
                 _ensure_float(spec.get("lo", None), f"{spec_path}.lo")
                 _ensure_float(spec.get("hi", None), f"{spec_path}.hi")
-                _ensure_float(spec.get("top_quantile", None), f"{spec_path}.top_quantile")
-                _ensure_float(spec.get("padding_ratio", None), f"{spec_path}.padding_ratio")
+                if "top_quantile" in spec and spec.get("top_quantile", None) is not None:
+                    _ensure_float(spec.get("top_quantile", None), f"{spec_path}.top_quantile")
+                if "padding_ratio" in spec and spec.get("padding_ratio", None) is not None:
+                    _ensure_float(spec.get("padding_ratio", None), f"{spec_path}.padding_ratio")
                 if "step" in spec and spec["step"] is not None:
                     _ensure_float(spec["step"], f"{spec_path}.step")
                 if "clamp_lo" in spec and spec["clamp_lo"] is not None:
@@ -519,6 +572,11 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
             raise ValueError("final.seeds must be a non-empty list")
         for i, s in enumerate(seeds):
             _ensure_int(s, f"final.seeds[{i}]")
+        if "ablations" in _get_path(cfg, "final"):
+            _require_dict(_get_path(cfg, "final.ablations"), "final.ablations")
+            _ensure_bool(_get_path(cfg, "final.ablations.enabled"), "final.ablations.enabled")
+            _ensure_bool(_get_path(cfg, "final.ablations.no_gate"), "final.ablations.no_gate")
+            _ensure_bool(_get_path(cfg, "final.ablations.no_compensation"), "final.ablations.no_compensation")
 
     # plot: no extra enforcement here (runner/plotting handles runs_dir etc.)
 

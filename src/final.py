@@ -241,6 +241,55 @@ def _derive_baseline_cagrad_best(best_obj: Dict[str, Any], best_path: Path) -> O
     return {"baseline_r": r_best, "baseline_R": R_best}
 
 
+def _derive_best_cfg_map(best_obj: Dict[str, Any], key: str) -> Optional[Dict[str, Dict[str, Any]]]:
+    raw = best_obj.get(key, None)
+    if not isinstance(raw, dict):
+        return None
+    out: Dict[str, Dict[str, Any]] = {}
+    for tag, cfgj in raw.items():
+        if not isinstance(cfgj, dict):
+            return None
+        out[str(tag)] = json.loads(json.dumps(cfgj))
+    return out
+
+
+def _build_ours_ablation_methods(cfg: Dict[str, Any], ours_cfg: Dict[str, Any], ours_lr: float) -> List[Dict[str, Any]]:
+    ab_cfg = (((cfg.get("final", {}) or {}).get("ablations", {}) or {}))
+    if not bool(ab_cfg.get("enabled", False)):
+        return []
+
+    out: List[Dict[str, Any]] = []
+    if bool(ab_cfg.get("no_gate", True)):
+        ours_no_gate = json.loads(json.dumps(ours_cfg))
+        ours_no_gate.setdefault("trigger_gate0", {})
+        # Make Gate0 practically unreachable.
+        ours_no_gate["trigger_gate0"]["tau_N"] = 1e9
+        ours_no_gate["trigger_gate0"]["tau_D"] = 1e9
+        out.append(
+            {
+                "name": "ablate_no_gate",
+                "cfg_key": "ours",
+                "override": {"method": {"name": "ours", "ours": ours_no_gate}},
+                "lr": float(ours_lr),
+            }
+        )
+
+    if bool(ab_cfg.get("no_compensation", True)):
+        ours_no_comp = json.loads(json.dumps(ours_cfg))
+        ours_no_comp.setdefault("compensation", {})
+        ours_no_comp["compensation"]["enabled"] = False
+        out.append(
+            {
+                "name": "ablate_no_compensation",
+                "cfg_key": "ours",
+                "override": {"method": {"name": "ours", "ours": ours_no_comp}},
+                "lr": float(ours_lr),
+            }
+        )
+
+    return out
+
+
 def _resolve_plan_path(best_obj: Dict[str, Any], best_path: Path) -> Optional[Path]:
     pp = best_obj.get("plan_path", None)
     if pp:
@@ -580,18 +629,23 @@ def run_final(
     if not isinstance(plan, dict):
         raise RuntimeError("[final] grid_plan.json must be a JSON dict")
 
-    # baseline best lr by variant (new format) or legacy fallback from hpo_dir/trials.csv
+    # baseline best lr/cfg by variant (new format) or legacy fallback from hpo_dir/trials.csv
     bl = _derive_baseline_best_lr_refined(best_obj, bp)
     if not isinstance(bl, dict):
         raise RuntimeError("[final] missing baseline_best_lr_refined and failed to derive from hpo trials.csv")
     baseline_lr_r = float(bl["baseline_r"])
     baseline_lr_R = float(bl["baseline_R"])
+    baseline_cfgs = _derive_best_cfg_map(best_obj, "baseline_best_cfg_by_tag") or {}
 
     bl_cagrad = _derive_baseline_cagrad_best(best_obj, bp)
     if not isinstance(bl_cagrad, dict):
         raise RuntimeError("[final] missing baseline_cagrad_best_by_tag and failed to derive from hpo trials.csv")
     baseline_cagrad_r = bl_cagrad["baseline_r"]
     baseline_cagrad_R = bl_cagrad["baseline_R"]
+    baseline_cagrad_cfgs = _derive_best_cfg_map(best_obj, "baseline_cagrad_best_cfg_by_tag") or {}
+
+    def _cfg_wu(cfg_map: Dict[str, Dict[str, Any]], tag: str) -> float:
+        return float((((cfg_map.get(tag, {}) or {}).get("train", {}) or {}).get("warmup_ratio", fixed_wu)))
 
     # ensure final uses ranks derived from ours_r/ours_R
     methods = [
@@ -611,6 +665,7 @@ def run_final(
                 }
             },
             "lr": baseline_lr_r,
+            "warmup_ratio": _cfg_wu(baseline_cfgs, "baseline_r"),
         },
         {
             "name": "baseline_R",
@@ -627,6 +682,7 @@ def run_final(
                 }
             },
             "lr": baseline_lr_R,
+            "warmup_ratio": _cfg_wu(baseline_cfgs, "baseline_R"),
         },
         {
             "name": "baseline_cagrad_r",
@@ -642,6 +698,7 @@ def run_final(
                 }
             },
             "lr": float(baseline_cagrad_r["lr"]),
+            "warmup_ratio": _cfg_wu(baseline_cagrad_cfgs, "baseline_r"),
         },
         {
             "name": "baseline_cagrad_R",
@@ -657,6 +714,7 @@ def run_final(
                 }
             },
             "lr": float(baseline_cagrad_R["lr"]),
+            "warmup_ratio": _cfg_wu(baseline_cagrad_cfgs, "baseline_R"),
         },
         {
             "name": "ours",
@@ -668,8 +726,12 @@ def run_final(
                 }
             },
             "lr": ours_lr,
+            "warmup_ratio": float((best_trial_cfg.get("train", {}) or {}).get("warmup_ratio", fixed_wu)),
         },
     ]
+    for item in _build_ours_ablation_methods(cfg, ours_cfg, float(ours_lr)):
+        item["warmup_ratio"] = float((best_trial_cfg.get("train", {}) or {}).get("warmup_ratio", fixed_wu))
+        methods.append(item)
 
     trials_csv = final_dir / "trials.csv"
     summary_json = final_dir / "final_summary.json"
@@ -687,6 +749,7 @@ def run_final(
         cfg_key = str(m["cfg_key"])
         base_override = dict(m["override"])
         lr = float(m["lr"])
+        warmup_ratio = float(m["warmup_ratio"])
 
         for sd in final_seeds:
             key = (mname, int(sd))
@@ -701,7 +764,7 @@ def run_final(
                 override.setdefault("train", {})
                 override["train"]["seed"] = int(sd)
                 override["train"]["epochs"] = int(final_epochs)
-                override["train"]["warmup_ratio"] = float(fixed_wu)
+                override["train"]["warmup_ratio"] = float(warmup_ratio)
                 override["train"]["lr"] = float(lr)
 
                 _run_one(

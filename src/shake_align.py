@@ -221,7 +221,8 @@ class ShakeAlignController:
 
     def trusted_reference(self, s: BlockStats) -> str:
         ours = self.cfg.get("method", {}).get("ours", {}) or {}
-        delta = float(ours.get("routing_delta", 0.02))
+        # Keep fallback aligned with configs/base.yaml default.
+        delta = float(ours.get("routing_delta", 0.005))
         dC = float(s.C_r - s.C_R)
         return "r" if (dC >= delta) else "R"
 
@@ -306,10 +307,12 @@ class ShakeAlignController:
 
         trig_cfg = ours.get("trigger_gate0", {}) or {}
         tau_N = float(trig_cfg.get("tau_N", 0.6))
-        tau_D = float(trig_cfg.get("tau_D", 0.25))
+        # Keep fallback aligned with configs/base.yaml default.
+        tau_D = float(trig_cfg.get("tau_D", 0.0033914772))
 
         pull_cfg = ours.get("pulling", {}) or {}
-        gamma_pull = float(pull_cfg.get("gamma_pull", 0.35))
+        # Keep fallback aligned with configs/base.yaml default.
+        gamma_pull = float(pull_cfg.get("gamma_pull", 0.30))
         k_pull = float(pull_cfg.get("k_pull", 8.0))
 
         # compensation knobs

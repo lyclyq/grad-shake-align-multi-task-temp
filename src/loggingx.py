@@ -150,7 +150,7 @@ class SwanLabLogger:
         project: str,
         run_name: str,
         config: Dict[str, Any],
-        timeout_s: float = 20.0,
+        timeout_s: float = 30.0,
         max_failures: int = 3,
     ):
         self.enabled = bool(enabled)

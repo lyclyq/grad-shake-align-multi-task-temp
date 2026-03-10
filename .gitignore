@@ -37,6 +37,14 @@ ENV/
 Thumbs.db
 
 # Experiment runs
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 runs/
 tests_v2/log/
 .hf_cache/

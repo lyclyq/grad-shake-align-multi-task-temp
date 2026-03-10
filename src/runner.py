@@ -295,11 +295,15 @@ def run_train(
     sw_cfg = cfg["log"]["swanlab"]
     sw_enabled = bool(sw_cfg["enabled"])
     sw_project = str(sw_cfg["project"])
+    sw_timeout_s = float(sw_cfg.get("timeout_s", 30.0))
+    sw_max_failures = int(sw_cfg.get("max_failures", 3))
     swan = SwanLabLogger(
         enabled=sw_enabled,
         project=sw_project,
         run_name=run_name,
         config=cfg,
+        timeout_s=sw_timeout_s,
+        max_failures=sw_max_failures,
     )
 
     logger = RunLogger(csv=csv_logger, swan=swan)

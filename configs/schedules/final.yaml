@@ -22,3 +22,7 @@ final:
   # final.py uses this single source of truth for per-trial train epochs.
   epochs: 10
   seeds: [2, 3, 5, 7, 11]
+  ablations:
+    enabled: false
+    no_gate: true
+    no_compensation: true
