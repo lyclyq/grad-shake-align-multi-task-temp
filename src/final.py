@@ -253,7 +253,13 @@ def _derive_best_cfg_map(best_obj: Dict[str, Any], key: str) -> Optional[Dict[st
     return out
 
 
-def _build_ours_ablation_methods(cfg: Dict[str, Any], ours_cfg: Dict[str, Any], ours_lr: float) -> List[Dict[str, Any]]:
+def _build_ours_ablation_methods(
+    cfg: Dict[str, Any],
+    ours_cfg: Dict[str, Any],
+    ours_lr: float,
+    *,
+    ablation_best_cfgs: Optional[Dict[str, Dict[str, Any]]] = None,
+) -> List[Dict[str, Any]]:
     ab_cfg = (((cfg.get("final", {}) or {}).get("ablations", {}) or {}))
     if not bool(ab_cfg.get("enabled", False)):
         return []
@@ -265,12 +271,15 @@ def _build_ours_ablation_methods(cfg: Dict[str, Any], ours_cfg: Dict[str, Any], 
         # Make Gate0 practically unreachable.
         ours_no_gate["trigger_gate0"]["tau_N"] = 1e9
         ours_no_gate["trigger_gate0"]["tau_D"] = 1e9
+        base_cfg = json.loads(json.dumps((ablation_best_cfgs or {}).get("ablate_no_gate", {})))
+        best_lr = float(((base_cfg.get("train", {}) or {}).get("lr", ours_lr)))
         out.append(
             {
                 "name": "ablate_no_gate",
                 "cfg_key": "ours",
                 "override": {"method": {"name": "ours", "ours": ours_no_gate}},
-                "lr": float(ours_lr),
+                "lr": float(best_lr),
+                "best_cfg": base_cfg,
             }
         )
 
@@ -278,12 +287,15 @@ def _build_ours_ablation_methods(cfg: Dict[str, Any], ours_cfg: Dict[str, Any], 
         ours_no_comp = json.loads(json.dumps(ours_cfg))
         ours_no_comp.setdefault("compensation", {})
         ours_no_comp["compensation"]["enabled"] = False
+        base_cfg = json.loads(json.dumps((ablation_best_cfgs or {}).get("ablate_no_compensation", {})))
+        best_lr = float(((base_cfg.get("train", {}) or {}).get("lr", ours_lr)))
         out.append(
             {
                 "name": "ablate_no_compensation",
                 "cfg_key": "ours",
                 "override": {"method": {"name": "ours", "ours": ours_no_comp}},
-                "lr": float(ours_lr),
+                "lr": float(best_lr),
+                "best_cfg": base_cfg,
             }
         )
 
@@ -309,7 +321,13 @@ def _resolve_plan_path(best_obj: Dict[str, Any], best_path: Path) -> Optional[Pa
     return None
 
 
-def _metric_values_from_csv(metrics_csv: Path, key: str, *, max_epoch: Optional[int] = None) -> List[float]:
+def _metric_values_from_csv(
+    metrics_csv: Path,
+    key: str,
+    *,
+    max_epoch: Optional[int] = None,
+    probe_is_eval: Optional[float] = None,
+) -> List[float]:
     p = Path(metrics_csv)
     if not p.is_absolute():
         p = Path(os.getcwd()) / p
@@ -319,6 +337,10 @@ def _metric_values_from_csv(metrics_csv: Path, key: str, *, max_epoch: Optional[
     out: List[float] = []
     with p.open("r", encoding="utf-8") as f:
         for row in csv.DictReader(f):
+            if probe_is_eval is not None:
+                probe = _safe_float(row.get("probe/is_eval", ""))
+                if probe is None or abs(float(probe) - float(probe_is_eval)) > 1e-9:
+                    continue
             v = _safe_float(row.get(key, ""))
             if v is None:
                 continue
@@ -352,6 +374,13 @@ def _aggregate_ours_diagnostics(rows: List[Dict[str, Any]], *, dense_early_epoch
         ("pull_strength_alpha", ["train/alpha_pull_mean"]),
         ("pull_strength_to_r", ["train/alpha_pull_to_r_mean"]),
         ("pull_strength_to_R", ["train/alpha_pull_to_R_mean"]),
+        ("load_cv", ["train/load_cv"]),
+        ("utilization_ratio", ["train/utilization_ratio"]),
+        ("routing_entropy", ["train/routing_entropy"]),
+        ("expert_purity", ["train/expert_purity"]),
+        ("intra_expert_coherence", ["train/intra_expert_coherence"]),
+        ("intra_expert_conflict", ["train/intra_expert_conflict"]),
+        ("inter_expert_similarity", ["train/inter_expert_similarity"]),
     ]
 
     out: Dict[str, Any] = {
@@ -399,6 +428,55 @@ def _aggregate_ours_diagnostics(rows: List[Dict[str, Any]], *, dense_early_epoch
         metric_out.update(_summary_stats(merged_vals))
         out["metrics"][metric_name] = metric_out
 
+    return out
+
+
+def _aggregate_efficiency(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    per_method: Dict[str, Dict[str, List[float]]] = {}
+    for r in rows:
+        method = str(r.get("method", ""))
+        metrics_csv = str(r.get("metrics_csv", "") or "").strip()
+        if not method or not metrics_csv:
+            continue
+        time_vals = _metric_values_from_csv(Path(metrics_csv), "sys/time_per_step_ms", probe_is_eval=0.0)
+        mem_vals = _metric_values_from_csv(Path(metrics_csv), "sys/peak_memory_mb", probe_is_eval=0.0)
+        if not time_vals and not mem_vals:
+            continue
+        slot = per_method.setdefault(method, {"time_per_step_ms": [], "peak_memory_mb": []})
+        if time_vals:
+            slot["time_per_step_ms"].append(float(np.mean(np.asarray(time_vals, dtype=float))))
+        if mem_vals:
+            slot["peak_memory_mb"].append(float(np.max(np.asarray(mem_vals, dtype=float))))
+
+    out: Dict[str, Any] = {"methods": {}}
+    fastest = None
+    for method, series in per_method.items():
+        time_arr = np.asarray(series["time_per_step_ms"], dtype=float) if series["time_per_step_ms"] else np.asarray([], dtype=float)
+        mem_arr = np.asarray(series["peak_memory_mb"], dtype=float) if series["peak_memory_mb"] else np.asarray([], dtype=float)
+        meth: Dict[str, Any] = {}
+        if time_arr.size > 0:
+            meth["time_per_step_ms"] = {
+                "mean": float(np.mean(time_arr)),
+                "std": float(np.std(time_arr)),
+                "min": float(np.min(time_arr)),
+                "max": float(np.max(time_arr)),
+            }
+            if fastest is None or meth["time_per_step_ms"]["mean"] < fastest:
+                fastest = meth["time_per_step_ms"]["mean"]
+        if mem_arr.size > 0:
+            meth["peak_memory_mb"] = {
+                "mean": float(np.mean(mem_arr)),
+                "std": float(np.std(mem_arr)),
+                "min": float(np.min(mem_arr)),
+                "max": float(np.max(mem_arr)),
+            }
+        out["methods"][method] = meth
+
+    if fastest is not None and fastest > 0.0:
+        for meth in out["methods"].values():
+            time_stats = meth.get("time_per_step_ms", None)
+            if isinstance(time_stats, dict):
+                meth["relative_slowdown_pct_vs_fastest"] = float((float(time_stats["mean"]) / float(fastest) - 1.0) * 100.0)
     return out
 
 
@@ -643,6 +721,7 @@ def run_final(
     baseline_cagrad_r = bl_cagrad["baseline_r"]
     baseline_cagrad_R = bl_cagrad["baseline_R"]
     baseline_cagrad_cfgs = _derive_best_cfg_map(best_obj, "baseline_cagrad_best_cfg_by_tag") or {}
+    ablation_best_cfgs = _derive_best_cfg_map(best_obj, "ablation_best_cfg_by_name") or {}
 
     def _cfg_wu(cfg_map: Dict[str, Dict[str, Any]], tag: str) -> float:
         return float((((cfg_map.get(tag, {}) or {}).get("train", {}) or {}).get("warmup_ratio", fixed_wu)))
@@ -729,8 +808,9 @@ def run_final(
             "warmup_ratio": float((best_trial_cfg.get("train", {}) or {}).get("warmup_ratio", fixed_wu)),
         },
     ]
-    for item in _build_ours_ablation_methods(cfg, ours_cfg, float(ours_lr)):
-        item["warmup_ratio"] = float((best_trial_cfg.get("train", {}) or {}).get("warmup_ratio", fixed_wu))
+    for item in _build_ours_ablation_methods(cfg, ours_cfg, float(ours_lr), ablation_best_cfgs=ablation_best_cfgs):
+        item["warmup_ratio"] = float((((item.get("best_cfg", {}) or {}).get("train", {}) or {}).get("warmup_ratio", fixed_wu)))
+        item.pop("best_cfg", None)
         methods.append(item)
 
     trials_csv = final_dir / "trials.csv"
@@ -853,6 +933,7 @@ def run_final(
         agg["methods"][m] = _aggregate_method(rows, m)
     dense_early_epochs = int((((cfg.get("train", {}) or {}).get("eval", {}) or {}).get("dense_early_epochs", 2)))
     agg["ours_diagnostics"] = _aggregate_ours_diagnostics(rows, dense_early_epochs=dense_early_epochs)
+    agg["efficiency"] = _aggregate_efficiency(rows)
 
     dump_json(summary_json, agg)
     print(f"[final] saved: {summary_json}")

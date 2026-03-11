@@ -248,6 +248,9 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
     _ensure_str(_get_path(cfg, "model.name"), "model.name")
 
     _require_dict(_get_path(cfg, "task"), "task")
+    scenario = _ensure_str(_get_path(cfg, "task.scenario"), "task.scenario").strip().lower()
+    if scenario not in {"single_task", "multi_task", "multi_dataset"}:
+        raise ValueError("task.scenario must be one of: single_task / multi_task / multi_dataset")
     _ensure_str(_get_path(cfg, "task.name"), "task.name")
     _ensure_int(_get_path(cfg, "task.max_len"), "task.max_len")
     task_cfg = _get_path(cfg, "task")
@@ -260,6 +263,10 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
             _ensure_str(ds, f"task.multi.datasets[{i}]")
         if multi_enabled and len(datasets) == 0:
             raise ValueError("task.multi.datasets must be non-empty when task.multi.enabled=true")
+    if scenario == "single_task" and multi_enabled:
+        raise ValueError("task.scenario=single_task requires task.multi.enabled=false")
+    if scenario in {"multi_task", "multi_dataset"} and not multi_enabled:
+        raise ValueError(f"task.scenario={scenario} requires task.multi.enabled=true")
 
     _require_dict(_get_path(cfg, "train"), "train")
     _ensure_int(_get_path(cfg, "train.epochs"), "train.epochs")
@@ -300,6 +307,13 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
             sm = _ensure_str(_get_path(cfg, "train.multi.steps_mode"), "train.multi.steps_mode").strip().lower()
             if sm not in {"max_steps", "epochs"}:
                 raise ValueError("train.multi.steps_mode must be one of: max_steps / epochs")
+    if "single" in train_cfg:
+        _require_dict(_get_path(cfg, "train.single"), "train.single")
+        ts = _get_path(cfg, "train.single")
+        if "steps_mode" in ts:
+            sm = _ensure_str(_get_path(cfg, "train.single.steps_mode"), "train.single.steps_mode").strip().lower()
+            if sm not in {"max_steps", "epochs"}:
+                raise ValueError("train.single.steps_mode must be one of: max_steps / epochs")
     if multi_enabled:
         tm = _get_path(cfg, "train.multi") if "multi" in train_cfg else {}
         sm = str(tm.get("steps_mode", "max_steps")).strip().lower()
@@ -310,6 +324,16 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
                 raise KeyError("Missing required config key for multi-task mode max_steps: 'train.max_steps'")
             if int(_get_path(cfg, "train.max_steps")) <= 0:
                 raise ValueError("train.max_steps must be > 0 when task.multi.enabled=true and train.multi.steps_mode=max_steps")
+    else:
+        ts = _get_path(cfg, "train.single") if "single" in train_cfg else {}
+        sm = str(ts.get("steps_mode", "epochs")).strip().lower()
+        if sm not in {"max_steps", "epochs"}:
+            raise ValueError("train.single.steps_mode must be one of: max_steps / epochs")
+        if sm == "max_steps":
+            if "max_steps" not in train_cfg:
+                raise KeyError("Missing required config key for single-task mode max_steps: 'train.max_steps'")
+            if int(_get_path(cfg, "train.max_steps")) <= 0:
+                raise ValueError("train.max_steps must be > 0 when task.scenario=single_task and train.single.steps_mode=max_steps")
 
     _require_dict(_get_path(cfg, "train.eval"), "train.eval")
     _ensure_str(_get_path(cfg, "train.eval.strategy"), "train.eval.strategy")
@@ -445,12 +469,21 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
                 _ensure_str(_get_path(cfg, f"{spec_path}.path_template"), f"{spec_path}.path_template")
             else:
                 raise KeyError(f"{spec_path} must contain either 'path' or 'path_template'")
-            scale = _ensure_str(_get_path(cfg, f"{spec_path}.scale"), f"{spec_path}.scale").strip().lower()
-            if scale not in {"linear", "log"}:
-                raise ValueError(f"{spec_path}.scale must be one of: linear / log")
-            _ensure_float(_get_path(cfg, f"{spec_path}.lower"), f"{spec_path}.lower")
-            _ensure_float(_get_path(cfg, f"{spec_path}.center"), f"{spec_path}.center")
-            _ensure_float(_get_path(cfg, f"{spec_path}.upper"), f"{spec_path}.upper")
+            kind = str(spec.get("kind", "float")).strip().lower()
+            if kind == "choice":
+                choices = _require_list(spec.get("choices", None), f"{spec_path}.choices")
+                if not choices:
+                    raise ValueError(f"{spec_path}.choices must be non-empty")
+                for i, v in enumerate(choices):
+                    _ensure_float(v, f"{spec_path}.choices[{i}]")
+                _ensure_float(_get_path(cfg, f"{spec_path}.center"), f"{spec_path}.center")
+            else:
+                scale = _ensure_str(_get_path(cfg, f"{spec_path}.scale"), f"{spec_path}.scale").strip().lower()
+                if scale not in {"linear", "log"}:
+                    raise ValueError(f"{spec_path}.scale must be one of: linear / log")
+                _ensure_float(_get_path(cfg, f"{spec_path}.lower"), f"{spec_path}.lower")
+                _ensure_float(_get_path(cfg, f"{spec_path}.center"), f"{spec_path}.center")
+                _ensure_float(_get_path(cfg, f"{spec_path}.upper"), f"{spec_path}.upper")
 
         _require_dict(_get_path(cfg, "hpo.grid"), "hpo.grid")
         knobs = _require_list(_get_path(cfg, "hpo.grid.knobs"), "hpo.grid.knobs")
@@ -563,6 +596,11 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
                 raise ValueError("hpo.cagrad.c_grid must be non-empty")
             for i, c in enumerate(c_grid):
                 _ensure_float(c, f"hpo.cagrad.c_grid[{i}]")
+        if "ablations" in _get_path(cfg, "hpo"):
+            _require_dict(_get_path(cfg, "hpo.ablations"), "hpo.ablations")
+            _ensure_bool(_get_path(cfg, "hpo.ablations.enabled"), "hpo.ablations.enabled")
+            _ensure_bool(_get_path(cfg, "hpo.ablations.no_gate"), "hpo.ablations.no_gate")
+            _ensure_bool(_get_path(cfg, "hpo.ablations.no_compensation"), "hpo.ablations.no_compensation")
 
     if cmd == "final":
         _require_dict(_get_path(cfg, "final"), "final")

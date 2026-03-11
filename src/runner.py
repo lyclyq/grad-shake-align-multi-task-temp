@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional, Tuple
 from torch.utils.data import DataLoader
 
 from .artifacts import make_run_name, prepare_run_dir
-from .data_glue import load_glue
+from .data_glue import load_text_classification
 from .lora_layers import inject_lora
 from .loggingx import CSVLogger, RunLogger, SwanLabLogger
 from .models_hf import build_model
@@ -147,6 +147,14 @@ def _resolve_method_lora(cfg: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 
+def _task_scenario(task_cfg: Dict[str, Any]) -> str:
+    raw = str(task_cfg.get("scenario", "") or "").strip().lower()
+    if raw:
+        return raw
+    multi_cfg = task_cfg.get("multi", {}) or {}
+    return "multi_task" if bool(multi_cfg.get("enabled", False)) else "single_task"
+
+
 def run_train(
     cfg: Dict[str, Any],
     run_id: Optional[str] = None,
@@ -162,8 +170,9 @@ def run_train(
     model_name = str(cfg["model"]["name"])
     max_len = int(cfg["task"]["max_len"])
     task_cfg = cfg["task"]
+    scenario = _task_scenario(task_cfg)
     multi_cfg = task_cfg.get("multi", {}) or {}
-    multi_enabled = bool(multi_cfg.get("enabled", False))
+    multi_enabled = scenario in {"multi_task", "multi_dataset"} or bool(multi_cfg.get("enabled", False))
     batch_size = int(cfg["train"]["batch_size"])
     drop_last = bool(((cfg.get("train", {}) or {}).get("multi", {}) or {}).get("drop_last", False))
     dl_cfg = ((cfg.get("train", {}) or {}).get("dataloader", {}) or {})
@@ -174,9 +183,7 @@ def run_train(
 
     if not multi_enabled:
         dataset = str(task_cfg["name"])
-        assert dataset.startswith("glue/"), "Only glue/<task> supported in this scaffold"
-        glue_task = dataset.split("/", 1)[1]
-        data = load_glue(glue_task, model_name, max_len)
+        data = load_text_classification(dataset, model_name, max_len)
 
         train_loader = DataLoader(
             data.train,
@@ -213,10 +220,7 @@ def run_train(
             ds = str(ds_name).strip()
             if not ds:
                 continue
-            if not ds.startswith("glue/"):
-                raise RuntimeError(f"[runner] only glue/* is supported in multi mode, got: {ds!r}")
-            glue_task = ds.split("/", 1)[1]
-            data = load_glue(glue_task, model_name, max_len)
+            data = load_text_classification(ds, model_name, max_len)
 
             if num_labels_ref is None:
                 num_labels_ref = int(data.num_labels)

@@ -16,6 +16,18 @@ class BlockStats:
     A_b: float
 
 
+def _mean_pairwise_cos(vectors: List[torch.Tensor], eps: float) -> float:
+    if len(vectors) < 2:
+        return float("nan")
+    mat = torch.stack([v.detach().reshape(-1) for v in vectors], dim=0)
+    norms = torch.norm(mat, dim=1, keepdim=True).clamp_min(float(eps))
+    cos = (mat @ mat.t()) / (norms @ norms.t())
+    mask = torch.triu(torch.ones_like(cos, dtype=torch.bool), diagonal=1)
+    if not bool(mask.any()):
+        return float("nan")
+    return float(cos[mask].mean().item())
+
+
 class ShakeAlignController:
     """
     Implements (paper-aligned):
@@ -202,6 +214,39 @@ class ShakeAlignController:
         rep = int(np.ceil(hi_dim / head_vec.numel()))
         return head_vec.repeat(rep)[:hi_dim]
 
+    def _split_branch_vec(
+        self,
+        mod: torch.nn.Module,
+        branch: str,
+        grad_vec: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        if branch == "r":
+            A = mod.lora_A_r.detach()
+            B = mod.lora_B_r.detach()
+        elif branch == "hi":
+            A = mod.lora_A_hi.detach()
+            B = mod.lora_B_hi.detach()
+        else:
+            raise ValueError(f"unknown branch: {branch}")
+
+        A_n = int(A.numel())
+        B_n = int(B.numel())
+        need = A_n + B_n
+        if grad_vec.numel() != need:
+            grad_vec = self._pad_or_trim(grad_vec, need)
+        dA = grad_vec[:A_n].view_as(A)
+        dB = grad_vec[A_n : A_n + B_n].view_as(B)
+        return A, B, dA, dB
+
+    def _branch_delta_w(
+        self,
+        mod: torch.nn.Module,
+        branch: str,
+        grad_vec: torch.Tensor,
+    ) -> torch.Tensor:
+        A, B, dA, dB = self._split_branch_vec(mod, branch, grad_vec)
+        return (B @ dA) + (dB @ A)
+
     # -------------------------
     # Gates
     # -------------------------
@@ -335,6 +380,21 @@ class ShakeAlignController:
             "alpha_pull_mean": 0.0,
             "alpha_pull_to_r_mean": 0.0,
             "alpha_pull_to_R_mean": 0.0,
+            "info_retention_ratio": 0.0,
+            "residual_visibility": 0.0,
+            "conflict_resolution_rate": 0.0,
+            "expert_load_r": 0.0,
+            "expert_load_R": 0.0,
+            "load_cv": float("nan"),
+            "load_max_min_ratio": float("nan"),
+            "utilization_ratio": float("nan"),
+            "routing_entropy": float("nan"),
+            "routing_entropy_raw": float("nan"),
+            "active_experts": 0.0,
+            "expert_purity": float("nan"),
+            "intra_expert_coherence": float("nan"),
+            "intra_expert_conflict": float("nan"),
+            "inter_expert_similarity": float("nan"),
         }
         if debug:
             info["per_block"] = {}
@@ -350,6 +410,15 @@ class ShakeAlignController:
         alpha_pull_sum = 0.0
         alpha_pull_to_r_sum = 0.0
         alpha_pull_to_R_sum = 0.0
+        info_num_sum = 0.0
+        info_den_sum = 0.0
+        residual_hi_norm_sum = 0.0
+        residual_total_norm_sum = 0.0
+        conflict_delta_sum = 0.0
+        conflict_count = 0
+        route_counts = {"r": 0, "R": 0}
+        route_exec: Dict[str, List[torch.Tensor]] = {"r": [], "R": []}
+        route_purity_sum = 0.0
 
         for name, mod in lora_modules.items():
             if name not in stats or name not in vote_sums:
@@ -502,6 +571,30 @@ class ShakeAlignController:
             if ghi.numel() != Dhi:
                 ghi = self._pad_or_trim(ghi, Dhi)
 
+            dW_r_raw = self._branch_delta_w(mod, "r", g_r_prime)
+            dW_hi_raw = self._branch_delta_w(mod, "hi", mean_hi)
+            dW_r_exec = self._branch_delta_w(mod, "r", g_r_exec)
+            dW_hi_exec = self._branch_delta_w(mod, "hi", ghi)
+
+            dW_raw = dW_r_raw + dW_hi_raw
+            dW_exec = dW_r_exec + dW_hi_exec
+            raw_flat = dW_raw.reshape(-1)
+            exec_flat = dW_exec.reshape(-1)
+            raw_norm_sq = float(torch.dot(raw_flat, raw_flat).item())
+            if raw_norm_sq > self.eps:
+                info_num_sum += float(torch.dot(exec_flat, raw_flat).item())
+                info_den_sum += raw_norm_sq
+
+            hi_exec_norm = float(torch.norm(dW_hi_exec).item())
+            r_exec_norm = float(torch.norm(dW_r_exec).item())
+            residual_hi_norm_sum += hi_exec_norm
+            residual_total_norm_sum += (r_exec_norm + hi_exec_norm)
+
+            conflict_before = self._cos(dW_r_raw.reshape(-1), dW_hi_raw.reshape(-1))
+            conflict_after = self._cos(dW_r_exec.reshape(-1), dW_hi_exec.reshape(-1))
+            conflict_delta_sum += float(conflict_after - conflict_before)
+            conflict_count += 1
+
             ghi = ghi * scaling_hi
             mod.lora_A_hi.grad.copy_(ghi[:Ahi_n].view_as(mod.lora_A_hi.grad))
             mod.lora_B_hi.grad.copy_(ghi[Ahi_n:Ahi_n + Bhi_n].view_as(mod.lora_B_hi.grad))
@@ -510,6 +603,9 @@ class ShakeAlignController:
             if gate0:
                 triggered += 1
                 alpha_pull_sum += float(alpha_pull)
+                route_counts[chi_star] += 1
+                route_exec[chi_star].append(exec_flat.detach().clone())
+                route_purity_sum += float(max(insuff, over))
                 if chi_star == "r":
                     pull_to_r += 1
                     alpha_pull_to_r_sum += float(alpha_pull)
@@ -565,4 +661,46 @@ class ShakeAlignController:
                 info["alpha_pull_to_r_mean"] = float(alpha_pull_to_r_sum) / float(pull_to_r)
             if pull_to_R > 0:
                 info["alpha_pull_to_R_mean"] = float(alpha_pull_to_R_sum) / float(pull_to_R)
+        if info_den_sum > self.eps:
+            info["info_retention_ratio"] = float(info_num_sum / info_den_sum)
+        if residual_total_norm_sum > self.eps:
+            info["residual_visibility"] = float(residual_hi_norm_sum / residual_total_norm_sum)
+        if conflict_count > 0:
+            info["conflict_resolution_rate"] = float(conflict_delta_sum / float(conflict_count))
+        if triggered > 0:
+            load_r = int(route_counts["r"])
+            load_R = int(route_counts["R"])
+            loads = np.asarray([load_r, load_R], dtype=np.float64)
+            info["expert_load_r"] = float(load_r)
+            info["expert_load_R"] = float(load_R)
+            info["active_experts"] = float(np.count_nonzero(loads > 0.0))
+            mean_load = float(np.mean(loads))
+            if mean_load > 0.0:
+                info["load_cv"] = float(np.std(loads) / mean_load)
+            min_load = float(np.min(loads))
+            max_load = float(np.max(loads))
+            if min_load > 0.0:
+                info["load_max_min_ratio"] = float(max_load / min_load)
+            info["utilization_ratio"] = float(np.count_nonzero(loads > 0.0) / float(loads.size))
+            probs = loads / max(1.0, float(loads.sum()))
+            raw_entropy = float(-np.sum([p * np.log(p + self.eps) for p in probs if p > 0.0]))
+            info["routing_entropy_raw"] = raw_entropy
+            if loads.size > 1:
+                info["routing_entropy"] = float(raw_entropy / np.log(float(loads.size)))
+            info["expert_purity"] = float(route_purity_sum / float(triggered))
+
+            intra_vals: List[float] = []
+            for dest in ("r", "R"):
+                v = _mean_pairwise_cos(route_exec[dest], self.eps)
+                if np.isfinite(v):
+                    intra_vals.append(float(v))
+            if intra_vals:
+                intra_coh = float(np.mean(intra_vals))
+                info["intra_expert_coherence"] = intra_coh
+                info["intra_expert_conflict"] = float(0.5 * (1.0 - intra_coh))
+
+            if route_exec["r"] and route_exec["R"]:
+                mean_r = torch.stack(route_exec["r"], dim=0).mean(dim=0)
+                mean_R = torch.stack(route_exec["R"], dim=0).mean(dim=0)
+                info["inter_expert_similarity"] = float(self._cos(mean_r, mean_R))
         return info

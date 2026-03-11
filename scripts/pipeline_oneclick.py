@@ -53,6 +53,7 @@ def _default_runs_group(dataset: str, model: str) -> str:
 def _default_runs_group_from_cfg(cfg: dict) -> str:
     task = cfg["task"]
     model = str(cfg["model"]["name"])
+    scenario = str(task.get("scenario", "single_task")).strip().lower()
     multi = (task.get("multi", {}) or {}) if isinstance(task, dict) else {}
     if bool(multi.get("enabled", False)):
         ds_list = list(multi.get("datasets", []) or [])
@@ -66,7 +67,7 @@ def _default_runs_group_from_cfg(cfg: dict) -> str:
         bb = "bert"
     else:
         bb = model.split("-")[0]
-    return f"{ds}_{bb}"
+    return f"{scenario}__{ds}_{bb}"
 
 
 def _multi_ds_token(ds_list: List[str]) -> str:
@@ -117,6 +118,7 @@ class ExpSpec:
     resume_debug: str
 
     # optional overrides (passed through as --set)
+    scenario: Optional[str] = None
     dataset: Optional[str] = None
     model: Optional[str] = None
     trials: Optional[int] = None
@@ -253,6 +255,7 @@ def _check_resume_snapshot_compat(
         "task.name",
         "task.multi.enabled",
         "task.multi.datasets",
+        "train.single.steps_mode",
         "train.multi.steps_mode",
         "model.name",
         "train.max_steps",
@@ -292,6 +295,40 @@ def _check_resume_snapshot_compat(
         )
 
 
+def _check_resume_final_compat(*, final_dir: Path, expected_spec: "ExpSpec", with_ablations: bool) -> None:
+    prov = final_dir / "final_provenance_from_pipeline.json"
+    if not prov.exists():
+        raise RuntimeError(f"[PIPE] missing final provenance for resume: {prov}")
+    obj = json.loads(prov.read_text(encoding="utf-8"))
+    spec_old = obj.get("spec", {}) if isinstance(obj, dict) else {}
+    checks = {
+        "runs_group": expected_spec.runs_group,
+        "scenario": expected_spec.scenario,
+        "dataset": expected_spec.dataset,
+        "model": expected_spec.model,
+        "multi_enabled": expected_spec.multi_enabled,
+        "multi_datasets": expected_spec.multi_datasets,
+        "multi_steps_mode": expected_spec.multi_steps_mode,
+        "max_steps": expected_spec.max_steps,
+        "epochs": expected_spec.epochs,
+        "ours_r": expected_spec.ours_r,
+        "ours_R": expected_spec.ours_R,
+        "with_ablations": bool(with_ablations),
+    }
+    mismatches: List[str] = []
+    for k, now_v in checks.items():
+        old_v = spec_old.get(k, None)
+        if now_v is not None and old_v != now_v:
+            mismatches.append(f"{k}: old={old_v!r}, now={now_v!r}")
+    if mismatches:
+        raise RuntimeError(
+            "[PIPE] resume_final config mismatch detected.\n"
+            f"[PIPE] final_dir={final_dir}\n"
+            "[PIPE] mismatches:\n"
+            + "\n".join(mismatches)
+        )
+
+
 def build_argparser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="pipeline_oneclick.py",
@@ -301,6 +338,13 @@ def build_argparser() -> argparse.ArgumentParser:
     # Optional pass-through overrides (ONLY applied if provided)
     p.add_argument("--dataset", type=str, default=None, help="Override task.name via --set task.name=...")
     p.add_argument("--model", type=str, default=None, help="Override model.name via --set model.name=...")
+    p.add_argument(
+        "--scenario",
+        type=str,
+        choices=["single_task", "multi_task", "multi_dataset"],
+        default=None,
+        help="Override task.scenario via --set",
+    )
     p.add_argument(
         "--multi_enabled",
         type=_parse_bool_arg,
@@ -333,7 +377,12 @@ def build_argparser() -> argparse.ArgumentParser:
         default=None,
         help="Override train.multi.drop_last via --set (true/false)",
     )
-    p.add_argument("--trials", type=int, default=None, help="Override hpo.budget.total_trials via --set")
+    p.add_argument(
+        "--trials",
+        type=int,
+        default=None,
+        help="Override hpo.budget.total_trials via --set. Recommended tiers: 48 / 96 / 192. Default: 96.",
+    )
     p.add_argument(
         "--rerank_enabled",
         type=_parse_bool_arg,
@@ -386,6 +435,12 @@ def build_argparser() -> argparse.ArgumentParser:
         default="",
         help="Resume an existing HPO directory (hpo__*/debug__*, absolute path). If empty, run HPO normally.",
     )
+    p.add_argument(
+        "--resume_final",
+        type=str,
+        default="",
+        help="Resume an existing final directory. If set, pipeline reuses that final_dir and only fills missing runs.",
+    )
 
     return p
 
@@ -411,6 +466,7 @@ def main() -> int:
                 sys.executable,
                 str(Path(__file__).resolve()),
                 *filtered,
+                "--scenario", "multi_task",
                 "--multi_enabled", "true",
                 "--multi_datasets", json.dumps(mix),
             ]
@@ -433,6 +489,8 @@ def main() -> int:
             derive_sets.append(f"task.name={str(args.dataset)}")
         if args.model is not None:
             derive_sets.append(f"model.name={str(args.model)}")
+        if args.scenario is not None:
+            derive_sets.append(f"task.scenario={str(args.scenario)}")
         if args.multi_enabled is not None:
             derive_sets.append(f"task.multi.enabled={str(args.multi_enabled).lower()}")
         ds_cli = _parse_datasets_arg(args.multi_datasets)
@@ -467,6 +525,7 @@ def main() -> int:
         final_epochs=int(args.final_epochs) if args.final_epochs is not None else None,
         final_seeds=_parse_seeds(args.final_seeds),
         resume_debug=str(args.resume_debug or ""),
+        scenario=str(args.scenario) if args.scenario is not None else None,
         dataset=str(args.dataset) if args.dataset is not None else None,
         model=str(args.model) if args.model is not None else None,
         trials=int(args.trials) if args.trials is not None else None,
@@ -488,6 +547,11 @@ def main() -> int:
         ablate_interp=bool(args.ablate_interp),
         history_enabled=bool(args.history_enabled),
     )
+    if spec.scenario is None:
+        if spec.multi_enabled is True:
+            spec.scenario = "multi_task"
+        elif spec.multi_enabled is False:
+            spec.scenario = "single_task"
 
     spec.runs_group = _augment_runs_group_with_datasets(
         spec.runs_group,
@@ -517,6 +581,8 @@ def main() -> int:
         raise ValueError("--multi_enabled=true requires --multi_datasets")
     if spec.multi_steps_mode == "max_steps" and spec.multi_enabled is True and spec.max_steps is None:
         raise ValueError("--multi_steps_mode=max_steps with --multi_enabled=true requires --max_steps")
+    if bool(args.with_ablations) and spec.scenario != "multi_task":
+        raise ValueError("--with_ablations is only supported when --scenario=multi_task")
 
     runs_root = ROOT / "runs" / spec.runs_group
 
@@ -531,6 +597,11 @@ def main() -> int:
         common_sets_global.append(f"task.name={spec.dataset}")
     if spec.model is not None:
         common_sets_global.append(f"model.name={spec.model}")
+    if spec.scenario is not None:
+        common_sets_global.append(f"task.scenario={spec.scenario}")
+        if spec.multi_enabled is None:
+            implied_multi = spec.scenario in {"multi_task", "multi_dataset"}
+            common_sets_global.append(f"task.multi.enabled={str(implied_multi).lower()}")
     if spec.multi_enabled is not None:
         common_sets_global.append(f"task.multi.enabled={str(spec.multi_enabled).lower()}")
     if spec.multi_datasets is not None:
@@ -571,12 +642,11 @@ def main() -> int:
 
     # HPO-ONLY
     hpo_sets_only: List[str] = []
-    # If CLI provides --trials, use it as budget cap.
-    # If CLI omits --trials, run the full cartesian grid (unbounded).
+    # If CLI omits --trials, fall back to the default HPO tier (96).
     if spec.trials is not None:
         hpo_sets_only.append(f"hpo.budget.total_trials={spec.trials}")
     else:
-        hpo_sets_only.append("hpo.budget.total_trials=0")
+        hpo_sets_only.append("hpo.budget.total_trials=96")
     if spec.rerank_enabled is not None:
         hpo_sets_only.append(f"hpo.grid.rerank.enabled={str(spec.rerank_enabled).lower()}")
     if spec.rerank_top_k is not None:
@@ -593,6 +663,8 @@ def main() -> int:
         hpo_sets_only.append(f"hpo.grid.grid_max_steps={spec.hpo_grid_max_steps}")
     if spec.hpo_rerank_max_steps is not None:
         hpo_sets_only.append(f"hpo.grid.rerank.max_steps={spec.hpo_rerank_max_steps}")
+    if bool(args.with_ablations):
+        hpo_sets_only.append("hpo.ablations.enabled=true")
 
     # ---------------- (1) HPO ----------------
     cmd_hpo = ["python", "scripts/run.py", "hpo", "--config", base_cfg]
@@ -625,11 +697,15 @@ def main() -> int:
 
     # ---------------- (2) Final (timestamp-bound, deterministic) ----------------
     dbg_ts, dbg_hash = _extract_ts_and_hash_from_dirname(debug_dir.name)
-    final_ts = time.strftime("%Y%m%d-%H%M%S")
-    final_budget_tag = _pipeline_budget_tag(spec)
-    final_dir = runs_root / (
-        f"final__{_slug(spec.runs_group)}__from_{dbg_ts}__{dbg_hash}__{_slug(final_budget_tag)}__{final_ts}"
-    )
+    if str(args.resume_final or "").strip():
+        final_dir = Path(str(args.resume_final)).resolve()
+        _check_resume_final_compat(final_dir=final_dir, expected_spec=spec, with_ablations=bool(args.with_ablations))
+    else:
+        final_ts = time.strftime("%Y%m%d-%H%M%S")
+        final_budget_tag = _pipeline_budget_tag(spec)
+        final_dir = runs_root / (
+            f"final__{_slug(spec.runs_group)}__from_{dbg_ts}__{dbg_hash}__{_slug(final_budget_tag)}__{final_ts}"
+        )
 
     cmd_final = [
         "python", "scripts/run.py", "final",
@@ -672,6 +748,7 @@ def main() -> int:
                 "final_dir": str(final_dir),
                 "spec": {
                     "runs_group": spec.runs_group,
+                    "scenario": spec.scenario,
                     "dataset": spec.dataset,
                     "model": spec.model,
                     "multi_enabled": spec.multi_enabled,
@@ -723,6 +800,9 @@ def main() -> int:
     # final paper-style 4-line + ours diagnostics
     plot_4lines_cmd = ["python", "scripts/plot_final_4lines_abs.py", str(trial_runs), "val/acc"]
     sh(plot_4lines_cmd)
+
+    plot_diag_cmd = ["python", "scripts/plot_mechanism_diagnostics.py", str(trial_runs)]
+    sh(plot_diag_cmd)
 
     if bool(args.with_ablations):
         plot_ablate_cmd = ["python", "scripts/plot_ablation_compare.py", str(trial_runs)]

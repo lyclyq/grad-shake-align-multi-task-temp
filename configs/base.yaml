@@ -4,6 +4,7 @@ model:
   name: roberta-base
 
 task:
+  scenario: single_task
   name: glue/rte
   max_len: 128
   multi:
@@ -24,6 +25,8 @@ train:
 
   weight_decay: 0.0
   max_grad_norm: 1.0
+  single:
+    steps_mode: epochs
   multi:
     steps_mode: max_steps
     drop_last: true
@@ -179,7 +182,7 @@ hpo:
     c_grid: [0.2, 0.4, 0.6]
 
   budget:
-    total_trials: 400
+    total_trials: 96
 
   ratio_sensitivity: 0.20
   ratio_grid: 0.50
@@ -196,7 +199,7 @@ hpo:
       w_avg: 0.1
 
   coord:
-    shared_order: [lr, warmup_ratio]
+    shared_order: [lr, warmup_ratio, batch_size]
     method_orders:
       baseline: []
       cagrad: [cagrad_c]
@@ -217,6 +220,11 @@ hpo:
         lower: 0.0
         center: 0.1
         upper: 0.2
+      batch_size:
+        path: train.batch_size
+        kind: choice
+        choices: [16, 32, 128]
+        center: 32
       cagrad_c:
         path_template: method.{tag}.cagrad.c
         scale: linear
@@ -301,3 +309,8 @@ hpo:
         kind: float
         lo: 0.002
         hi: 0.02
+
+  ablations:
+    enabled: false
+    no_gate: true
+    no_compensation: true

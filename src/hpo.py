@@ -744,10 +744,12 @@ def _score_mean_for_tags(trials_csv: Path, tags: List[str]) -> Optional[float]:
 class ParamSpec:
     key: str
     path: str
-    scale: str
-    lower: float
-    center: float
-    upper: float
+    kind: str
+    scale: Optional[str] = None
+    lower: Optional[float] = None
+    center: Optional[float] = None
+    upper: Optional[float] = None
+    choices: Optional[List[float]] = None
 
 
 def _cfg_get_path(obj: Dict[str, Any], dotted: str) -> Any:
@@ -769,6 +771,15 @@ def _cfg_set_path(obj: Dict[str, Any], dotted: str, value: Any) -> None:
             cur[part] = nxt
         cur = nxt
     cur[parts[-1]] = value
+
+
+def _task_scenario(cfg: Dict[str, Any]) -> str:
+    task_cfg = cfg.get("task", {}) or {}
+    raw = str(task_cfg.get("scenario", "") or "").strip().lower()
+    if raw:
+        return raw
+    multi_cfg = task_cfg.get("multi", {}) or {}
+    return "multi_task" if bool(multi_cfg.get("enabled", False)) else "single_task"
 
 
 def _safe_stage_slug(x: str) -> str:
@@ -913,9 +924,19 @@ def _spec_from_cfg(cfg: Dict[str, Any], key: str, tag: Optional[str] = None) -> 
         path = str(raw["path"])
     else:
         path = str(raw["path_template"]).format(tag=str(tag or ""))
+    kind = str(raw.get("kind", "float")).strip().lower()
+    if kind == "choice":
+        return ParamSpec(
+            key=str(key),
+            path=path,
+            kind="choice",
+            center=float(raw["center"]),
+            choices=[float(x) for x in raw["choices"]],
+        )
     return ParamSpec(
         key=str(key),
         path=path,
+        kind="float",
         scale=str(raw["scale"]).strip().lower(),
         lower=float(raw["lower"]),
         center=float(raw["center"]),
@@ -926,6 +947,8 @@ def _spec_from_cfg(cfg: Dict[str, Any], key: str, tag: Optional[str] = None) -> 
 def _method_param_specs(cfg: Dict[str, Any], *, family: str, tag: Optional[str] = None) -> List[ParamSpec]:
     coord = _cfg_get_path(cfg, "hpo.coord")
     shared_order = [str(x) for x in coord["shared_order"]]
+    if _task_scenario(cfg) != "single_task":
+        shared_order = [x for x in shared_order if x != "batch_size"]
     method_orders = coord["method_orders"]
     private_order = [str(x) for x in method_orders[family]]
     ordered = shared_order + private_order
@@ -937,6 +960,8 @@ def _method_base_override(cfg: Dict[str, Any], *, family: str, tag: Optional[str
         "epochs": int(stage_epochs),
         "max_steps": int(stage_max_steps),
     }
+    if _task_scenario(cfg) == "single_task" and int(stage_max_steps) > 0:
+        tr["single"] = {"steps_mode": "max_steps"}
     if family == "ours":
         return {
             "method": {"name": "ours", "ours": json.loads(json.dumps(cfg["method"]["ours"]))},
@@ -952,9 +977,75 @@ def _method_base_override(cfg: Dict[str, Any], *, family: str, tag: Optional[str
     }
 
 
+def _ours_ablation_override(
+    cfg: Dict[str, Any],
+    *,
+    ablation_name: str,
+    stage_epochs: int,
+    stage_max_steps: int,
+) -> Dict[str, Any]:
+    ours_cfg = json.loads(json.dumps(cfg["method"]["ours"]))
+    if ablation_name == "ablate_no_gate":
+        ours_cfg.setdefault("trigger_gate0", {})
+        ours_cfg["trigger_gate0"]["tau_N"] = 1e9
+        ours_cfg["trigger_gate0"]["tau_D"] = 1e9
+    elif ablation_name == "ablate_no_compensation":
+        ours_cfg.setdefault("compensation", {})
+        ours_cfg["compensation"]["enabled"] = False
+    else:
+        raise ValueError(f"unknown ablation: {ablation_name}")
+    return {
+        "method": {"name": "ours", "ours": ours_cfg},
+        "train": {
+            "epochs": int(stage_epochs),
+            "max_steps": int(stage_max_steps),
+            **({"single": {"steps_mode": "max_steps"}} if _task_scenario(cfg) == "single_task" and int(stage_max_steps) > 0 else {}),
+        },
+    }
+
+
 def _apply_centers(override: Dict[str, Any], specs: List[ParamSpec]) -> None:
     for sp in specs:
-        _cfg_set_path(override, sp.path, float(sp.center))
+        if sp.kind == "choice":
+            _cfg_set_path(override, sp.path, int(float(sp.center)))
+        else:
+            _cfg_set_path(override, sp.path, float(sp.center))
+
+
+def _coord_values_for_spec(sp: ParamSpec, *, current_value: Any, count: int, rng: np.random.Generator) -> List[float]:
+    if sp.kind == "choice":
+        out: List[float] = []
+        for x in list(sp.choices or []):
+            fx = float(x)
+            if fx not in out:
+                out.append(fx)
+        cur = float(current_value)
+        if cur not in out:
+            out.insert(0, cur)
+        return out
+
+    return _make_anchor_grid(
+        count=count,
+        lower=float(sp.lower),
+        center=float(current_value),
+        upper=float(sp.upper),
+        scale=str(sp.scale),
+        rng=rng,
+    )
+
+
+def _coord_budget_slots(cfg: Dict[str, Any], specs: List[ParamSpec], budget_trials: int) -> Tuple[int, Optional[str]]:
+    scenario = _task_scenario(cfg)
+    batch_key = None
+    if scenario == "single_task":
+        for sp in specs:
+            if str(sp.key) == "batch_size" and sp.kind == "choice":
+                batch_key = "batch_size"
+                break
+    budget_core = int(budget_trials)
+    if batch_key is not None:
+        budget_core = max(1, int(budget_trials) - 3)
+    return budget_core, batch_key
 
 
 def _run_seed_aggregate(
@@ -1051,37 +1142,50 @@ def _run_coordinate_descent(
     rng: np.random.Generator,
     family: str,
     tag: Optional[str],
+    param_family: Optional[str] = None,
+    base_override_seedless: Optional[Dict[str, Any]] = None,
     budget_trials: int,
     seeds: List[int],
     stage_epochs: int,
     stage_max_steps: int,
 ) -> Dict[str, Any]:
-    specs = _method_param_specs(cfg, family=family, tag=tag)
+    spec_family = str(param_family or family)
+    specs = _method_param_specs(cfg, family=spec_family, tag=tag)
     if not specs:
-        raise RuntimeError(f"[HPO] no params for family={family} tag={tag}")
+        raise RuntimeError(f"[HPO] no params for family={spec_family} tag={tag}")
 
-    current = _method_base_override(cfg, family=family, tag=tag, stage_epochs=stage_epochs, stage_max_steps=stage_max_steps)
+    if base_override_seedless is None:
+        current = _method_base_override(cfg, family=spec_family, tag=tag, stage_epochs=stage_epochs, stage_max_steps=stage_max_steps)
+    else:
+        current = json.loads(json.dumps(base_override_seedless))
     _apply_centers(current, specs)
 
-    points_per_param = _half_up_div(int(budget_trials), len(specs))
+    budget_core, fixed_extra_key = _coord_budget_slots(cfg, specs, int(budget_trials))
+    counted_specs = [sp for sp in specs if str(sp.key) != str(fixed_extra_key or "")]
+    denom = len(counted_specs) if counted_specs else len(specs)
+    points_per_param = _half_up_div(int(budget_core), denom)
     points_per_param = max(1, int(points_per_param))
 
     sweeps: List[Dict[str, Any]] = []
     current_best_row: Optional[Dict[str, Any]] = None
 
     for pi, sp in enumerate(specs):
-        values = _make_anchor_grid(
-            count=points_per_param,
-            lower=sp.lower,
-            center=float(_cfg_get_path(current, sp.path)),
-            upper=sp.upper,
-            scale=sp.scale,
-            rng=rng,
-        )
+        if fixed_extra_key is not None and str(sp.key) == fixed_extra_key:
+            values = [float(x) for x in list(sp.choices or [])]
+        else:
+            values = _coord_values_for_spec(
+                sp,
+                current_value=_cfg_get_path(current, sp.path),
+                count=points_per_param,
+                rng=rng,
+            )
         candidates: List[Dict[str, Any]] = []
         for vi, val in enumerate(values):
             ov = json.loads(json.dumps(current))
-            _cfg_set_path(ov, sp.path, float(val))
+            if sp.kind == "choice":
+                _cfg_set_path(ov, sp.path, int(round(float(val))))
+            else:
+                _cfg_set_path(ov, sp.path, float(val))
             base_tag = f"{family}__{tag or 'ours'}__cd__p{pi:02d}__{_safe_stage_slug(sp.key)}__v{vi:02d}"
             stage_seed = "baseline_search" if family == "baseline" else "baseline_cagrad_search" if family == "cagrad" else "coord_search"
             stage_agg = "baseline_search.agg" if family == "baseline" else "baseline_cagrad_search.agg" if family == "cagrad" else "coord_search.agg"
@@ -1108,9 +1212,10 @@ def _run_coordinate_descent(
             {
                 "param_key": sp.key,
                 "param_path": sp.path,
+                "kind": sp.kind,
                 "scale": sp.scale,
-                "lower": float(sp.lower),
-                "upper": float(sp.upper),
+                "lower": None if sp.lower is None else float(sp.lower),
+                "upper": None if sp.upper is None else float(sp.upper),
                 "chosen_value": float(best["value"]),
                 "candidate_values": [float(c["value"]) for c in candidates],
                 "score_variance": float(_score_variance([c["row"] for c in candidates])),
@@ -1128,6 +1233,9 @@ def _run_coordinate_descent(
         "final_override": current,
         "best_row": current_best_row,
         "points_per_param": int(points_per_param),
+        "budget_trials": int(budget_trials),
+        "budget_core": int(budget_core),
+        "fixed_extra_key": fixed_extra_key,
         "sweeps": sweeps,
     }
 
@@ -1158,6 +1266,8 @@ def _run_local_refine(
 
     grids: List[Tuple[Dict[str, Any], List[float]]] = []
     for sw in top:
+        if str(sw.get("kind", "float")) != "float":
+            continue
         grids.append(
             (
                 sw,
@@ -1171,6 +1281,8 @@ def _run_local_refine(
                 ),
             )
         )
+    if not grids:
+        return {"enabled": False, "best_row": coord_result["best_row"], "best_override": coord_result["final_override"], "top_params": []}
 
     base_override = json.loads(json.dumps(coord_result["final_override"]))
     best_row = coord_result["best_row"]
@@ -1450,9 +1562,17 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
     multi_cfg = task_cfg.get("multi", {}) if isinstance(task_cfg.get("multi", {}), dict) else {}
     train_cfg = cfg.get("train", {}) if isinstance(cfg.get("train", {}), dict) else {}
     train_multi_cfg = train_cfg.get("multi", {}) if isinstance(train_cfg.get("multi", {}), dict) else {}
-    hpo_use_max_steps = bool(multi_cfg.get("enabled", False)) and (
+    train_single_cfg = train_cfg.get("single", {}) if isinstance(train_cfg.get("single", {}), dict) else {}
+    scenario = _task_scenario(cfg)
+    multi_uses_max_steps = (scenario in {"multi_task", "multi_dataset"} or bool(multi_cfg.get("enabled", False))) and (
         str(train_multi_cfg.get("steps_mode", "max_steps")).strip().lower() == "max_steps"
     )
+    single_uses_max_steps = scenario == "single_task" and (
+        str(train_single_cfg.get("steps_mode", "epochs")).strip().lower() == "max_steps"
+        or int(grid_cfg.get("baseline_search_max_steps", 0) or 0) > 0
+        or int(rerank_cfg.get("max_steps", 0) or 0) > 0
+    )
+    hpo_use_max_steps = bool(multi_uses_max_steps or single_uses_max_steps)
     global_train_max_steps = int(train_cfg.get("max_steps", 0) or 0)
 
     def _resolve_stage_max_steps(stage_name: str, configured_steps: int) -> int:
@@ -1645,6 +1765,87 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
         trials_budget=bayes_trials,
     )
 
+    ablation_results: Dict[str, Dict[str, Any]] = {}
+    ablation_refine_results: Dict[str, Dict[str, Any]] = {}
+    ablation_bayes_results: Dict[str, Dict[str, Any]] = {}
+    hpo_ab_cfg = (cfg.get("hpo", {}) or {}).get("ablations", {}) or {}
+    scenario = _task_scenario(cfg)
+    if bool(hpo_ab_cfg.get("enabled", False)) and scenario == "multi_task":
+        ablation_names: List[str] = []
+        if bool(hpo_ab_cfg.get("no_gate", True)):
+            ablation_names.append("ablate_no_gate")
+        if bool(hpo_ab_cfg.get("no_compensation", True)):
+            ablation_names.append("ablate_no_compensation")
+        for ablation_name in ablation_names:
+            base_override = _ours_ablation_override(
+                cfg,
+                ablation_name=ablation_name,
+                stage_epochs=coord_epochs,
+                stage_max_steps=coord_max_steps,
+            )
+            ablation_results[ablation_name] = _run_coordinate_descent(
+                cfg=cfg,
+                base_config_path=base_config_path,
+                schedule_path=schedule_path,
+                set_args=set_args,
+                hpo_run_dir=hpo_run_dir,
+                trials_csv=trials_csv,
+                score_weights=score_weights,
+                rng=rng,
+                family=ablation_name,
+                tag=None,
+                param_family="ours",
+                base_override_seedless=base_override,
+                budget_trials=family_budget,
+                seeds=refine_seeds,
+                stage_epochs=coord_epochs,
+                stage_max_steps=coord_max_steps,
+            )
+            ablation_refine_results[ablation_name] = _run_local_refine(
+                cfg=cfg,
+                base_config_path=base_config_path,
+                schedule_path=schedule_path,
+                set_args=set_args,
+                hpo_run_dir=hpo_run_dir,
+                trials_csv=trials_csv,
+                score_weights=score_weights,
+                family=ablation_name,
+                tag=None,
+                coord_result=ablation_results[ablation_name],
+                seeds=refine_seeds,
+                stage_epochs=refine_epochs,
+                stage_max_steps=refine_max_steps,
+                top_k=top_k,
+                radix=refine_radix,
+            )
+            ablation_bayes_results[ablation_name] = _run_bayes_after_refine(
+                cfg=cfg,
+                base_config_path=base_config_path,
+                schedule_path=schedule_path,
+                set_args=set_args,
+                hpo_run_dir=hpo_run_dir,
+                trials_csv=trials_csv,
+                score_weights=score_weights,
+                family=ablation_name,
+                tag=None,
+                coord_result=ablation_results[ablation_name],
+                refine_result=ablation_refine_results[ablation_name],
+                seeds=refine_seeds,
+                stage_epochs=refine_epochs,
+                stage_max_steps=refine_max_steps,
+                trials_budget=bayes_trials,
+            )
+            best_ab_row = ablation_results[ablation_name]["best_row"]
+            best_ab_override = ablation_results[ablation_name]["final_override"]
+            if float(ablation_refine_results[ablation_name]["best_row"].get("score", "-inf")) >= float(best_ab_row.get("score", "-inf")):
+                best_ab_row = ablation_refine_results[ablation_name]["best_row"]
+                best_ab_override = ablation_refine_results[ablation_name]["best_override"]
+            if ablation_bayes_results[ablation_name].get("enabled", False) and float(ablation_bayes_results[ablation_name]["best_row"].get("score", "-inf")) >= float(best_ab_row.get("score", "-inf")):
+                best_ab_row = ablation_bayes_results[ablation_name]["best_row"]
+                best_ab_override = ablation_bayes_results[ablation_name]["best_override"]
+            ablation_results[ablation_name]["best_row"] = best_ab_row
+            ablation_results[ablation_name]["final_override"] = best_ab_override
+
     best_overall = ours_coord["best_row"]
     best_source = "coord_search"
     if float(ours_refine["best_row"].get("score", "-inf")) >= float(best_overall.get("score", "-inf")):
@@ -1660,6 +1861,8 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
     for tag, res in cagrad_results.items():
         _copy_metrics_csv(res["best_row"], best_curves_dir / f"best_baseline_cagrad_{tag}.csv")
     _copy_metrics_csv(best_overall, best_curves_dir / "best_ours.csv")
+    for ablation_name, res in ablation_results.items():
+        _copy_metrics_csv(res["best_row"], best_curves_dir / f"best_{ablation_name}.csv")
 
     if best_overall:
         baseline_best_lr_refined = {
@@ -1681,6 +1884,16 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
             tag: json.loads(json.dumps(res["final_override"]))
             for tag, res in cagrad_results.items()
         }
+        ablation_best_by_name = {
+            name: {
+                "lr": float(_cfg_get_path(res["final_override"], "train.lr")),
+            }
+            for name, res in ablation_results.items()
+        }
+        ablation_best_cfg_by_name = {
+            name: json.loads(json.dumps(res["final_override"]))
+            for name, res in ablation_results.items()
+        }
 
         best_obj = {
             "best": best_overall,
@@ -1693,20 +1906,24 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
             "baseline_cagrad_best_by_tag": baseline_cagrad_best_by_tag,
             "baseline_best_cfg_by_tag": baseline_best_cfg_by_tag,
             "baseline_cagrad_best_cfg_by_tag": baseline_cagrad_best_cfg_by_tag,
+            "ablation_best_by_name": ablation_best_by_name,
+            "ablation_best_cfg_by_name": ablation_best_cfg_by_name,
             "hpo_train_schedule": hpo_train_schedule,
             "chosen_ours_alpha": chosen_ours_alpha,
             "coord_report": {
                 "baseline": {tag: {"points_per_param": int(res["points_per_param"]), "sweeps": res["sweeps"]} for tag, res in baseline_results.items()},
                 "cagrad": {tag: {"points_per_param": int(res["points_per_param"]), "sweeps": res["sweeps"]} for tag, res in cagrad_results.items()},
                 "ours": {"points_per_param": int(ours_coord["points_per_param"]), "sweeps": ours_coord["sweeps"]},
+                "ablations": {name: {"points_per_param": int(res["points_per_param"]), "sweeps": res["sweeps"]} for name, res in ablation_results.items()},
             },
             "local_refine_report": {
                 "baseline": baseline_refine_results,
                 "cagrad": cagrad_refine_results,
                 "ours": ours_refine,
+                "ablations": ablation_refine_results,
             },
             "use_bayes": bool(cfg["hpo"]["use_bayes"]),
-            "bayes_report": ours_bayes,
+            "bayes_report": {"ours": ours_bayes, "ablations": ablation_bayes_results},
         }
         _atomic_write_json(best_path, best_obj)
         print(f"[HPO][OK] best saved: {best_path}")
@@ -1725,6 +1942,8 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
             "baseline_cagrad_best_by_tag": baseline_cagrad_best_by_tag,
             "baseline_best_cfg_by_tag": baseline_best_cfg_by_tag,
             "baseline_cagrad_best_cfg_by_tag": baseline_cagrad_best_cfg_by_tag,
+            "ablation_best_by_name": ablation_best_by_name,
+            "ablation_best_cfg_by_name": ablation_best_cfg_by_name,
             "hpo_train_schedule": hpo_train_schedule,
             "chosen_ours_alpha": chosen_ours_alpha,
             "coord_report": best_obj["coord_report"],

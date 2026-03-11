@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,6 +11,10 @@ import pandas as pd
 
 
 Curve = Tuple[np.ndarray, np.ndarray]
+
+
+def _fname(metric: str) -> str:
+    return metric.replace("/", "_").replace(" ", "_").replace(":", "_")
 
 
 def read_step_curve(metrics_csv: Path, ykey: str) -> Optional[Curve]:
@@ -37,6 +41,23 @@ def collect_variant_curves(trial_runs_dir: Path, variant: str, metric: str) -> L
         if curve is not None:
             out.append(curve)
     return out
+
+
+def collect_metrics(trial_runs_dir: Path, variants: List[str]) -> List[str]:
+    metrics: Set[str] = set()
+    skip = {"step", "epoch", "step_in_epoch", "probe/is_eval"}
+    for variant in variants:
+        for p in sorted((trial_runs_dir / variant).glob("s*/metrics.csv")):
+            try:
+                df = pd.read_csv(p, nrows=8)
+            except Exception:
+                continue
+            for col in df.columns:
+                name = str(col).strip()
+                if not name or name in skip:
+                    continue
+                metrics.add(name)
+    return sorted(metrics)
 
 
 def align_and_stack(curves: List[Curve]) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
@@ -99,14 +120,10 @@ def main() -> int:
 
     trial_runs_dir = Path(args.trial_runs_dir)
     out_dir = trial_runs_dir / "_plots_ablation"
-    metrics = {
-        "val/acc": "ablation_val_acc.png",
-        "val/loss": "ablation_val_loss.png",
-        "train/acc": "ablation_train_acc.png",
-        "train/loss_eval": "ablation_train_loss.png",
-    }
-    for metric, name in metrics.items():
-        plot_metric(trial_runs_dir, metric, out_dir / name)
+    variants = ["ours", "ablate_no_gate", "ablate_no_compensation"]
+    metrics = collect_metrics(trial_runs_dir, variants)
+    for metric in metrics:
+        plot_metric(trial_runs_dir, metric, out_dir / f"{_fname(metric)}.png")
     print(f"[OK] ablation plots saved under {out_dir}")
     return 0
 

@@ -18,6 +18,20 @@ class GlueData:
     num_labels: int
 
 
+def _ensure_validation_split(ds: DatasetDict, *, seed: int = 2026, validation_ratio: float = 0.1) -> DatasetDict:
+    if "validation" in ds:
+        return ds
+    if "train" not in ds:
+        raise RuntimeError("dataset must contain a train split")
+    split = ds["train"].train_test_split(test_size=float(validation_ratio), seed=int(seed))
+    out = DatasetDict()
+    out["train"] = split["train"]
+    out["validation"] = split["test"]
+    if "test" in ds:
+        out["test"] = ds["test"]
+    return out
+
+
 def _normalize_task_name(task_name: str) -> str:
     """
     Accepts either:
@@ -101,4 +115,64 @@ def load_glue(task_name: str, model_name: str, max_len: int) -> GlueData:
         tokenizer=tokenizer,
         collator=collator,
         num_labels=num_labels,
+    )
+
+
+def load_text_classification(dataset_name: str, model_name: str, max_len: int) -> GlueData:
+    name = str(dataset_name).strip()
+    if name.startswith("glue/") or name in {
+        "cola",
+        "sst2",
+        "mrpc",
+        "qqp",
+        "stsb",
+        "mnli",
+        "qnli",
+        "rte",
+        "wnli",
+    }:
+        return load_glue(name, model_name, max_len)
+
+    ds: DatasetDict
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+    if tokenizer.pad_token is None and tokenizer.eos_token is not None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    if name == "yelp_polarity":
+        ds = _ensure_validation_split(load_dataset("yelp_polarity"))
+
+        def tok(ex: Dict[str, List[Any]]) -> Dict[str, Any]:
+            return tokenizer(ex["text"], truncation=True, max_length=max_len)
+
+        remove_cols = [c for c in ds["train"].column_names if c != "label"]
+        ds = ds.map(tok, batched=True, remove_columns=remove_cols)
+        num_labels = 2
+    elif name == "amazon_polarity":
+        ds = _ensure_validation_split(load_dataset("amazon_polarity"))
+
+        def tok(ex: Dict[str, List[Any]]) -> Dict[str, Any]:
+            titles = ex.get("title", [""] * len(ex["label"]))
+            contents = ex.get("content", [""] * len(ex["label"]))
+            merged = [f"{str(t).strip()} {str(c).strip()}".strip() for t, c in zip(titles, contents)]
+            return tokenizer(merged, truncation=True, max_length=max_len)
+
+        remove_cols = [c for c in ds["train"].column_names if c != "label"]
+        ds = ds.map(tok, batched=True, remove_columns=remove_cols)
+        num_labels = 2
+    else:
+        raise RuntimeError(f"unsupported text-classification dataset: {name!r}")
+
+    if "label" in ds["train"].column_names:
+        ds = ds.rename_column("label", "labels")
+
+    keep_cols = [c for c in ds["train"].column_names if c in {"input_ids", "attention_mask", "token_type_ids", "labels"}]
+    ds.set_format(type="torch", columns=keep_cols)
+    collator = DataCollatorWithPadding(tokenizer=tokenizer)
+    return GlueData(
+        train=ds["train"],
+        validation=ds["validation"],
+        test=ds.get("test", None),
+        tokenizer=tokenizer,
+        collator=collator,
+        num_labels=int(num_labels),
     )

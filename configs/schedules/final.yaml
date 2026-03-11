@@ -2,6 +2,8 @@
 stage: final
 
 train:
+  single:
+    steps_mode: epochs
   warmup_ratio: 0.1
 
   eval:

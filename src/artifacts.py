@@ -74,13 +74,14 @@ def make_run_name(cfg: Dict[str, Any], extra: Optional[Dict[str, Any]] = None) -
 
     stage = str(cfg["stage"])
     task_cfg = cfg["task"]
+    scenario = str(task_cfg.get("scenario", "single_task")).strip().lower()
     multi_cfg = (task_cfg.get("multi", {}) or {}) if isinstance(task_cfg, dict) else {}
     if bool(multi_cfg.get("enabled", False)):
         ds_list = multi_cfg.get("datasets", []) or []
         ds_tokens = [str(x).replace("/", "_") for x in ds_list]
-        task = "multi_" + ("+".join(ds_tokens) if ds_tokens else "none")
+        task = f"{scenario}_" + ("+".join(ds_tokens) if ds_tokens else "none")
     else:
-        task = str(task_cfg["name"]).replace("/", "_")
+        task = f"{scenario}_{str(task_cfg['name']).replace('/', '_')}"
     model = str(cfg["model"]["name"]).replace("/", "_")
     method_name = str(cfg["method"]["name"])
     method = method_name
