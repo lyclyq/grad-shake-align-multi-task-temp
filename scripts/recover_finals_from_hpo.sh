@@ -132,7 +132,7 @@ if isinstance(ng, dict) and "gate0_noise" not in ours_cfg:
 
 if "voting" not in ours_cfg and "votes" in ours_cfg:
     ours_cfg["voting"] = {
-        "samples_per_vote": int(ours_cfg.get("votes", 8)),
+        "samples_per_vote": int(ours_cfg.get("votes", 4)),
         "allow_tail": True,
         "keep_single_votes": True,
     }

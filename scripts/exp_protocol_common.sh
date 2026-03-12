@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON_BIN="${PYTHON_BIN:-python}"
 PIPELINE="$ROOT/scripts/pipeline_oneclick.py"
 TRIALS="${TRIALS:-96}"
+HPO_SEEDS="${HPO_SEEDS:-[2,3]}"
 FINAL_SEEDS="${FINAL_SEEDS:-[2,3,5,7,11]}"
 
 run_single_task_protocol() {
@@ -33,6 +34,8 @@ run_single_task_protocol() {
     --epochs "$final_epochs" \
     --final_epochs "$final_epochs" \
     --final_seeds "$FINAL_SEEDS" \
+    --set "hpo.bandit.refine_seeds=$HPO_SEEDS" \
+    --set "hpo.grid.rerank.seeds=$HPO_SEEDS" \
     --ours_r "$ours_r" \
     --ours_R "$ours_R" \
     "${extra[@]}"
@@ -43,7 +46,7 @@ run_multi_source_protocol() {
   local runs_group="$2"
   local model="$3"
   local datasets_json="$4"
-  local hpo_steps="${5:-50}"
+  local hpo_steps="${5:-80}"
   local final_steps="${6:-800}"
   local virtual_epochs="${7:-8}"
   local ours_r="${8:-32}"
@@ -69,6 +72,8 @@ run_multi_source_protocol() {
     --hpo_baseline_max_steps "$hpo_steps" \
     --hpo_grid_max_steps "$hpo_steps" \
     --hpo_rerank_max_steps "$hpo_steps" \
+    --set "hpo.bandit.refine_seeds=$HPO_SEEDS" \
+    --set "hpo.grid.rerank.seeds=$HPO_SEEDS" \
     --ours_r "$ours_r" \
     --ours_R "$ours_R" \
     "${extra[@]}"
@@ -103,7 +108,7 @@ run_multi_task_ablation_resume() {
   local runs_group="$1"
   local model="$2"
   local datasets_json="$3"
-  local hpo_steps="${4:-50}"
+  local hpo_steps="${4:-80}"
   local final_steps="${5:-800}"
   local virtual_epochs="${6:-8}"
   local ours_r="${7:-32}"

@@ -189,6 +189,73 @@ def _step_efficiency_metrics(step_start_t: float, device: torch.device) -> Dict[
     }
 
 
+def _loss_scalar(loss: Any) -> torch.Tensor:
+    if not torch.is_tensor(loss):
+        raise RuntimeError(f"[trainer] expected tensor loss, got {type(loss)}")
+    return loss.mean() if loss.ndim > 0 else loss
+
+
+def _batch_num_samples(batch: Dict[str, torch.Tensor]) -> int:
+    for v in batch.values():
+        if torch.is_tensor(v) and v.ndim > 0:
+            return int(v.shape[0])
+    raise RuntimeError("[trainer] could not infer batch size from batch payload")
+
+
+def _slice_batch(batch: Dict[str, torch.Tensor], s: int, e: int) -> Dict[str, torch.Tensor]:
+    out: Dict[str, torch.Tensor] = {}
+    for k, v in batch.items():
+        if torch.is_tensor(v) and v.ndim > 0 and int(v.shape[0]) >= int(e):
+            out[k] = v[s:e]
+        else:
+            out[k] = v
+    return out
+
+
+def _move_batch_to_device(batch: Dict[str, torch.Tensor], device: torch.device) -> Dict[str, torch.Tensor]:
+    return {
+        k: (v.to(device, non_blocking=True) if torch.is_tensor(v) else v)
+        for k, v in batch.items()
+    }
+
+
+def _resolve_device_batch_size(cfg: Dict[str, Any], target_batch_size: int) -> int:
+    raw = _as_int(_cfg_get(cfg, "train.device_batch_size", 0), 0)
+    if raw <= 0:
+        raw = int(target_batch_size)
+    return max(1, min(int(raw), int(max(1, target_batch_size))))
+
+
+def _iter_exec_spans(n: int, exec_batch_size: int) -> List[Tuple[int, int]]:
+    chunk = max(1, int(exec_batch_size))
+    return _split_indices(int(n), chunk, allow_tail=True)
+
+
+def _forward_backward_mean_loss(
+    model,
+    batch_cpu: Dict[str, torch.Tensor],
+    device: torch.device,
+    *,
+    exec_batch_size: int,
+    use_amp: bool,
+) -> float:
+    n = _batch_num_samples(batch_cpu)
+    if n <= 0:
+        raise RuntimeError("[trainer] empty batch in chunked backward")
+
+    total_loss = 0.0
+    for s, e in _iter_exec_spans(n, exec_batch_size):
+        micro_cpu = _slice_batch(batch_cpu, s, e)
+        micro = _move_batch_to_device(micro_cpu, device)
+        weight = float(e - s) / float(n)
+        with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=bool(use_amp)):
+            out = model(**micro)
+        micro_loss = _loss_scalar(out.loss)
+        (micro_loss * weight).backward()
+        total_loss += float(micro_loss.detach().item()) * weight
+    return float(total_loss)
+
+
 def _perf_cfg(cfg: Dict[str, Any], device: torch.device) -> Dict[str, Any]:
     tr = cfg.get("train", {}) or {}
     p = str(tr.get("precision", "fp32")).strip().lower()
@@ -308,9 +375,13 @@ def evaluate_acc(
     max_batches: int = 0,
     *,
     use_hi: Optional[bool] = None,
+    device_batch_size: Optional[int] = None,
 ) -> float:
     if isinstance(loader, dict):
-        vals = [evaluate_acc(model, ld, device, max_batches=max_batches, use_hi=use_hi) for ld in loader.values()]
+        vals = [
+            evaluate_acc(model, ld, device, max_batches=max_batches, use_hi=use_hi, device_batch_size=device_batch_size)
+            for ld in loader.values()
+        ]
         if not vals:
             return 0.0
         return float(sum(vals) / len(vals))
@@ -326,12 +397,16 @@ def evaluate_acc(
         for i, batch in enumerate(loader):
             if max_batches > 0 and i >= max_batches:
                 break
-            batch = {k: v.to(device, non_blocking=True) for k, v in batch.items()}
-            out = model(**batch)
-            preds = out.logits.argmax(dim=-1)
-            labels = batch["labels"]
-            correct += (preds == labels).sum().item()
-            total += labels.numel()
+            batch_n = _batch_num_samples(batch)
+            exec_bs = _resolve_device_batch_size({"train": {"device_batch_size": device_batch_size or 0}}, batch_n)
+            for s, e in _iter_exec_spans(batch_n, exec_bs):
+                micro_cpu = _slice_batch(batch, s, e)
+                micro = _move_batch_to_device(micro_cpu, device)
+                out = model(**micro)
+                preds = out.logits.argmax(dim=-1)
+                labels = micro["labels"]
+                correct += (preds == labels).sum().item()
+                total += labels.numel()
 
     model.train(was_training)
     return correct / max(total, 1)
@@ -345,9 +420,13 @@ def evaluate_metrics(
     max_batches: int = 0,
     *,
     use_hi: Optional[bool] = None,
+    device_batch_size: Optional[int] = None,
 ) -> Dict[str, float]:
     if isinstance(loader, dict):
-        vals = [evaluate_metrics(model, ld, device, max_batches=max_batches, use_hi=use_hi) for ld in loader.values()]
+        vals = [
+            evaluate_metrics(model, ld, device, max_batches=max_batches, use_hi=use_hi, device_batch_size=device_batch_size)
+            for ld in loader.values()
+        ]
         if not vals:
             return {"acc": 0.0, "loss": 0.0}
         return {
@@ -369,13 +448,20 @@ def evaluate_metrics(
         for i, batch in enumerate(loader):
             if max_batches > 0 and i >= max_batches:
                 break
-            batch = {k: v.to(device, non_blocking=True) for k, v in batch.items()}
-            out = model(**batch)
-            preds = out.logits.argmax(dim=-1)
-            labels = batch["labels"]
-            correct += (preds == labels).sum().item()
-            total += labels.numel()
-            total_loss += float(out.loss.detach().item())
+            batch_n = _batch_num_samples(batch)
+            exec_bs = _resolve_device_batch_size({"train": {"device_batch_size": device_batch_size or 0}}, batch_n)
+            batch_loss = 0.0
+            for s, e in _iter_exec_spans(batch_n, exec_bs):
+                micro_cpu = _slice_batch(batch, s, e)
+                micro = _move_batch_to_device(micro_cpu, device)
+                out = model(**micro)
+                preds = out.logits.argmax(dim=-1)
+                labels = micro["labels"]
+                weight = float(e - s) / float(batch_n)
+                correct += (preds == labels).sum().item()
+                total += labels.numel()
+                batch_loss += float(_loss_scalar(out.loss).detach().item()) * weight
+            total_loss += float(batch_loss)
             n_batches += 1
 
     model.train(was_training)
@@ -404,7 +490,7 @@ def _vote_cfg(cfg: Dict[str, Any]) -> Dict[str, Any]:
     ours = cfg.get("method", {}).get("ours", {}) or {}
     voting = ours.get("voting", {}) or {}
     return {
-        "samples_per_vote": int(voting.get("samples_per_vote", 8)),
+        "samples_per_vote": int(voting.get("samples_per_vote", 4)),
         "keep_single_votes": bool(voting.get("keep_single_votes", True)),
         "allow_tail": bool(voting.get("allow_tail", True)),
     }
@@ -572,6 +658,8 @@ def train_one(
     model = _maybe_compile_model(model, perf, device)
 
     epochs = int(cfg["train"]["epochs"])
+    effective_batch_size = int(cfg["train"]["batch_size"])
+    resolved_device_batch_size = _resolve_device_batch_size(cfg, effective_batch_size)
     lr = float(cfg["train"]["lr"])
     warmup_ratio = float(cfg["train"]["warmup_ratio"])
     weight_decay = float(cfg["train"].get("weight_decay", 0.0))
@@ -701,18 +789,34 @@ def train_one(
         if step == last_eval_global_step:
             return
 
-        val_full = evaluate_metrics(model, val_loader, device, max_batches=eval_max_batches, use_hi=True)
+        val_full = evaluate_metrics(
+            model,
+            val_loader,
+            device,
+            max_batches=eval_max_batches,
+            use_hi=True,
+            device_batch_size=resolved_device_batch_size,
+        )
         val_acc = float(val_full["acc"])
         payload: Dict[str, Any] = {
             "val/acc": float(val_acc),
             "val/loss": float(val_full["loss"]),
             "epoch": int(ep),
             "probe/is_eval": 1.0,
+            "sys/effective_batch_size": float(effective_batch_size),
+            "sys/device_batch_size": float(resolved_device_batch_size),
         }
 
         val_acc_r = None
         if is_ours and eval_r_only:
-            val_r = evaluate_metrics(model, val_loader, device, max_batches=eval_max_batches, use_hi=False)
+            val_r = evaluate_metrics(
+                model,
+                val_loader,
+                device,
+                max_batches=eval_max_batches,
+                use_hi=False,
+                device_batch_size=resolved_device_batch_size,
+            )
             val_acc_r = float(val_r["acc"])
             payload["val/acc_r_only"] = float(val_acc_r)
             payload["val/loss_r_only"] = float(val_r["loss"])
@@ -721,14 +825,28 @@ def train_one(
             payload.update(latest_probe_metrics)
 
         if compute_train_acc:
-            tr_full = evaluate_metrics(model, train_loader, device, max_batches=train_acc_max_batches, use_hi=True)
+            tr_full = evaluate_metrics(
+                model,
+                train_loader,
+                device,
+                max_batches=train_acc_max_batches,
+                use_hi=True,
+                device_batch_size=resolved_device_batch_size,
+            )
             tr_acc = float(tr_full["acc"])
             payload["train/acc"] = float(tr_acc)
             payload["train/loss_eval"] = float(tr_full["loss"])
             payload["gap/train_minus_val"] = float(tr_acc - val_acc)
 
             if is_ours and eval_r_only:
-                tr_r = evaluate_metrics(model, train_loader, device, max_batches=train_acc_max_batches, use_hi=False)
+                tr_r = evaluate_metrics(
+                    model,
+                    train_loader,
+                    device,
+                    max_batches=train_acc_max_batches,
+                    use_hi=False,
+                    device_batch_size=resolved_device_batch_size,
+                )
                 tr_acc_r = float(tr_r["acc"])
                 payload["train/acc_r_only"] = float(tr_acc_r)
                 payload["train/loss_r_only_eval"] = float(tr_r["loss"])
@@ -743,19 +861,47 @@ def train_one(
             best_epoch = int(ep)
 
     def _record_epoch_snapshot(ep: int) -> None:
-        val_acc = evaluate_acc(model, val_loader, device, max_batches=eval_max_batches, use_hi=True)
+        val_acc = evaluate_acc(
+            model,
+            val_loader,
+            device,
+            max_batches=eval_max_batches,
+            use_hi=True,
+            device_batch_size=resolved_device_batch_size,
+        )
         val_history_epoch.append(float(val_acc))
 
         if is_ours and eval_r_only:
-            val_acc_r = evaluate_acc(model, val_loader, device, max_batches=eval_max_batches, use_hi=False)
+            val_acc_r = evaluate_acc(
+                model,
+                val_loader,
+                device,
+                max_batches=eval_max_batches,
+                use_hi=False,
+                device_batch_size=resolved_device_batch_size,
+            )
             val_r_only_history_epoch.append(float(val_acc_r))
 
         if compute_train_acc:
-            tr_acc = evaluate_acc(model, train_loader, device, max_batches=train_acc_max_batches, use_hi=True)
+            tr_acc = evaluate_acc(
+                model,
+                train_loader,
+                device,
+                max_batches=train_acc_max_batches,
+                use_hi=True,
+                device_batch_size=resolved_device_batch_size,
+            )
             train_history_epoch.append(float(tr_acc))
 
             if is_ours and eval_r_only:
-                tr_acc_r = evaluate_acc(model, train_loader, device, max_batches=train_acc_max_batches, use_hi=False)
+                tr_acc_r = evaluate_acc(
+                    model,
+                    train_loader,
+                    device,
+                    max_batches=train_acc_max_batches,
+                    use_hi=False,
+                    device_batch_size=resolved_device_batch_size,
+                )
                 train_r_only_history_epoch.append(float(tr_acc_r))
 
     def _run_single_step(batch: Dict[str, torch.Tensor], *, ep: int, step_in_epoch: int) -> float:
@@ -766,24 +912,29 @@ def train_one(
                 torch.cuda.reset_peak_memory_stats(device)
             except Exception:
                 pass
-        batch = {k: v.to(device, non_blocking=True) for k, v in batch.items()}
+        batch_n = _batch_num_samples(batch)
+        step_exec_batch_size = _resolve_device_batch_size(cfg, batch_n)
         step_loss_val = 0.0
         step_probe_metrics: Dict[str, float] = {}
         step_payload: Dict[str, Any] = {
             "epoch": int(ep),
             "step_in_epoch": int(step_in_epoch),
             "probe/is_eval": 0.0,
+            "sys/effective_batch_size": float(batch_n),
+            "sys/device_batch_size": float(step_exec_batch_size),
         }
 
         if controller is None:
-            with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=bool(perf["use_amp"])):
-                out = model(**batch)
-            loss = out.loss
-            loss.backward()
-            step_loss_val = float(loss.item())
+            step_loss_val = _forward_backward_mean_loss(
+                model,
+                batch,
+                device,
+                exec_batch_size=step_exec_batch_size,
+                use_amp=bool(perf["use_amp"]),
+            )
             step_payload["train/loss"] = float(step_loss_val)
         else:
-            bs = int(batch["input_ids"].shape[0])
+            bs = int(batch_n)
             spv = int(vote_cfg["samples_per_vote"])
             allow_tail = bool(vote_cfg["allow_tail"])
 
@@ -798,17 +949,20 @@ def train_one(
             loss_mean_batch = 0.0
 
             for (s, e) in windows:
-                sub = {k: v[s:e] for k, v in batch.items()}
+                sub = _slice_batch(batch, s, e)
                 win_weight = float(e - s) / float(bs)
                 if win_weight <= 0.0:
                     raise RuntimeError(f"[trainer] invalid window weight: s={s} e={e} bs={bs}")
 
                 opt.zero_grad(set_to_none=True)
-                with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=bool(perf["use_amp"])):
-                    out = model(**sub)
-                win_loss = out.loss
-                loss_mean_batch += float(win_loss.detach().item()) * win_weight
-                win_loss.backward()
+                win_loss_val = _forward_backward_mean_loss(
+                    model,
+                    sub,
+                    device,
+                    exec_batch_size=step_exec_batch_size,
+                    use_amp=bool(perf["use_amp"]),
+                )
+                loss_mean_batch += float(win_loss_val) * win_weight
 
                 for name, mod in lora_modules.items():
                     g_r, g_hi = _flatten_branch_grads(mod)
@@ -1056,6 +1210,8 @@ def _train_one_multitask(
         max_steps = int(max(1, epochs) * max(1, largest_steps_per_epoch))
         virtual_steps_per_epoch = int(max(1, largest_steps_per_epoch))
 
+    effective_batch_size_per_source = int(cfg["train"]["batch_size"])
+    resolved_device_batch_size = _resolve_device_batch_size(cfg, effective_batch_size_per_source)
     lr = float(cfg["train"]["lr"])
     warmup_ratio = float(cfg["train"]["warmup_ratio"])
     weight_decay = float(cfg["train"].get("weight_decay", 0.0))
@@ -1185,18 +1341,34 @@ def _train_one_multitask(
         if step == last_eval_global_step:
             return
 
-        val_full = evaluate_metrics(model, val_loader, device, max_batches=eval_max_batches, use_hi=True)
+        val_full = evaluate_metrics(
+            model,
+            val_loader,
+            device,
+            max_batches=eval_max_batches,
+            use_hi=True,
+            device_batch_size=resolved_device_batch_size,
+        )
         val_acc = float(val_full["acc"])
         payload: Dict[str, Any] = {
             "val/acc": float(val_acc),
             "val/loss": float(val_full["loss"]),
             "epoch": int(ep),
             "probe/is_eval": 1.0,
+            "sys/effective_batch_size_per_source": float(effective_batch_size_per_source),
+            "sys/device_batch_size": float(resolved_device_batch_size),
         }
 
         val_acc_r = None
         if is_ours and eval_r_only:
-            val_r = evaluate_metrics(model, val_loader, device, max_batches=eval_max_batches, use_hi=False)
+            val_r = evaluate_metrics(
+                model,
+                val_loader,
+                device,
+                max_batches=eval_max_batches,
+                use_hi=False,
+                device_batch_size=resolved_device_batch_size,
+            )
             val_acc_r = float(val_r["acc"])
             payload["val/acc_r_only"] = float(val_acc_r)
             payload["val/loss_r_only"] = float(val_r["loss"])
@@ -1205,14 +1377,28 @@ def _train_one_multitask(
             payload.update(latest_probe_metrics)
 
         if compute_train_acc:
-            tr_full = evaluate_metrics(model, train_loader, device, max_batches=train_acc_max_batches, use_hi=True)
+            tr_full = evaluate_metrics(
+                model,
+                train_loader,
+                device,
+                max_batches=train_acc_max_batches,
+                use_hi=True,
+                device_batch_size=resolved_device_batch_size,
+            )
             tr_acc = float(tr_full["acc"])
             payload["train/acc"] = float(tr_acc)
             payload["train/loss_eval"] = float(tr_full["loss"])
             payload["gap/train_minus_val"] = float(tr_acc - val_acc)
 
             if is_ours and eval_r_only:
-                tr_r = evaluate_metrics(model, train_loader, device, max_batches=train_acc_max_batches, use_hi=False)
+                tr_r = evaluate_metrics(
+                    model,
+                    train_loader,
+                    device,
+                    max_batches=train_acc_max_batches,
+                    use_hi=False,
+                    device_batch_size=resolved_device_batch_size,
+                )
                 tr_acc_r = float(tr_r["acc"])
                 payload["train/acc_r_only"] = float(tr_acc_r)
                 payload["train/loss_r_only_eval"] = float(tr_r["loss"])
@@ -1245,8 +1431,7 @@ def _train_one_multitask(
 
         batch_by_task: Dict[str, Dict[str, torch.Tensor]] = {}
         for task_name, it in train_iters.items():
-            batch = next(it)
-            batch_by_task[task_name] = {k: v.to(device, non_blocking=True) for k, v in batch.items()}
+            batch_by_task[task_name] = next(it)
 
         step_loss_val = 0.0
         step_probe_metrics: Dict[str, float] = {}
@@ -1254,6 +1439,8 @@ def _train_one_multitask(
             "epoch": int(ep),
             "step_in_epoch": int(step_in_epoch),
             "probe/is_eval": 0.0,
+            "sys/effective_batch_size_per_source": float(effective_batch_size_per_source),
+            "sys/device_batch_size": float(resolved_device_batch_size),
         }
 
         if controller is None:
@@ -1262,14 +1449,17 @@ def _train_one_multitask(
             loss_sum = 0.0
             for task_name, batch in batch_by_task.items():
                 opt.zero_grad(set_to_none=True)
-                with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=bool(perf["use_amp"])):
-                    out = model(**batch)
-                loss = out.loss
-                loss.backward()
+                loss_val = _forward_backward_mean_loss(
+                    model,
+                    batch,
+                    device,
+                    exec_batch_size=_resolve_device_batch_size(cfg, _batch_num_samples(batch)),
+                    use_amp=bool(perf["use_amp"]),
+                )
                 grad_vec = _flatten_full_grad_vector(baseline_params)
                 grad_vecs.append(grad_vec)
                 task_grad_map[task_name] = grad_vec
-                loss_sum += float(loss.detach().item())
+                loss_sum += float(loss_val)
 
             if grad_vecs:
                 grads = torch.stack(grad_vecs, dim=0)
@@ -1300,7 +1490,7 @@ def _train_one_multitask(
             spv = int(vote_cfg["samples_per_vote"])
             allow_tail = bool(vote_cfg["allow_tail"])
 
-            total_samples = int(sum(int(batch["input_ids"].shape[0]) for batch in batch_by_task.values()))
+            total_samples = int(sum(_batch_num_samples(batch) for batch in batch_by_task.values()))
             if total_samples <= 0:
                 raise RuntimeError("[trainer] empty total_samples in multi-task step")
 
@@ -1314,13 +1504,13 @@ def _train_one_multitask(
             loss_mean_batch = 0.0
 
             for task_name, batch in batch_by_task.items():
-                bs = int(batch["input_ids"].shape[0])
+                bs = int(_batch_num_samples(batch))
                 windows = _split_indices(bs, spv, allow_tail=allow_tail)
                 if len(windows) == 0:
                     windows = [(0, bs)]
 
                 for (s, e) in windows:
-                    sub = {k: v[s:e] for k, v in batch.items()}
+                    sub = _slice_batch(batch, s, e)
                     win_weight = float(e - s) / float(total_samples)
                     task_win_weight = float(e - s) / float(bs)
                     if win_weight <= 0.0:
@@ -1329,11 +1519,14 @@ def _train_one_multitask(
                         raise RuntimeError(f"[trainer] invalid task window weight: s={s} e={e} bs={bs}")
 
                     opt.zero_grad(set_to_none=True)
-                    with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=bool(perf["use_amp"])):
-                        out = model(**sub)
-                    win_loss = out.loss
-                    loss_mean_batch += float(win_loss.detach().item()) * win_weight
-                    win_loss.backward()
+                    win_loss_val = _forward_backward_mean_loss(
+                        model,
+                        sub,
+                        device,
+                        exec_batch_size=_resolve_device_batch_size(cfg, e - s),
+                        use_amp=bool(perf["use_amp"]),
+                    )
+                    loss_mean_batch += float(win_loss_val) * win_weight
 
                     # scale-invariant votes (divide scaling here)
                     for name, mod in lora_modules.items():
@@ -1480,19 +1673,47 @@ def _train_one_multitask(
             _do_eval_and_log(global_step, ep)
 
             # epoch-end summary snapshots
-            val_acc = evaluate_acc(model, val_loader, device, max_batches=eval_max_batches, use_hi=True)
+            val_acc = evaluate_acc(
+                model,
+                val_loader,
+                device,
+                max_batches=eval_max_batches,
+                use_hi=True,
+                device_batch_size=resolved_device_batch_size,
+            )
             val_history_epoch.append(float(val_acc))
 
             if is_ours and eval_r_only:
-                val_acc_r = evaluate_acc(model, val_loader, device, max_batches=eval_max_batches, use_hi=False)
+                val_acc_r = evaluate_acc(
+                    model,
+                    val_loader,
+                    device,
+                    max_batches=eval_max_batches,
+                    use_hi=False,
+                    device_batch_size=resolved_device_batch_size,
+                )
                 val_r_only_history_epoch.append(float(val_acc_r))
 
             if compute_train_acc:
-                tr_acc = evaluate_acc(model, train_loader, device, max_batches=train_acc_max_batches, use_hi=True)
+                tr_acc = evaluate_acc(
+                    model,
+                    train_loader,
+                    device,
+                    max_batches=train_acc_max_batches,
+                    use_hi=True,
+                    device_batch_size=resolved_device_batch_size,
+                )
                 train_history_epoch.append(float(tr_acc))
 
                 if is_ours and eval_r_only:
-                    tr_acc_r = evaluate_acc(model, train_loader, device, max_batches=train_acc_max_batches, use_hi=False)
+                    tr_acc_r = evaluate_acc(
+                        model,
+                        train_loader,
+                        device,
+                        max_batches=train_acc_max_batches,
+                        use_hi=False,
+                        device_batch_size=resolved_device_batch_size,
+                    )
                     train_r_only_history_epoch.append(float(tr_acc_r))
 
     # -------- summary metrics --------

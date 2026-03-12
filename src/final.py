@@ -6,6 +6,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -559,7 +560,7 @@ def _run_one(
     io_over["overwrite"] = "resume"
     override["io"] = io_over
 
-    cmd = ["python", "scripts/run.py", "train", "--config", base_config_path]
+    cmd = [sys.executable, "scripts/run.py", "train", "--config", base_config_path]
     if schedule_path:
         cmd += ["--schedule", schedule_path]
 

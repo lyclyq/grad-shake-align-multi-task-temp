@@ -106,7 +106,7 @@ def plot_metric(trial_runs_dir: Path, metric: str, out_path: Path) -> None:
     plt.ylabel(metric)
     plt.title(f"Ablation vs Ours: {metric}")
     plt.grid(True, alpha=0.25)
-    plt.legend()
+    plt.legend(loc="upper left", framealpha=0.9)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()
     plt.savefig(out_path)

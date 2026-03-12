@@ -271,6 +271,19 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
     _require_dict(_get_path(cfg, "train"), "train")
     _ensure_int(_get_path(cfg, "train.epochs"), "train.epochs")
     _ensure_int(_get_path(cfg, "train.batch_size"), "train.batch_size")
+    if "device_batch_size" in _get_path(cfg, "train"):
+        if _get_path(cfg, "train.device_batch_size") is not None:
+            dbs = _ensure_int(_get_path(cfg, "train.device_batch_size"), "train.device_batch_size")
+            if dbs < 0:
+                raise ValueError("train.device_batch_size must be >= 0")
+    if "auto_device_batch" in _get_path(cfg, "train"):
+        _require_dict(_get_path(cfg, "train.auto_device_batch"), "train.auto_device_batch")
+        if "enabled" in _get_path(cfg, "train.auto_device_batch"):
+            _ensure_bool(_get_path(cfg, "train.auto_device_batch.enabled"), "train.auto_device_batch.enabled")
+        if "min_batch_size" in _get_path(cfg, "train.auto_device_batch"):
+            min_dbs = _ensure_int(_get_path(cfg, "train.auto_device_batch.min_batch_size"), "train.auto_device_batch.min_batch_size")
+            if min_dbs < 1:
+                raise ValueError("train.auto_device_batch.min_batch_size must be >= 1")
     _ensure_float(_get_path(cfg, "train.lr"), "train.lr")
     _ensure_float(_get_path(cfg, "train.warmup_ratio"), "train.warmup_ratio")
     _ensure_int(_get_path(cfg, "train.seed"), "train.seed")
@@ -428,8 +441,8 @@ def validate_config(cfg: Dict[str, Any], cmd: str) -> None:
         _require_dict(_get_path(cfg, "hpo.bandit"), "hpo.bandit")
         _ensure_float(_get_path(cfg, "hpo.bandit.fixed_warmup_ratio"), "hpo.bandit.fixed_warmup_ratio")
         refine_seeds = _require_list(_get_path(cfg, "hpo.bandit.refine_seeds"), "hpo.bandit.refine_seeds")
-        if len(refine_seeds) < 2:
-            raise ValueError("hpo.bandit.refine_seeds must contain at least 2 seeds")
+        if len(refine_seeds) < 1:
+            raise ValueError("hpo.bandit.refine_seeds must contain at least 1 seed")
         for i, s in enumerate(refine_seeds):
             _ensure_int(s, f"hpo.bandit.refine_seeds[{i}]")
         _require_dict(_get_path(cfg, "hpo.bandit.score"), "hpo.bandit.score")

@@ -4,9 +4,11 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import gc
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
+import torch
 from torch.utils.data import DataLoader
 
 from .artifacts import make_run_name, prepare_run_dir
@@ -16,6 +18,19 @@ from .loggingx import CSVLogger, RunLogger, SwanLabLogger
 from .models_hf import build_model
 from .trainer import train_one
 from .utils import infer_device, set_seed
+
+
+def _is_cuda_oom(exc: BaseException) -> bool:
+    msg = str(exc).lower()
+    return "out of memory" in msg and "cuda" in msg
+
+
+def _next_device_batch_size(cur: int, minimum: int) -> int:
+    cur_i = max(1, int(cur))
+    nxt = max(int(minimum), cur_i // 2)
+    if nxt >= cur_i:
+        nxt = cur_i - 1
+    return max(int(minimum), int(nxt))
 
 
 def _write_json(path: Path, obj: Any) -> None:
@@ -180,6 +195,7 @@ def run_train(
     pin_memory = bool(dl_cfg.get("pin_memory", True))
     persistent_workers = bool(dl_cfg.get("persistent_workers", True)) if num_workers > 0 else False
     prefetch_factor = int(dl_cfg.get("prefetch_factor", 2)) if num_workers > 0 else None
+    num_labels: Optional[int] = None
 
     if not multi_enabled:
         dataset = str(task_cfg["name"])
@@ -206,7 +222,7 @@ def run_train(
             persistent_workers=persistent_workers,
             prefetch_factor=prefetch_factor,
         )
-        model = build_model(model_name, num_labels=data.num_labels)
+        num_labels = int(data.num_labels)
     else:
         datasets_raw = list(multi_cfg.get("datasets", []) or [])
         if len(datasets_raw) == 0:
@@ -254,7 +270,10 @@ def run_train(
 
         if not train_loader:
             raise RuntimeError("[runner] no valid datasets in task.multi.datasets")
-        model = build_model(model_name, num_labels=int(num_labels_ref))
+        num_labels = int(num_labels_ref)
+
+    if num_labels is None:
+        raise RuntimeError("[runner] failed to resolve num_labels")
 
     # --------------------------
     # STRICT method resolution
@@ -267,19 +286,6 @@ def run_train(
     # - baselines => "baseline"
     inject_mode = "ours" if mode == "ours" else "baseline"
 
-    # IMPORTANT: scaling should NOT be touched here.
-    inject_lora(
-        model,
-        mode=inject_mode,
-        r=int(ml["r"]),
-        R=int(ml["R"]),
-        alpha=float(ml["alpha"]),
-        dropout=float(ml["dropout"]),
-        target_substrings=None,
-    )
-
-    model.to(device)
-
     extra = {"seed": seed, "method": mode}
     if trial_tag:
         extra["trial_tag"] = trial_tag
@@ -289,35 +295,80 @@ def run_train(
         extra["run_id"] = run_id
 
     run_name = make_run_name(cfg, extra=extra)
-
     run_dir, _resumed = _prepare_run_dir_from_cfg(cfg, run_name=run_name)
     _persist_repro_bundle(run_dir, cfg)
 
-    metrics_csv = run_dir / "metrics.csv"
-    csv_logger = CSVLogger(metrics_csv)
+    auto_device_cfg = ((cfg.get("train", {}) or {}).get("auto_device_batch", {}) or {})
+    auto_device_enabled = bool(auto_device_cfg.get("enabled", True))
+    min_device_batch = max(1, int(auto_device_cfg.get("min_batch_size", 1)))
+    current_device_batch = int((cfg.get("train", {}) or {}).get("device_batch_size", 0) or 0)
+    if current_device_batch <= 0:
+        current_device_batch = int(batch_size)
 
-    sw_cfg = cfg["log"]["swanlab"]
-    sw_enabled = bool(sw_cfg["enabled"])
-    sw_project = str(sw_cfg["project"])
-    sw_timeout_s = float(sw_cfg.get("timeout_s", 30.0))
-    sw_max_failures = int(sw_cfg.get("max_failures", 3))
-    swan = SwanLabLogger(
-        enabled=sw_enabled,
-        project=sw_project,
-        run_name=run_name,
-        config=cfg,
-        timeout_s=sw_timeout_s,
-        max_failures=sw_max_failures,
-    )
+    summary: Dict[str, Any]
+    cfg_used = cfg
+    while True:
+        set_seed(seed)
+        cfg_used = json.loads(json.dumps(cfg))
+        cfg_used.setdefault("train", {})
+        cfg_used["train"]["device_batch_size"] = int(current_device_batch)
 
-    logger = RunLogger(csv=csv_logger, swan=swan)
+        model = build_model(model_name, num_labels=int(num_labels))
 
-    _write_json(run_dir / "config_resolved.json", cfg)
+        inject_lora(
+            model,
+            mode=inject_mode,
+            r=int(ml["r"]),
+            R=int(ml["R"]),
+            alpha=float(ml["alpha"]),
+            dropout=float(ml["dropout"]),
+            target_substrings=None,
+        )
 
-    summary = train_one(cfg, model, train_loader, val_loader, logger)
+        model.to(device)
 
-    _write_json(run_dir / "summary.json", summary)
-    logger.close()
+        metrics_csv = run_dir / "metrics.csv"
+        csv_logger = CSVLogger(metrics_csv)
+
+        sw_cfg = cfg["log"]["swanlab"]
+        sw_enabled = bool(sw_cfg["enabled"])
+        sw_project = str(sw_cfg["project"])
+        sw_timeout_s = float(sw_cfg.get("timeout_s", 30.0))
+        sw_max_failures = int(sw_cfg.get("max_failures", 3))
+        swan = SwanLabLogger(
+            enabled=sw_enabled,
+            project=sw_project,
+            run_name=run_name,
+            config=cfg_used,
+            timeout_s=sw_timeout_s,
+            max_failures=sw_max_failures,
+        )
+
+        logger = RunLogger(csv=csv_logger, swan=swan)
+        _write_json(run_dir / "config_resolved.json", cfg_used)
+
+        try:
+            summary = train_one(cfg_used, model, train_loader, val_loader, logger)
+            _write_json(run_dir / "summary.json", summary)
+            logger.close()
+            break
+        except RuntimeError as e:
+            logger.close()
+            if device.type == "cuda" and auto_device_enabled and _is_cuda_oom(e) and int(current_device_batch) > int(min_device_batch):
+                next_batch = _next_device_batch_size(int(current_device_batch), int(min_device_batch))
+                print(
+                    f"[runner][OOM] train.device_batch_size={current_device_batch} failed; "
+                    f"retry with {next_batch} (effective batch stays {batch_size})"
+                )
+                current_device_batch = int(next_batch)
+                del model, logger, csv_logger, swan
+                gc.collect()
+                try:
+                    torch.cuda.empty_cache()
+                except Exception:
+                    pass
+                continue
+            raise
 
     # --------------------------
     # HPO integration (append only if training finished)
@@ -345,7 +396,7 @@ def run_train(
             "val_max": val_max,
             "val_final": val_final,
             "val_avg": val_avg,
-            "trial_cfg_json": json.dumps(cfg, sort_keys=True),
+            "trial_cfg_json": json.dumps(cfg_used, sort_keys=True),
             "seeds": str(seed),
             "run_dir": str(run_dir),
             "metrics_csv": str(metrics_csv),

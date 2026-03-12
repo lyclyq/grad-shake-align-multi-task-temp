@@ -2,14 +2,29 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PYTHON_BIN="${PYTHON_BIN:-python}"
+DEFAULT_OPT_PY="/home/lyclyq/miniconda3/envs/optimization/bin/python"
+if [[ -z "${PYTHON_BIN:-}" && -x "$DEFAULT_OPT_PY" ]]; then
+  PYTHON_BIN="$DEFAULT_OPT_PY"
+else
+  PYTHON_BIN="${PYTHON_BIN:-python}"
+fi
 PIPELINE="$ROOT/scripts/pipeline_oneclick.py"
 
-SMOKE_TRIALS="${SMOKE_TRIALS:-2}"
+SMOKE_TRIALS="${SMOKE_TRIALS:-1}"
 SMOKE_HPO_STEPS="${SMOKE_HPO_STEPS:-5}"
 SMOKE_FINAL_STEPS="${SMOKE_FINAL_STEPS:-5}"
-SMOKE_HPO_SEEDS="${SMOKE_HPO_SEEDS:-[1,2]}"
-SMOKE_FINAL_SEEDS="${SMOKE_FINAL_SEEDS:-[2]}"
+SMOKE_HPO_SEEDS="${SMOKE_HPO_SEEDS:-[1]}"
+SMOKE_FINAL_SEEDS="${SMOKE_FINAL_SEEDS:-[1]}"
+SMOKE_COORD_TOP_K="${SMOKE_COORD_TOP_K:-0}"
+SMOKE_REFINE_RADIX="${SMOKE_REFINE_RADIX:-1}"
+SMOKE_SHARED_ORDER="${SMOKE_SHARED_ORDER:-[\"lr\"]}"
+SMOKE_BASELINE_ORDER="${SMOKE_BASELINE_ORDER:-[]}"
+SMOKE_CAGRAD_ORDER="${SMOKE_CAGRAD_ORDER:-[\"cagrad_c\"]}"
+SMOKE_OURS_ORDER="${SMOKE_OURS_ORDER:-[\"tau_D\"]}"
+SMOKE_EVAL_MAX_BATCHES="${SMOKE_EVAL_MAX_BATCHES:-1}"
+SMOKE_COMPUTE_TRAIN_ACC="${SMOKE_COMPUTE_TRAIN_ACC:-false}"
+SMOKE_COMPILE="${SMOKE_COMPILE:-false}"
+SMOKE_NUM_WORKERS="${SMOKE_NUM_WORKERS:-0}"
 
 run_single_task_smoke() {
   local runs_group="$1"
@@ -34,7 +49,19 @@ run_single_task_smoke() {
     --hpo_grid_max_steps "$SMOKE_HPO_STEPS" \
     --hpo_rerank_max_steps "$SMOKE_HPO_STEPS" \
     --final_seeds "$SMOKE_FINAL_SEEDS" \
+    --set "hpo.use_bayes=false" \
+    --set "hpo.grid.rerank.enabled=false" \
+    --set "hpo.coord.top_k=$SMOKE_COORD_TOP_K" \
+    --set "hpo.coord.refine_radix=$SMOKE_REFINE_RADIX" \
+    --set "hpo.coord.shared_order=$SMOKE_SHARED_ORDER" \
+    --set "hpo.coord.method_orders.baseline=$SMOKE_BASELINE_ORDER" \
+    --set "hpo.coord.method_orders.cagrad=$SMOKE_CAGRAD_ORDER" \
+    --set "hpo.coord.method_orders.ours=$SMOKE_OURS_ORDER" \
     --set "hpo.bandit.refine_seeds=$SMOKE_HPO_SEEDS" \
+    --set "train.compile=$SMOKE_COMPILE" \
+    --set "train.dataloader.num_workers=$SMOKE_NUM_WORKERS" \
+    --set "train.eval.max_batches=$SMOKE_EVAL_MAX_BATCHES" \
+    --set "train.eval.compute_train_acc=$SMOKE_COMPUTE_TRAIN_ACC" \
     --set "train.single.steps_mode=max_steps" \
     "${extra[@]}"
 }
@@ -65,7 +92,19 @@ run_multi_source_smoke() {
     --hpo_grid_max_steps "$SMOKE_HPO_STEPS" \
     --hpo_rerank_max_steps "$SMOKE_HPO_STEPS" \
     --final_seeds "$SMOKE_FINAL_SEEDS" \
+    --set "hpo.use_bayes=false" \
+    --set "hpo.grid.rerank.enabled=false" \
+    --set "hpo.coord.top_k=$SMOKE_COORD_TOP_K" \
+    --set "hpo.coord.refine_radix=$SMOKE_REFINE_RADIX" \
+    --set "hpo.coord.shared_order=$SMOKE_SHARED_ORDER" \
+    --set "hpo.coord.method_orders.baseline=$SMOKE_BASELINE_ORDER" \
+    --set "hpo.coord.method_orders.cagrad=$SMOKE_CAGRAD_ORDER" \
+    --set "hpo.coord.method_orders.ours=$SMOKE_OURS_ORDER" \
     --set "hpo.bandit.refine_seeds=$SMOKE_HPO_SEEDS" \
+    --set "train.compile=$SMOKE_COMPILE" \
+    --set "train.dataloader.num_workers=$SMOKE_NUM_WORKERS" \
+    --set "train.eval.max_batches=$SMOKE_EVAL_MAX_BATCHES" \
+    --set "train.eval.compute_train_acc=$SMOKE_COMPUTE_TRAIN_ACC" \
     "${extra[@]}"
 }
 

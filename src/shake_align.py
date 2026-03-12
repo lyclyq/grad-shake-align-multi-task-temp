@@ -19,13 +19,58 @@ class BlockStats:
 def _mean_pairwise_cos(vectors: List[torch.Tensor], eps: float) -> float:
     if len(vectors) < 2:
         return float("nan")
-    mat = torch.stack([v.detach().reshape(-1) for v in vectors], dim=0)
-    norms = torch.norm(mat, dim=1, keepdim=True).clamp_min(float(eps))
-    cos = (mat @ mat.t()) / (norms @ norms.t())
-    mask = torch.triu(torch.ones_like(cos, dtype=torch.bool), diagonal=1)
-    if not bool(mask.any()):
+    buckets: Dict[int, List[torch.Tensor]] = {}
+    for v in vectors:
+        flat = v.detach().reshape(-1)
+        buckets.setdefault(int(flat.numel()), []).append(flat)
+
+    weighted_sum = 0.0
+    weighted_pairs = 0
+    for group in buckets.values():
+        if len(group) < 2:
+            continue
+        mat = torch.stack(group, dim=0)
+        norms = torch.norm(mat, dim=1, keepdim=True).clamp_min(float(eps))
+        cos = (mat @ mat.t()) / (norms @ norms.t())
+        mask = torch.triu(torch.ones_like(cos, dtype=torch.bool), diagonal=1)
+        if not bool(mask.any()):
+            continue
+        pair_count = int(mask.sum().item())
+        weighted_sum += float(cos[mask].mean().item()) * float(pair_count)
+        weighted_pairs += pair_count
+    if weighted_pairs <= 0:
         return float("nan")
-    return float(cos[mask].mean().item())
+    return float(weighted_sum / float(weighted_pairs))
+
+
+def _mean_cross_bucket_cos(vectors_a: List[torch.Tensor], vectors_b: List[torch.Tensor], eps: float) -> float:
+    if not vectors_a or not vectors_b:
+        return float("nan")
+
+    buckets_a: Dict[int, List[torch.Tensor]] = {}
+    buckets_b: Dict[int, List[torch.Tensor]] = {}
+    for v in vectors_a:
+        flat = v.detach().reshape(-1)
+        buckets_a.setdefault(int(flat.numel()), []).append(flat)
+    for v in vectors_b:
+        flat = v.detach().reshape(-1)
+        buckets_b.setdefault(int(flat.numel()), []).append(flat)
+
+    weighted_sum = 0.0
+    weighted_count = 0
+    for dim in sorted(set(buckets_a.keys()) & set(buckets_b.keys())):
+        mat_a = torch.stack(buckets_a[dim], dim=0)
+        mat_b = torch.stack(buckets_b[dim], dim=0)
+        mean_a = mat_a.mean(dim=0)
+        mean_b = mat_b.mean(dim=0)
+        denom = torch.norm(mean_a).clamp_min(float(eps)) * torch.norm(mean_b).clamp_min(float(eps))
+        sim = float(torch.dot(mean_a, mean_b).item() / float(denom.item()))
+        count = int(min(mat_a.shape[0], mat_b.shape[0]))
+        weighted_sum += sim * float(count)
+        weighted_count += count
+    if weighted_count <= 0:
+        return float("nan")
+    return float(weighted_sum / float(weighted_count))
 
 
 class ShakeAlignController:
@@ -44,7 +89,7 @@ class ShakeAlignController:
         self.eps = 1e-8
 
         ours = cfg.get("method", {}).get("ours", {}) or {}
-        self.V = int(ours.get("votes", 8))
+        self.V = int(ours.get("votes", 4))
 
         # legacy EMA window
         self.H_legacy = int(ours.get("ema_H", 4))
@@ -699,8 +744,7 @@ class ShakeAlignController:
                 info["intra_expert_coherence"] = intra_coh
                 info["intra_expert_conflict"] = float(0.5 * (1.0 - intra_coh))
 
-            if route_exec["r"] and route_exec["R"]:
-                mean_r = torch.stack(route_exec["r"], dim=0).mean(dim=0)
-                mean_R = torch.stack(route_exec["R"], dim=0).mean(dim=0)
-                info["inter_expert_similarity"] = float(self._cos(mean_r, mean_R))
+            inter_sim = _mean_cross_bucket_cos(route_exec["r"], route_exec["R"], self.eps)
+            if np.isfinite(inter_sim):
+                info["inter_expert_similarity"] = float(inter_sim)
         return info

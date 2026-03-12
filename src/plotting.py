@@ -232,7 +232,7 @@ def _plot_compare_one_metric(
     plt.title(metric)
     plt.xlabel("step")
     plt.ylabel("value")
-    plt.legend()
+    plt.legend(loc="upper left", framealpha=0.9)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()
     plt.savefig(out_path)

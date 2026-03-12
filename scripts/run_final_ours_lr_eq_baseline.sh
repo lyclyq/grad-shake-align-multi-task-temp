@@ -98,7 +98,7 @@ if ep is not None:
 
 plt.ylabel("val/acc")
 plt.title("Final: baselines vs ours(full+r-only, lr=baseline)")
-plt.legend()
+plt.legend(loc="upper left", framealpha=0.9)
 plt.tight_layout()
 
 out = dst / "_plots" / "compare_baselines_vs_ours_full_and_r_only_lr_eq_baseline_val_acc.png"

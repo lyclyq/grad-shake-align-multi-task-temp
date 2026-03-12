@@ -1542,8 +1542,8 @@ def run_hpo(cfg: Dict[str, Any], base_config_path: str, schedule_path: Optional[
     score_weights = (w_max, w_final, w_avg)
 
     refine_seeds = [int(x) for x in bandit["refine_seeds"]]
-    if len(refine_seeds) < 2:
-        raise RuntimeError("[HPO] hpo.bandit.refine_seeds must have at least 2 seeds")
+    if len(refine_seeds) < 1:
+        raise RuntimeError("[HPO] hpo.bandit.refine_seeds must have at least 1 seed")
     refine_seeds = refine_seeds[:2]
     tags = _baseline_tags(cfg)
 

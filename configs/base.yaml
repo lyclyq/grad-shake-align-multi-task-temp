@@ -14,7 +14,14 @@ task:
 train:
   epochs: 1
   max_steps: 1000
+  # Effective batch size per update.
   batch_size: 32
+  # Execution chunk size moved onto the device at a time.
+  # 0 means "use the full effective batch" (legacy behavior).
+  device_batch_size: 0
+  auto_device_batch:
+    enabled: true
+    min_batch_size: 1
   precision: bf16
   tf32: true
   compile: true
@@ -112,7 +119,7 @@ method:
       dropout: 0.1
 
     ema_H: 1
-    votes: 8
+    votes: 4
 
     ablate:
       interp: false
@@ -136,7 +143,7 @@ method:
       k_pull: 8.0
 
     voting:
-      samples_per_vote: 8
+      samples_per_vote: 4
       allow_tail: true
       keep_single_votes: true
 

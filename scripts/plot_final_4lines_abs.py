@@ -12,6 +12,7 @@ import pandas as pd
 
 
 Curve = Tuple[np.ndarray, np.ndarray]
+LEGEND_KW = {"loc": "upper left", "framealpha": 0.9}
 
 
 def _detect_multitask_max_steps(trial_runs_dir: Path) -> bool:
@@ -246,7 +247,7 @@ def _plot_4lines_epoch(tr: Path, metric: str) -> None:
     plt.xlabel("epoch")
     plt.ylabel(metric)
     plt.title("Final comparison (6 lines, mean±std over seeds)")
-    plt.legend()
+    plt.legend(**LEGEND_KW)
     plt.tight_layout()
 
     out_dir = tr / "_plots"
@@ -320,7 +321,7 @@ def _plot_4lines_dense(tr: Path, *, y_full: str, y_r_only: str, title: str, out_
     plt.ylabel(y_full)
     plt.title(title)
     if plotted:
-        plt.legend()
+        plt.legend(**LEGEND_KW)
     else:
         print(f"[WARN] skip legend: no valid curves for dense plot '{out_name}'")
     plt.tight_layout()
@@ -355,7 +356,7 @@ def _plot_ours_gate_and_pull_dense(tr: Path, *, max_epoch: Optional[int] = 2) ->
     plt.ylabel("rate")
     plt.title(f"Ours Gate0 Activation (dense, first {max_epoch} epochs)")
     if plotted_gate:
-        plt.legend()
+        plt.legend(**LEGEND_KW)
     else:
         print("[WARN] skip legend: no valid ours gate0 dense curves")
     plt.tight_layout()
@@ -403,7 +404,7 @@ def _plot_ours_gate_and_pull_dense(tr: Path, *, max_epoch: Optional[int] = 2) ->
     plt.ylabel("rate")
     plt.title(f"Ours Pull Direction (dense, first {max_epoch} epochs)")
     if plotted_pull:
-        plt.legend()
+        plt.legend(**LEGEND_KW)
     else:
         print("[WARN] skip legend: no valid ours pull-direction dense curves")
     plt.tight_layout()
@@ -423,7 +424,7 @@ def _plot_ours_gate_and_pull_dense(tr: Path, *, max_epoch: Optional[int] = 2) ->
     plt.ylabel("rate")
     plt.title(f"Ours Pull Activation To r (dense, first {max_epoch} epochs)")
     if plotted_pull_r:
-        plt.legend()
+        plt.legend(**LEGEND_KW)
     else:
         print("[WARN] skip legend: no valid ours pull-to-r dense curves")
     plt.tight_layout()
@@ -442,7 +443,7 @@ def _plot_ours_gate_and_pull_dense(tr: Path, *, max_epoch: Optional[int] = 2) ->
     plt.ylabel("rate")
     plt.title(f"Ours Pull Activation To R (dense, first {max_epoch} epochs)")
     if plotted_pull_R:
-        plt.legend()
+        plt.legend(**LEGEND_KW)
     else:
         print("[WARN] skip legend: no valid ours pull-to-R dense curves")
     plt.tight_layout()
@@ -469,7 +470,7 @@ def _plot_ours_gate_and_pull_dense(tr: Path, *, max_epoch: Optional[int] = 2) ->
     plt.ylabel("alpha")
     plt.title(f"Ours Pull Strength (dense, first {max_epoch} epochs)")
     if plotted_alpha:
-        plt.legend()
+        plt.legend(**LEGEND_KW)
     else:
         print("[WARN] skip legend: no valid ours pull-strength dense curves")
     plt.tight_layout()
@@ -512,7 +513,7 @@ def _plot_ours_gate_and_pull_dense(tr: Path, *, max_epoch: Optional[int] = 2) ->
     plt.ylabel("alpha")
     plt.title(f"Ours Pull Strength To r (dense, first {max_epoch} epochs)")
     if plotted_alpha_r:
-        plt.legend()
+        plt.legend(**LEGEND_KW)
     else:
         print("[WARN] skip legend: no valid ours pull-strength-to-r dense curves")
     plt.tight_layout()
@@ -554,7 +555,7 @@ def _plot_ours_gate_and_pull_dense(tr: Path, *, max_epoch: Optional[int] = 2) ->
     plt.ylabel("alpha")
     plt.title(f"Ours Pull Strength To R (dense, first {max_epoch} epochs)")
     if plotted_alpha_R:
-        plt.legend()
+        plt.legend(**LEGEND_KW)
     else:
         print("[WARN] skip legend: no valid ours pull-strength-to-R dense curves")
     plt.tight_layout()

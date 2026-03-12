@@ -318,6 +318,13 @@ def _check_resume_final_compat(*, final_dir: Path, expected_spec: "ExpSpec", wit
     mismatches: List[str] = []
     for k, now_v in checks.items():
         old_v = spec_old.get(k, None)
+        if k == "with_ablations":
+            old_flag = bool(old_v) if old_v is not None else False
+            now_flag = bool(now_v)
+            # Allow upgrading an existing final dir by appending ablation methods.
+            if old_flag and (not now_flag):
+                mismatches.append(f"{k}: old={old_flag!r}, now={now_flag!r}")
+            continue
         if now_v is not None and old_v != now_v:
             mismatches.append(f"{k}: old={old_v!r}, now={now_v!r}")
     if mismatches:

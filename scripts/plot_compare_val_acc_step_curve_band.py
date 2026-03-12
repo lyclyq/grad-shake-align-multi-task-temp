@@ -164,7 +164,7 @@ def main() -> int:
             plt.xlim(0.0, st + 1.0)
             plt.xticks([0, int(st)])
     plt.grid(True, alpha=0.25)
-    plt.legend(loc="best")
+    plt.legend(loc="upper left", framealpha=0.9)
 
     outp = Path(args.out)
     outp.parent.mkdir(parents=True, exist_ok=True)

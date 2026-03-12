@@ -31,7 +31,7 @@ run_multi_source_protocol \
   "appendix_rank_multi_deberta_mix3_r16_R64" \
   "microsoft/deberta-v3-base" \
   "$MIX3" \
-  50 \
+  80 \
   800 \
   8 \
   16 \
@@ -42,7 +42,7 @@ run_multi_source_protocol \
   "appendix_rank_multi_deberta_mix3_r32_R128" \
   "microsoft/deberta-v3-base" \
   "$MIX3" \
-  50 \
+  80 \
   800 \
   8 \
   32 \
