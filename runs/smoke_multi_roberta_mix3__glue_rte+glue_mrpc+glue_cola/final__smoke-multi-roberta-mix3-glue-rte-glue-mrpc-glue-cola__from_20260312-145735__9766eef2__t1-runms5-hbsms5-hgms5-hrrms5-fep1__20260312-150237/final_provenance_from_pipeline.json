@@ -1,0 +1,78 @@
+{
+  "best_path": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_multi_roberta_mix3__glue_rte+glue_mrpc+glue_cola/hpo__multi_task_glue_rte+glue_mrpc+glue_cola__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runms5__20260312-145735__9766eef2/best_hparams.json",
+  "debug_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_multi_roberta_mix3__glue_rte+glue_mrpc+glue_cola/hpo__multi_task_glue_rte+glue_mrpc+glue_cola__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runms5__20260312-145735__9766eef2",
+  "debug_hash": "9766eef2",
+  "debug_name": "hpo__multi_task_glue_rte+glue_mrpc+glue_cola__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runms5__20260312-145735__9766eef2",
+  "debug_timestamp": "20260312-145735",
+  "final_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_multi_roberta_mix3__glue_rte+glue_mrpc+glue_cola/final__smoke-multi-roberta-mix3-glue-rte-glue-mrpc-glue-cola__from_20260312-145735__9766eef2__t1-runms5-hbsms5-hgms5-hrrms5-fep1__20260312-150237",
+  "sets": {
+    "global": [
+      "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/smoke_multi_roberta_mix3__glue_rte+glue_mrpc+glue_cola",
+      "model.name=roberta-base",
+      "task.scenario=multi_task",
+      "task.multi.enabled=true",
+      "task.multi.datasets=[\"glue/rte\", \"glue/mrpc\", \"glue/cola\"]",
+      "train.multi.steps_mode=max_steps",
+      "train.max_steps=5",
+      "train.epochs=1",
+      "hpo.use_bayes=false",
+      "hpo.grid.rerank.enabled=false",
+      "hpo.coord.top_k=0",
+      "hpo.coord.refine_radix=1",
+      "hpo.coord.shared_order=[\"lr\"]",
+      "hpo.coord.method_orders.baseline=[]",
+      "hpo.coord.method_orders.cagrad=[\"cagrad_c\"]",
+      "hpo.coord.method_orders.ours=[\"tau_D\"]",
+      "hpo.bandit.refine_seeds=[1]",
+      "train.compile=false",
+      "train.dataloader.num_workers=0",
+      "train.eval.max_batches=1",
+      "train.eval.compute_train_acc=false"
+    ],
+    "hpo_only": [
+      "hpo.budget.total_trials=1",
+      "hpo.grid.rerank.epochs=1",
+      "hpo.grid.baseline_search_epochs=1",
+      "hpo.grid.grid_epochs=1",
+      "hpo.grid.baseline_search_max_steps=5",
+      "hpo.grid.grid_max_steps=5",
+      "hpo.grid.rerank.max_steps=5",
+      "hpo.ablations.enabled=true"
+    ],
+    "ours_only": []
+  },
+  "spec": {
+    "ablate_interp": false,
+    "dataset": null,
+    "epochs": 1,
+    "final_epochs": 1,
+    "final_seeds": [
+      1
+    ],
+    "history_enabled": false,
+    "hpo_baseline_epochs": 1,
+    "hpo_baseline_max_steps": 5,
+    "hpo_grid_epochs": 1,
+    "hpo_grid_max_steps": 5,
+    "hpo_rerank_max_steps": 5,
+    "max_steps": 5,
+    "model": "roberta-base",
+    "multi_datasets": [
+      "glue/rte",
+      "glue/mrpc",
+      "glue/cola"
+    ],
+    "multi_drop_last": null,
+    "multi_enabled": true,
+    "multi_steps_mode": "max_steps",
+    "ours_R": null,
+    "ours_r": null,
+    "rerank_enabled": null,
+    "rerank_epochs": 1,
+    "rerank_top_k": null,
+    "runs_group": "smoke_multi_roberta_mix3__glue_rte+glue_mrpc+glue_cola",
+    "scenario": "multi_task",
+    "total_trials": 1,
+    "with_ablations": true
+  }
+}

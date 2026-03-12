@@ -1,0 +1,572 @@
+{
+  "ablation_best_by_name": {},
+  "ablation_best_cfg_by_name": {},
+  "baseline_best_cfg_by_tag": {
+    "baseline_R": {
+      "method": {
+        "baseline_R": {
+          "cagrad": {
+            "c": 0.4
+          },
+          "grad_solver": "avg",
+          "lora": {
+            "alpha": 16.0,
+            "dropout": 0.1,
+            "r": 128
+          }
+        },
+        "name": "baseline_R"
+      },
+      "train": {
+        "epochs": 1,
+        "lr": 8e-05,
+        "max_steps": 5,
+        "single": {
+          "steps_mode": "max_steps"
+        }
+      }
+    },
+    "baseline_r": {
+      "method": {
+        "baseline_r": {
+          "cagrad": {
+            "c": 0.4
+          },
+          "grad_solver": "avg",
+          "lora": {
+            "alpha": 2.0,
+            "dropout": 0.1,
+            "r": 32
+          }
+        },
+        "name": "baseline_r"
+      },
+      "train": {
+        "epochs": 1,
+        "lr": 8e-05,
+        "max_steps": 5,
+        "single": {
+          "steps_mode": "max_steps"
+        }
+      }
+    }
+  },
+  "baseline_best_lr_refined": {
+    "baseline_R": 8e-05,
+    "baseline_r": 8e-05
+  },
+  "baseline_cagrad_best_by_tag": {
+    "baseline_R": {
+      "c": 0.4,
+      "lr": 8e-05
+    },
+    "baseline_r": {
+      "c": 0.4,
+      "lr": 8e-05
+    }
+  },
+  "baseline_cagrad_best_cfg_by_tag": {
+    "baseline_R": {
+      "method": {
+        "baseline_R": {
+          "cagrad": {
+            "c": 0.4
+          },
+          "grad_solver": "cagrad",
+          "lora": {
+            "alpha": 16.0,
+            "dropout": 0.1,
+            "r": 128
+          }
+        },
+        "name": "baseline_R"
+      },
+      "train": {
+        "epochs": 1,
+        "lr": 8e-05,
+        "max_steps": 5,
+        "single": {
+          "steps_mode": "max_steps"
+        }
+      }
+    },
+    "baseline_r": {
+      "method": {
+        "baseline_r": {
+          "cagrad": {
+            "c": 0.4
+          },
+          "grad_solver": "cagrad",
+          "lora": {
+            "alpha": 2.0,
+            "dropout": 0.1,
+            "r": 32
+          }
+        },
+        "name": "baseline_r"
+      },
+      "train": {
+        "epochs": 1,
+        "lr": 8e-05,
+        "max_steps": 5,
+        "single": {
+          "steps_mode": "max_steps"
+        }
+      }
+    }
+  },
+  "bayes_report": {
+    "ablations": {},
+    "ours": {
+      "enabled": false
+    }
+  },
+  "best": {
+    "metrics_csv": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/trial_runs/ours/ours/coord/p01_tau_d/v00/s1/metrics.csv",
+    "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/trial_runs/ours/ours/coord/p01_tau_d/v00/s1",
+    "score": "0.375",
+    "seeds": "1",
+    "stage": "coord_search.agg",
+    "trial_cfg_json": "{\"method\": {\"name\": \"ours\", \"ours\": {\"ablate\": {\"interp\": false}, \"compensation\": {\"enabled\": true, \"ridge_lambda\": \"1e-4\"}, \"compression\": {\"enabled\": false, \"every_steps\": 0, \"qr\": {\"enabled\": true}, \"svd\": {\"enabled\": true}, \"target_rank\": null}, \"ema_H\": 1, \"gate0_noise\": {\"kappa\": 10.0, \"tau\": -10.0}, \"history\": {\"enabled\": false, \"exp_beta\": 0.7, \"weighting\": \"exp\", \"window_steps\": 1}, \"lora\": {\"R\": 128, \"alpha\": 16.0, \"dropout\": 0.1, \"r\": 32}, \"pulling\": {\"gamma_pull\": 0.3, \"k_pull\": 8.0}, \"routing_delta\": 0.005, \"trigger_gate0\": {\"tau_D\": 0.0033914772, \"tau_N\": 0.6}, \"votes\": 4, \"voting\": {\"allow_tail\": true, \"keep_single_votes\": true, \"samples_per_vote\": 4}}}, \"train\": {\"epochs\": 1, \"lr\": 8e-05, \"max_steps\": 5, \"single\": {\"steps_mode\": \"max_steps\"}}}",
+    "trial_id": "",
+    "trial_tag": "ours__ours__cd__p01__tau_d__v00",
+    "val_avg": "0.375",
+    "val_final": "0.375",
+    "val_max": "0.375"
+  },
+  "best_source": "local_refine",
+  "chosen_ours_alpha": 16.0,
+  "coord_report": {
+    "ablations": {},
+    "baseline": {
+      "baseline_R": {
+        "points_per_param": 1,
+        "sweeps": [
+          {
+            "best_score": 0.5625,
+            "best_trial_tag": "baseline__baseline_R__cd__p00__lr__v00",
+            "candidate_values": [
+              8e-05
+            ],
+            "chosen_value": 8e-05,
+            "kind": "float",
+            "lower": 2e-06,
+            "param_key": "lr",
+            "param_path": "train.lr",
+            "scale": "log",
+            "score_variance": 0.0,
+            "upper": 0.001
+          }
+        ]
+      },
+      "baseline_r": {
+        "points_per_param": 1,
+        "sweeps": [
+          {
+            "best_score": 0.43750000000000006,
+            "best_trial_tag": "baseline__baseline_r__cd__p00__lr__v00",
+            "candidate_values": [
+              8e-05
+            ],
+            "chosen_value": 8e-05,
+            "kind": "float",
+            "lower": 2e-06,
+            "param_key": "lr",
+            "param_path": "train.lr",
+            "scale": "log",
+            "score_variance": 0.0,
+            "upper": 0.001
+          }
+        ]
+      }
+    },
+    "cagrad": {
+      "baseline_R": {
+        "points_per_param": 1,
+        "sweeps": [
+          {
+            "best_score": 0.5625,
+            "best_trial_tag": "cagrad__baseline_R__cd__p00__lr__v00",
+            "candidate_values": [
+              8e-05
+            ],
+            "chosen_value": 8e-05,
+            "kind": "float",
+            "lower": 2e-06,
+            "param_key": "lr",
+            "param_path": "train.lr",
+            "scale": "log",
+            "score_variance": 0.0,
+            "upper": 0.001
+          },
+          {
+            "best_score": 0.5625,
+            "best_trial_tag": "cagrad__baseline_R__cd__p01__cagrad_c__v00",
+            "candidate_values": [
+              0.4
+            ],
+            "chosen_value": 0.4,
+            "kind": "float",
+            "lower": 0.1,
+            "param_key": "cagrad_c",
+            "param_path": "method.baseline_R.cagrad.c",
+            "scale": "linear",
+            "score_variance": 0.0,
+            "upper": 0.8
+          }
+        ]
+      },
+      "baseline_r": {
+        "points_per_param": 1,
+        "sweeps": [
+          {
+            "best_score": 0.43750000000000006,
+            "best_trial_tag": "cagrad__baseline_r__cd__p00__lr__v00",
+            "candidate_values": [
+              8e-05
+            ],
+            "chosen_value": 8e-05,
+            "kind": "float",
+            "lower": 2e-06,
+            "param_key": "lr",
+            "param_path": "train.lr",
+            "scale": "log",
+            "score_variance": 0.0,
+            "upper": 0.001
+          },
+          {
+            "best_score": 0.43750000000000006,
+            "best_trial_tag": "cagrad__baseline_r__cd__p01__cagrad_c__v00",
+            "candidate_values": [
+              0.4
+            ],
+            "chosen_value": 0.4,
+            "kind": "float",
+            "lower": 0.1,
+            "param_key": "cagrad_c",
+            "param_path": "method.baseline_r.cagrad.c",
+            "scale": "linear",
+            "score_variance": 0.0,
+            "upper": 0.8
+          }
+        ]
+      }
+    },
+    "ours": {
+      "points_per_param": 1,
+      "sweeps": [
+        {
+          "best_score": 0.375,
+          "best_trial_tag": "ours__ours__cd__p00__lr__v00",
+          "candidate_values": [
+            8e-05
+          ],
+          "chosen_value": 8e-05,
+          "kind": "float",
+          "lower": 2e-06,
+          "param_key": "lr",
+          "param_path": "train.lr",
+          "scale": "log",
+          "score_variance": 0.0,
+          "upper": 0.001
+        },
+        {
+          "best_score": 0.375,
+          "best_trial_tag": "ours__ours__cd__p01__tau_d__v00",
+          "candidate_values": [
+            0.0033914772
+          ],
+          "chosen_value": 0.0033914772,
+          "kind": "float",
+          "lower": 0.0015,
+          "param_key": "tau_D",
+          "param_path": "method.ours.trigger_gate0.tau_D",
+          "scale": "log",
+          "score_variance": 0.0,
+          "upper": 0.008
+        }
+      ]
+    }
+  },
+  "hpo_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1",
+  "hpo_train_schedule": {
+    "bayes": {
+      "epochs": 1,
+      "max_steps": 5,
+      "trials": 48
+    },
+    "coord_search": {
+      "configured_max_steps": 5,
+      "epochs": 1,
+      "max_steps": 5
+    },
+    "global_train_max_steps": 5,
+    "local_refine": {
+      "configured_max_steps": 5,
+      "epochs": 1,
+      "max_steps": 5
+    },
+    "mode": "max_steps"
+  },
+  "local_refine_report": {
+    "ablations": {},
+    "baseline": {
+      "baseline_R": {
+        "best_override": {
+          "method": {
+            "baseline_R": {
+              "cagrad": {
+                "c": 0.4
+              },
+              "grad_solver": "avg",
+              "lora": {
+                "alpha": 16.0,
+                "dropout": 0.1,
+                "r": 128
+              }
+            },
+            "name": "baseline_R"
+          },
+          "train": {
+            "epochs": 1,
+            "lr": 8e-05,
+            "max_steps": 5,
+            "single": {
+              "steps_mode": "max_steps"
+            }
+          }
+        },
+        "best_row": {
+          "metrics_csv": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/trial_runs/baseline/baseline_R/coord/p00_lr/v00/s1/metrics.csv",
+          "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/trial_runs/baseline/baseline_R/coord/p00_lr/v00/s1",
+          "score": "0.5625",
+          "seeds": "1",
+          "stage": "baseline_search.agg",
+          "trial_cfg_json": "{\"method\": {\"baseline_R\": {\"cagrad\": {\"c\": 0.4}, \"grad_solver\": \"avg\", \"lora\": {\"alpha\": 16.0, \"dropout\": 0.1, \"r\": 128}}, \"name\": \"baseline_R\"}, \"train\": {\"epochs\": 1, \"lr\": 8e-05, \"max_steps\": 5, \"single\": {\"steps_mode\": \"max_steps\"}}}",
+          "trial_id": "",
+          "trial_tag": "baseline__baseline_R__cd__p00__lr__v00",
+          "val_avg": "0.5625",
+          "val_final": "0.5625",
+          "val_max": "0.5625"
+        },
+        "enabled": false,
+        "top_params": []
+      },
+      "baseline_r": {
+        "best_override": {
+          "method": {
+            "baseline_r": {
+              "cagrad": {
+                "c": 0.4
+              },
+              "grad_solver": "avg",
+              "lora": {
+                "alpha": 2.0,
+                "dropout": 0.1,
+                "r": 32
+              }
+            },
+            "name": "baseline_r"
+          },
+          "train": {
+            "epochs": 1,
+            "lr": 8e-05,
+            "max_steps": 5,
+            "single": {
+              "steps_mode": "max_steps"
+            }
+          }
+        },
+        "best_row": {
+          "metrics_csv": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/trial_runs/baseline/baseline_r/coord/p00_lr/v00/s1/metrics.csv",
+          "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/trial_runs/baseline/baseline_r/coord/p00_lr/v00/s1",
+          "score": "0.43750000000000006",
+          "seeds": "1",
+          "stage": "baseline_search.agg",
+          "trial_cfg_json": "{\"method\": {\"baseline_r\": {\"cagrad\": {\"c\": 0.4}, \"grad_solver\": \"avg\", \"lora\": {\"alpha\": 2.0, \"dropout\": 0.1, \"r\": 32}}, \"name\": \"baseline_r\"}, \"train\": {\"epochs\": 1, \"lr\": 8e-05, \"max_steps\": 5, \"single\": {\"steps_mode\": \"max_steps\"}}}",
+          "trial_id": "",
+          "trial_tag": "baseline__baseline_r__cd__p00__lr__v00",
+          "val_avg": "0.4375",
+          "val_final": "0.4375",
+          "val_max": "0.4375"
+        },
+        "enabled": false,
+        "top_params": []
+      }
+    },
+    "cagrad": {
+      "baseline_R": {
+        "best_override": {
+          "method": {
+            "baseline_R": {
+              "cagrad": {
+                "c": 0.4
+              },
+              "grad_solver": "cagrad",
+              "lora": {
+                "alpha": 16.0,
+                "dropout": 0.1,
+                "r": 128
+              }
+            },
+            "name": "baseline_R"
+          },
+          "train": {
+            "epochs": 1,
+            "lr": 8e-05,
+            "max_steps": 5,
+            "single": {
+              "steps_mode": "max_steps"
+            }
+          }
+        },
+        "best_row": {
+          "metrics_csv": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/trial_runs/cagrad/baseline_R/coord/p01_cagrad_c/v00/s1/metrics.csv",
+          "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/trial_runs/cagrad/baseline_R/coord/p01_cagrad_c/v00/s1",
+          "score": "0.5625",
+          "seeds": "1",
+          "stage": "baseline_cagrad_search.agg",
+          "trial_cfg_json": "{\"method\": {\"baseline_R\": {\"cagrad\": {\"c\": 0.4}, \"grad_solver\": \"cagrad\", \"lora\": {\"alpha\": 16.0, \"dropout\": 0.1, \"r\": 128}}, \"name\": \"baseline_R\"}, \"train\": {\"epochs\": 1, \"lr\": 8e-05, \"max_steps\": 5, \"single\": {\"steps_mode\": \"max_steps\"}}}",
+          "trial_id": "",
+          "trial_tag": "cagrad__baseline_R__cd__p01__cagrad_c__v00",
+          "val_avg": "0.5625",
+          "val_final": "0.5625",
+          "val_max": "0.5625"
+        },
+        "enabled": false,
+        "top_params": []
+      },
+      "baseline_r": {
+        "best_override": {
+          "method": {
+            "baseline_r": {
+              "cagrad": {
+                "c": 0.4
+              },
+              "grad_solver": "cagrad",
+              "lora": {
+                "alpha": 2.0,
+                "dropout": 0.1,
+                "r": 32
+              }
+            },
+            "name": "baseline_r"
+          },
+          "train": {
+            "epochs": 1,
+            "lr": 8e-05,
+            "max_steps": 5,
+            "single": {
+              "steps_mode": "max_steps"
+            }
+          }
+        },
+        "best_row": {
+          "metrics_csv": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/trial_runs/cagrad/baseline_r/coord/p01_cagrad_c/v00/s1/metrics.csv",
+          "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/trial_runs/cagrad/baseline_r/coord/p01_cagrad_c/v00/s1",
+          "score": "0.43750000000000006",
+          "seeds": "1",
+          "stage": "baseline_cagrad_search.agg",
+          "trial_cfg_json": "{\"method\": {\"baseline_r\": {\"cagrad\": {\"c\": 0.4}, \"grad_solver\": \"cagrad\", \"lora\": {\"alpha\": 2.0, \"dropout\": 0.1, \"r\": 32}}, \"name\": \"baseline_r\"}, \"train\": {\"epochs\": 1, \"lr\": 8e-05, \"max_steps\": 5, \"single\": {\"steps_mode\": \"max_steps\"}}}",
+          "trial_id": "",
+          "trial_tag": "cagrad__baseline_r__cd__p01__cagrad_c__v00",
+          "val_avg": "0.4375",
+          "val_final": "0.4375",
+          "val_max": "0.4375"
+        },
+        "enabled": false,
+        "top_params": []
+      }
+    },
+    "ours": {
+      "best_override": {
+        "method": {
+          "name": "ours",
+          "ours": {
+            "ablate": {
+              "interp": false
+            },
+            "compensation": {
+              "enabled": true,
+              "ridge_lambda": "1e-4"
+            },
+            "compression": {
+              "enabled": false,
+              "every_steps": 0,
+              "qr": {
+                "enabled": true
+              },
+              "svd": {
+                "enabled": true
+              },
+              "target_rank": null
+            },
+            "ema_H": 1,
+            "gate0_noise": {
+              "kappa": 10.0,
+              "tau": -10.0
+            },
+            "history": {
+              "enabled": false,
+              "exp_beta": 0.7,
+              "weighting": "exp",
+              "window_steps": 1
+            },
+            "lora": {
+              "R": 128,
+              "alpha": 16.0,
+              "dropout": 0.1,
+              "r": 32
+            },
+            "pulling": {
+              "gamma_pull": 0.3,
+              "k_pull": 8.0
+            },
+            "routing_delta": 0.005,
+            "trigger_gate0": {
+              "tau_D": 0.0033914772,
+              "tau_N": 0.6
+            },
+            "votes": 4,
+            "voting": {
+              "allow_tail": true,
+              "keep_single_votes": true,
+              "samples_per_vote": 4
+            }
+          }
+        },
+        "train": {
+          "epochs": 1,
+          "lr": 8e-05,
+          "max_steps": 5,
+          "single": {
+            "steps_mode": "max_steps"
+          }
+        }
+      },
+      "best_row": {
+        "metrics_csv": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/trial_runs/ours/ours/coord/p01_tau_d/v00/s1/metrics.csv",
+        "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/trial_runs/ours/ours/coord/p01_tau_d/v00/s1",
+        "score": "0.375",
+        "seeds": "1",
+        "stage": "coord_search.agg",
+        "trial_cfg_json": "{\"method\": {\"name\": \"ours\", \"ours\": {\"ablate\": {\"interp\": false}, \"compensation\": {\"enabled\": true, \"ridge_lambda\": \"1e-4\"}, \"compression\": {\"enabled\": false, \"every_steps\": 0, \"qr\": {\"enabled\": true}, \"svd\": {\"enabled\": true}, \"target_rank\": null}, \"ema_H\": 1, \"gate0_noise\": {\"kappa\": 10.0, \"tau\": -10.0}, \"history\": {\"enabled\": false, \"exp_beta\": 0.7, \"weighting\": \"exp\", \"window_steps\": 1}, \"lora\": {\"R\": 128, \"alpha\": 16.0, \"dropout\": 0.1, \"r\": 32}, \"pulling\": {\"gamma_pull\": 0.3, \"k_pull\": 8.0}, \"routing_delta\": 0.005, \"trigger_gate0\": {\"tau_D\": 0.0033914772, \"tau_N\": 0.6}, \"votes\": 4, \"voting\": {\"allow_tail\": true, \"keep_single_votes\": true, \"samples_per_vote\": 4}}}, \"train\": {\"epochs\": 1, \"lr\": 8e-05, \"max_steps\": 5, \"single\": {\"steps_mode\": \"max_steps\"}}}",
+        "trial_id": "",
+        "trial_tag": "ours__ours__cd__p01__tau_d__v00",
+        "val_avg": "0.375",
+        "val_final": "0.375",
+        "val_max": "0.375"
+      },
+      "enabled": false,
+      "top_params": []
+    }
+  },
+  "plan_path": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/grid_plan.json",
+  "status_path": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/plan_status.json",
+  "use_bayes": false,
+  "weights": {
+    "w_avg": 0.1,
+    "w_final": 0.4,
+    "w_max": 0.5
+  }
+}

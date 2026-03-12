@@ -26,6 +26,10 @@ SMOKE_COMPUTE_TRAIN_ACC="${SMOKE_COMPUTE_TRAIN_ACC:-false}"
 SMOKE_COMPILE="${SMOKE_COMPILE:-false}"
 SMOKE_NUM_WORKERS="${SMOKE_NUM_WORKERS:-0}"
 
+export HF_HOME="${HF_HOME:-$ROOT/.hf_cache}"
+export HF_DATASETS_CACHE="${HF_DATASETS_CACHE:-$HF_HOME/datasets}"
+export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-$HF_HOME/transformers}"
+
 run_single_task_smoke() {
   local runs_group="$1"
   local dataset="$2"

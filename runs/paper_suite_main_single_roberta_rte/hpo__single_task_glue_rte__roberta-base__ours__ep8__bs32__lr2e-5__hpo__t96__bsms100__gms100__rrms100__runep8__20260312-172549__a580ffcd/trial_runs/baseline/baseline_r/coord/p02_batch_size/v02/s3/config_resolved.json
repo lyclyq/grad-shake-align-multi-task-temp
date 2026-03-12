@@ -1,0 +1,401 @@
+{
+  "_provenance": {
+    "base_config_path": "configs/base.yaml",
+    "cli_set_args": [
+      "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_roberta_rte",
+      "task.name=glue/rte",
+      "model.name=roberta-base",
+      "task.scenario=single_task",
+      "task.multi.enabled=false",
+      "train.epochs=8",
+      "hpo.bandit.refine_seeds=[2,3]",
+      "hpo.grid.rerank.seeds=[2,3]",
+      "train.compile=false",
+      "method.baseline_r.lora.r=32",
+      "method.ours.lora.r=32",
+      "method.baseline_R.lora.r=128",
+      "method.ours.lora.R=128",
+      "hpo.budget.total_trials=96",
+      "hpo.grid.rerank.epochs=1",
+      "hpo.grid.baseline_search_epochs=1",
+      "hpo.grid.grid_epochs=1",
+      "hpo.grid.baseline_search_max_steps=100",
+      "hpo.grid.grid_max_steps=100",
+      "hpo.grid.rerank.max_steps=100",
+      "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep8__bs32__lr2e-5__hpo__t96__bsms100__gms100__rrms100__runep8__20260312-172549__a580ffcd/trial_runs/baseline/baseline_r/coord/p02_batch_size/v02/s3",
+      "io.overwrite=resume",
+      "method.name=baseline_r",
+      "method.baseline_r.lora.r=32",
+      "method.baseline_r.lora.alpha=2.0",
+      "method.baseline_r.lora.dropout=0.1",
+      "method.baseline_r.grad_solver=avg",
+      "method.baseline_r.cagrad.c=0.4",
+      "train.epochs=1",
+      "train.max_steps=100",
+      "train.single.steps_mode=max_steps",
+      "train.lr=3.4149459567917766e-05",
+      "train.warmup_ratio=0.17272727272727273",
+      "train.batch_size=128",
+      "train.seed=3"
+    ],
+    "schedule_path": null
+  },
+  "debug": {
+    "assert_hi_zero_init": true,
+    "dump_gates": true,
+    "dump_grad_norms": true,
+    "dump_history": false,
+    "dump_init": true,
+    "dump_votes": true,
+    "enabled": false,
+    "max_blocks_to_print": 3,
+    "print_every_steps": 80
+  },
+  "hpo": {
+    "ablations": {
+      "enabled": false,
+      "no_compensation": true,
+      "no_gate": true
+    },
+    "bandit": {
+      "fixed_warmup_ratio": 0.1,
+      "refine_seeds": [
+        2,
+        3
+      ],
+      "score": {
+        "w_avg": 0.1,
+        "w_final": 0.4,
+        "w_max": 0.5
+      }
+    },
+    "baseline_variants": [
+      {
+        "tag": "baseline_r"
+      },
+      {
+        "tag": "baseline_R"
+      }
+    ],
+    "budget": {
+      "total_trials": 96
+    },
+    "cagrad": {
+      "c_grid": [
+        0.2,
+        0.4,
+        0.6
+      ]
+    },
+    "coord": {
+      "bayes_trials": 48,
+      "method_orders": {
+        "baseline": [],
+        "cagrad": [
+          "cagrad_c"
+        ],
+        "ours": [
+          "tau_D",
+          "gamma_pull",
+          "k_pull",
+          "routing_delta"
+        ]
+      },
+      "param_specs": {
+        "batch_size": {
+          "center": 32,
+          "choices": [
+            16,
+            32,
+            128
+          ],
+          "kind": "choice",
+          "path": "train.batch_size"
+        },
+        "cagrad_c": {
+          "center": 0.4,
+          "lower": 0.1,
+          "path_template": "method.{tag}.cagrad.c",
+          "scale": "linear",
+          "upper": 0.8
+        },
+        "gamma_pull": {
+          "center": 0.3,
+          "lower": 0.15,
+          "path": "method.ours.pulling.gamma_pull",
+          "scale": "linear",
+          "upper": 0.45
+        },
+        "k_pull": {
+          "center": 8.0,
+          "lower": 6.0,
+          "path": "method.ours.pulling.k_pull",
+          "scale": "linear",
+          "upper": 10.0
+        },
+        "lr": {
+          "center": "8e-5",
+          "lower": "2e-6",
+          "path": "train.lr",
+          "scale": "log",
+          "upper": "1e-3"
+        },
+        "routing_delta": {
+          "center": 0.005,
+          "lower": 0.002,
+          "path": "method.ours.routing_delta",
+          "scale": "log",
+          "upper": 0.02
+        },
+        "tau_D": {
+          "center": 0.0033914772,
+          "lower": 0.0015,
+          "path": "method.ours.trigger_gate0.tau_D",
+          "scale": "log",
+          "upper": 0.008
+        },
+        "warmup_ratio": {
+          "center": 0.1,
+          "lower": 0.0,
+          "path": "train.warmup_ratio",
+          "scale": "linear",
+          "upper": 0.2
+        }
+      },
+      "refine_radix": 3,
+      "shared_order": [
+        "lr",
+        "warmup_ratio",
+        "batch_size"
+      ],
+      "top_k": 3
+    },
+    "grid": {
+      "alpha_probe": {
+        "enabled": true,
+        "epochs": 3,
+        "num_alpha": 2,
+        "num_lr": 2,
+        "seeds": [
+          2,
+          3
+        ]
+      },
+      "baseline_search_epochs": 1,
+      "baseline_search_max_steps": 100,
+      "bayes_ei_xi": 0.01,
+      "bayes_gp_length": 0.6,
+      "bayes_gp_noise": "1e-3",
+      "bayes_gp_var": 1.0,
+      "bayes_pool": 256,
+      "bayes_rng_seed": 20260211,
+      "drop_if_weight_lt": 0.0,
+      "grid_epochs": 1,
+      "grid_max_steps": 100,
+      "knob_specs": {
+        "gamma_pull": {
+          "hi": 0.45,
+          "kind": "float",
+          "lo": 0.15
+        },
+        "k_pull": {
+          "hi": 10.0,
+          "kind": "float",
+          "lo": 6.0
+        },
+        "routing_delta": {
+          "hi": 0.02,
+          "kind": "float",
+          "lo": 0.002
+        },
+        "tau_D": {
+          "hi": 0.008,
+          "kind": "float",
+          "lo": 0.0015
+        }
+      },
+      "knobs": [
+        "tau_D",
+        "gamma_pull",
+        "k_pull",
+        "routing_delta"
+      ],
+      "max_m_choice": 0,
+      "max_m_float": 7,
+      "max_retries": 3,
+      "rerank": {
+        "enabled": true,
+        "epochs": 1,
+        "max_steps": 100,
+        "seeds": [
+          2,
+          3
+        ],
+        "top_k": 10
+      },
+      "rng_seed": 2026,
+      "sens_samples_per_knob": 40,
+      "sens_seed": 2,
+      "sensitivity_epochs": 1
+    },
+    "lr_grid": {
+      "baseline_points": 15,
+      "clamp_max_lr": "1e-2",
+      "clamp_min_lr": "1e-6",
+      "extend_factor": 1.6,
+      "max_lr": "7e-3",
+      "min_lr": "1e-5",
+      "neighbor_points": 9
+    },
+    "ratio_bayes": 0.3,
+    "ratio_grid": 0.5,
+    "ratio_sensitivity": 0.2,
+    "use_bayes": false
+  },
+  "io": {
+    "overwrite": "resume",
+    "root": "/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_roberta_rte",
+    "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep8__bs32__lr2e-5__hpo__t96__bsms100__gms100__rrms100__runep8__20260312-172549__a580ffcd/trial_runs/baseline/baseline_r/coord/p02_batch_size/v02/s3"
+  },
+  "log": {
+    "csv": true,
+    "swanlab": {
+      "enabled": false,
+      "max_failures": 3,
+      "project": "ShakeAlign_LoRA",
+      "timeout_s": 30
+    }
+  },
+  "method": {
+    "baseline_R": {
+      "cagrad": {
+        "c": 0.4
+      },
+      "grad_solver": "avg",
+      "lora": {
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 128
+      }
+    },
+    "baseline_r": {
+      "cagrad": {
+        "c": 0.4
+      },
+      "grad_solver": "avg",
+      "lora": {
+        "alpha": 2.0,
+        "dropout": 0.1,
+        "r": 32
+      }
+    },
+    "name": "baseline_r",
+    "ours": {
+      "ablate": {
+        "interp": false
+      },
+      "compensation": {
+        "enabled": true,
+        "ridge_lambda": "1e-4"
+      },
+      "compression": {
+        "enabled": false,
+        "every_steps": 0,
+        "qr": {
+          "enabled": true
+        },
+        "svd": {
+          "enabled": true
+        },
+        "target_rank": null
+      },
+      "ema_H": 1,
+      "gate0_noise": {
+        "kappa": 10.0,
+        "tau": -10.0
+      },
+      "history": {
+        "enabled": false,
+        "exp_beta": 0.7,
+        "weighting": "exp",
+        "window_steps": 1
+      },
+      "lora": {
+        "R": 128,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "pulling": {
+        "gamma_pull": 0.3,
+        "k_pull": 8.0
+      },
+      "routing_delta": 0.005,
+      "trigger_gate0": {
+        "tau_D": 0.0033914772,
+        "tau_N": 0.6
+      },
+      "votes": 4,
+      "voting": {
+        "allow_tail": true,
+        "keep_single_votes": true,
+        "samples_per_vote": 4
+      }
+    }
+  },
+  "model": {
+    "name": "roberta-base"
+  },
+  "stage": "train",
+  "task": {
+    "max_len": 128,
+    "multi": {
+      "datasets": [
+        "glue/cola",
+        "glue/mrpc",
+        "glue/rte"
+      ],
+      "enabled": false
+    },
+    "name": "glue/rte",
+    "scenario": "single_task"
+  },
+  "train": {
+    "auto_device_batch": {
+      "enabled": true,
+      "min_batch_size": 1
+    },
+    "batch_size": 128,
+    "compile": false,
+    "dataloader": {
+      "num_workers": 4,
+      "persistent_workers": true,
+      "pin_memory": true,
+      "prefetch_factor": 2
+    },
+    "device_batch_size": 128,
+    "epochs": 1,
+    "eval": {
+      "every_steps": 50,
+      "first_step": false,
+      "max_batches": 0,
+      "strategy": "per_epoch"
+    },
+    "fused_adamw": true,
+    "lr": 3.4149459567917766e-05,
+    "max_grad_norm": 1.0,
+    "max_steps": 100,
+    "multi": {
+      "drop_last": true,
+      "steps_mode": "max_steps"
+    },
+    "precision": "bf16",
+    "seed": 3,
+    "single": {
+      "steps_mode": "max_steps"
+    },
+    "tf32": true,
+    "warmup_ratio": 0.17272727272727273,
+    "weight_decay": 0.0
+  }
+}

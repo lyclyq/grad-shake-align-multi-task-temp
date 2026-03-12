@@ -1,0 +1,295 @@
+{
+  "baseline_cagrad_R": {
+    "c": 0.4,
+    "lr": 8e-05
+  },
+  "baseline_cagrad_r": {
+    "c": 0.4,
+    "lr": 8e-05
+  },
+  "baseline_lr_R": 8e-05,
+  "baseline_lr_r": 8e-05,
+  "best_path": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/best_hparams.json",
+  "final_epochs": 1,
+  "final_seeds": [
+    1
+  ],
+  "fixed_warmup_ratio": 0.1,
+  "ours_R": 128,
+  "ours_lr": 8e-05,
+  "ours_r": 32,
+  "plan_path": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/hpo__single_task_glue_rte__roberta-base__ours__ep1__bs32__lr2e-5__hpo__t1__bsms5__gms5__rrms5__runep1__20260312-144003__7031f5e1/grid_plan.json",
+  "repro_runs": [
+    {
+      "cfg_key": "baseline_r",
+      "lora": {
+        "R": null,
+        "alpha": 2.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "baseline_r",
+      "method_cfg": {
+        "cagrad": {
+          "c": 0.4
+        },
+        "grad_solver": "avg",
+        "lora": {
+          "alpha": 2.0,
+          "dropout": 0.1,
+          "r": 32
+        }
+      },
+      "model": {
+        "name": "roberta-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/final__smoke-single-roberta-rte__from_20260312-144003__7031f5e1__t1-runbase-hbsms5-hgms5-hrrms5-fep1__20260312-144223/trial_runs/baseline_r/s1",
+      "seed": 1,
+      "task": {
+        "max_len": 128,
+        "multi": {
+          "datasets": [
+            "glue/cola",
+            "glue/mrpc",
+            "glue/rte"
+          ],
+          "enabled": false
+        },
+        "name": "glue/rte",
+        "scenario": "single_task"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 1,
+        "lr": 8e-05,
+        "seed": 1,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "cfg_key": "baseline_R",
+      "lora": {
+        "R": null,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 128
+      },
+      "method": "baseline_R",
+      "method_cfg": {
+        "cagrad": {
+          "c": 0.4
+        },
+        "grad_solver": "avg",
+        "lora": {
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 128
+        }
+      },
+      "model": {
+        "name": "roberta-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/final__smoke-single-roberta-rte__from_20260312-144003__7031f5e1__t1-runbase-hbsms5-hgms5-hrrms5-fep1__20260312-144223/trial_runs/baseline_R/s1",
+      "seed": 1,
+      "task": {
+        "max_len": 128,
+        "multi": {
+          "datasets": [
+            "glue/cola",
+            "glue/mrpc",
+            "glue/rte"
+          ],
+          "enabled": false
+        },
+        "name": "glue/rte",
+        "scenario": "single_task"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 1,
+        "lr": 8e-05,
+        "seed": 1,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "cfg_key": "baseline_r",
+      "lora": {
+        "R": null,
+        "alpha": 2.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "baseline_cagrad_r",
+      "method_cfg": {
+        "cagrad": {
+          "c": 0.4
+        },
+        "grad_solver": "cagrad",
+        "lora": {
+          "alpha": 2.0,
+          "dropout": 0.1,
+          "r": 32
+        }
+      },
+      "model": {
+        "name": "roberta-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/final__smoke-single-roberta-rte__from_20260312-144003__7031f5e1__t1-runbase-hbsms5-hgms5-hrrms5-fep1__20260312-144223/trial_runs/baseline_cagrad_r/s1",
+      "seed": 1,
+      "task": {
+        "max_len": 128,
+        "multi": {
+          "datasets": [
+            "glue/cola",
+            "glue/mrpc",
+            "glue/rte"
+          ],
+          "enabled": false
+        },
+        "name": "glue/rte",
+        "scenario": "single_task"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 1,
+        "lr": 8e-05,
+        "seed": 1,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "cfg_key": "baseline_R",
+      "lora": {
+        "R": null,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 128
+      },
+      "method": "baseline_cagrad_R",
+      "method_cfg": {
+        "cagrad": {
+          "c": 0.4
+        },
+        "grad_solver": "cagrad",
+        "lora": {
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 128
+        }
+      },
+      "model": {
+        "name": "roberta-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/final__smoke-single-roberta-rte__from_20260312-144003__7031f5e1__t1-runbase-hbsms5-hgms5-hrrms5-fep1__20260312-144223/trial_runs/baseline_cagrad_R/s1",
+      "seed": 1,
+      "task": {
+        "max_len": 128,
+        "multi": {
+          "datasets": [
+            "glue/cola",
+            "glue/mrpc",
+            "glue/rte"
+          ],
+          "enabled": false
+        },
+        "name": "glue/rte",
+        "scenario": "single_task"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 1,
+        "lr": 8e-05,
+        "seed": 1,
+        "warmup_ratio": 0.1
+      }
+    },
+    {
+      "cfg_key": "ours",
+      "lora": {
+        "R": 128,
+        "alpha": 16.0,
+        "dropout": 0.1,
+        "r": 32
+      },
+      "method": "ours",
+      "method_cfg": {
+        "ablate": {
+          "interp": false
+        },
+        "compensation": {
+          "enabled": true,
+          "ridge_lambda": 0.0001
+        },
+        "compression": {
+          "enabled": false,
+          "every_steps": 0,
+          "qr": {
+            "enabled": true
+          },
+          "svd": {
+            "enabled": true
+          },
+          "target_rank": null
+        },
+        "ema_H": 1,
+        "gate0_noise": {
+          "kappa": 10.0,
+          "tau": -10.0
+        },
+        "history": {
+          "enabled": false,
+          "exp_beta": 0.7,
+          "weighting": "exp",
+          "window_steps": 1
+        },
+        "lora": {
+          "R": 128,
+          "alpha": 16.0,
+          "dropout": 0.1,
+          "r": 32
+        },
+        "pulling": {
+          "gamma_pull": 0.3,
+          "k_pull": 8.0
+        },
+        "routing_delta": 0.005,
+        "trigger_gate0": {
+          "tau_D": 0.0033914772,
+          "tau_N": 0.6
+        },
+        "votes": 4,
+        "voting": {
+          "allow_tail": true,
+          "keep_single_votes": true,
+          "samples_per_vote": 4
+        }
+      },
+      "model": {
+        "name": "roberta-base"
+      },
+      "run_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte/final__smoke-single-roberta-rte__from_20260312-144003__7031f5e1__t1-runbase-hbsms5-hgms5-hrrms5-fep1__20260312-144223/trial_runs/ours/s1",
+      "seed": 1,
+      "task": {
+        "max_len": 128,
+        "multi": {
+          "datasets": [
+            "glue/cola",
+            "glue/mrpc",
+            "glue/rte"
+          ],
+          "enabled": false
+        },
+        "name": "glue/rte",
+        "scenario": "single_task"
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 1,
+        "lr": 8e-05,
+        "seed": 1,
+        "warmup_ratio": 0.1
+      }
+    }
+  ]
+}

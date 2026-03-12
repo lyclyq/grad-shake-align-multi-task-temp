@@ -1,0 +1,32 @@
+{
+  "set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/smoke_single_roberta_rte",
+    "task.name=glue/rte",
+    "model.name=roberta-base",
+    "task.scenario=single_task",
+    "task.multi.enabled=false",
+    "train.max_steps=5",
+    "train.epochs=1",
+    "hpo.use_bayes=false",
+    "hpo.grid.rerank.enabled=false",
+    "hpo.coord.top_k=0",
+    "hpo.coord.refine_radix=1",
+    "hpo.coord.shared_order=[\"lr\"]",
+    "hpo.coord.method_orders.baseline=[]",
+    "hpo.coord.method_orders.cagrad=[\"cagrad_c\"]",
+    "hpo.coord.method_orders.ours=[\"tau_D\"]",
+    "hpo.bandit.refine_seeds=[1]",
+    "train.compile=false",
+    "train.dataloader.num_workers=0",
+    "train.eval.max_batches=1",
+    "train.eval.compute_train_acc=false",
+    "train.single.steps_mode=max_steps",
+    "hpo.budget.total_trials=1",
+    "hpo.grid.rerank.epochs=1",
+    "hpo.grid.baseline_search_epochs=1",
+    "hpo.grid.grid_epochs=1",
+    "hpo.grid.baseline_search_max_steps=5",
+    "hpo.grid.grid_max_steps=5",
+    "hpo.grid.rerank.max_steps=5"
+  ]
+}

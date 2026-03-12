@@ -8,7 +8,7 @@ MIX3='["glue/rte","glue/mrpc","glue/cola"]'
 
 # Rank robustness: single-task MRPC on DeBERTa.
 run_single_task_protocol \
-  "appendix_rank_single_deberta_mrpc_r16_R64" \
+  "paper_suite_appendix_rank_single_deberta_mrpc_r16_R64" \
   "glue/mrpc" \
   "microsoft/deberta-v3-base" \
   100 \
@@ -17,7 +17,7 @@ run_single_task_protocol \
   64
 
 run_single_task_protocol \
-  "appendix_rank_single_deberta_mrpc_r32_R128" \
+  "paper_suite_appendix_rank_single_deberta_mrpc_r32_R128" \
   "glue/mrpc" \
   "microsoft/deberta-v3-base" \
   100 \
@@ -28,7 +28,7 @@ run_single_task_protocol \
 # Rank robustness: 3-task mixture on DeBERTa.
 run_multi_source_protocol \
   "multi_task" \
-  "appendix_rank_multi_deberta_mix3_r16_R64" \
+  "paper_suite_appendix_rank_multi_deberta_mix3_r16_R64" \
   "microsoft/deberta-v3-base" \
   "$MIX3" \
   80 \
@@ -39,7 +39,7 @@ run_multi_source_protocol \
 
 run_multi_source_protocol \
   "multi_task" \
-  "appendix_rank_multi_deberta_mix3_r32_R128" \
+  "paper_suite_appendix_rank_multi_deberta_mix3_r32_R128" \
   "microsoft/deberta-v3-base" \
   "$MIX3" \
   80 \

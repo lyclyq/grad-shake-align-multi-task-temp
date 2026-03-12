@@ -289,7 +289,11 @@ def _maybe_compile_model(model, perf: Dict[str, Any], device: torch.device):
     if not hasattr(torch, "compile"):
         return model
     try:
-        return torch.compile(model, mode="max-autotune")
+        compiled = torch.compile(model, mode="max-autotune")
+        if not hasattr(compiled, "parameters"):
+            print("[WARN] torch.compile returned a non-module callable; fallback to eager model")
+            return model
+        return compiled
     except Exception as e:
         print(f"[WARN] torch.compile disabled due to: {type(e).__name__}: {e}")
         return model
@@ -655,7 +659,6 @@ def train_one(
     _setup_cuda_perf(perf, device)
     model = _maybe_compile_model(model, perf, device)
     _setup_cuda_perf(perf, device)
-    model = _maybe_compile_model(model, perf, device)
 
     epochs = int(cfg["train"]["epochs"])
     effective_batch_size = int(cfg["train"]["batch_size"])

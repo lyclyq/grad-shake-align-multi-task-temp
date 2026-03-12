@@ -1,0 +1,980 @@
+\documentclass{article}
+
+% =========================
+% Encoding & Math
+% =========================
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+
+% =========================
+% Page / Graphics / Tables
+% =========================
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{float} % Better figure placement with [H]
+
+% =========================
+% Algorithms
+% =========================
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% Caption should be loaded after float/graphics and before hyperref in many setups
+\usepackage{caption}
+\usepackage{mathtools} % provides \coloneqq
+% Provide a "List of Algorithms" file target (loa) cleanly
+\makeatletter
+\newcommand{\listofalgorithms}{%
+  \section*{List of Algorithms}%
+  \addcontentsline{toc}{section}{List of Algorithms}%
+  \@starttoc{loa}%
+}
+\makeatother
+
+% =========================
+% Hyperlinks (load late)
+% =========================
+\usepackage{hyperref}
+
+% =========================
+% Title / Theorems / Macros
+% =========================
+\title{\textbf{Gradient Shake-to-Align Dual-Rank LoRA: \\ A Comprehensive Framework for Multi-Resolution Gradient Consensus}}
+\author{Methodology \& Implementation Guide}
+\date{\today}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{definition}{Definition}
+
+% Utility macros
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\inner}[2]{\langle #1, #2 \rangle}
+
+% =========================
+% Breakable (multi-page) algorithm environment
+% =========================
+\makeatletter
+\newenvironment{breakablealgorithm}
+  {%
+   \begin{center}
+   \refstepcounter{algorithm}%
+   \hrule height .8pt depth 0pt \kern 2pt%
+   \renewcommand{\caption}[2][\relax]{%
+     {\raggedright\textbf{Algorithm \thealgorithm} ##2\par}%
+     \ifx\relax##1\relax
+       \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##2}%
+     \else
+       \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##1}%
+     \fi
+     \kern 2pt\hrule\kern 2pt
+   }%
+  }{%
+   \kern 2pt\hrule\relax%
+   \end{center}
+  }
+\makeatother
+
+\begin{document}
+
+\maketitle
+
+
+\begin{abstract}
+We present \textit{Gradient Shake-to-Align}, a diagnostic-first training paradigm for Dual-Rank LoRA that stabilizes learning in information-limited regimes.
+Our core idea is to treat the rank-$r$ core and the rank-$R$ extension as two resolution views of the same update and to use online cosine-based gradient consistency as evidence for when cross-resolution intervention is necessary.
+
+At each optimization step, we construct a set of gradient voters and compute instantaneous internal consistencies within each resolution, together with cross-resolution directional agreement.
+Rather than enforcing alignment a priori, we introduce a sparse global trigger (Gate-0) that activates cross-resolution reconciliation only when internal unreliability or directional deviation is detected.
+
+Under the nested $(r,hi)$ parameterization, the rank-$R$ update is not allowed to overwrite the rank-$r$ core.
+We therefore execute the trusted head direction at rank $r$ and realize the remaining rank-$R$ semantics through the extension branch using a scale-invariant residual compensation mechanism.
+All diagnostic and reconciliation operations are performed in a normalized gradient space, ensuring invariance to LoRA scaling conventions.
+
+This framework preserves stable low-rank structure when reliable, absorbs heterogeneous gradients when necessary, and provides a unified mechanism for handling stochastic instability and resolution-level conflict within parameter-efficient fine-tuning.
+
+\end{abstract}
+
+
+\tableofcontents
+\listoffigures
+\listofalgorithms
+
+\newpage
+% =========================
+% NEW: Introduction + Related Work
+% =========================
+\section{Introduction}
+
+\subsection{Problem Setting and Motivation}
+
+Parameter-efficient fine-tuning (PEFT) methods such as LoRA~\cite{hu2022lora}
+are built on the premise that most task-specific updates can be represented
+within a low-rank subspace.
+This assumption has proven effective in many large-scale settings.
+However, in \emph{information-limited regimes}---including small datasets,
+high-entropy labels, heterogeneous supervision, or multi-task mixtures---
+the observed gradients are often noisy, unstable, and mutually inconsistent
+across minibatches and data shards~\cite{yu2020pcgrad,liu2021cagrad}.
+
+In such regimes, naive gradient averaging may amplify stochastic noise
+or cause destructive interference between incompatible updates.
+At the same time, enforcing a fixed low-rank constraint too early can distort
+structured but weakly supported signals.
+Recent evidence further suggests that the effective adaptation subspace
+may evolve during training~\cite{aghajanyan2021intrinsic,zhang2023adalora},
+making premature compression particularly brittle.
+
+These observations raise a fundamental question:
+\emph{what online evidence should guide when and how low-rank structure
+ought to be trusted during optimization?}
+More specifically, can reliability of gradient information be inferred
+intrinsically from the interaction between parameter resolutions,
+rather than imposed through static constraints or explicit regularizers?
+
+\subsection{Core Insight: Multi-Resolution Parameters as Reliability Estimators}
+
+Our key insight is that different parameter resolutions provide
+complementary views of the same gradient signal.
+High-resolution (high-rank) parameterizations offer expressive capacity
+and can absorb heterogeneous or weak signals,
+but are more susceptible to transient noise and overfitting.
+Low-resolution (low-rank) parameterizations are capacity-limited,
+yet often capture more stable and compressible structure
+when the underlying signal is reliable.
+
+Crucially, the \emph{contrast} between gradient behaviors observed at low
+and high resolutions provides an intrinsic \emph{online reliability estimator}.
+When gradient directions agree across resolutions,
+the signal is likely coherent and compressible.
+When persistent disagreement arises,
+it may indicate either insufficient capacity at low rank
+or dominance of stochastic noise at high rank.
+In this sense, resolution contrast acts as a diagnostic mechanism
+embedded directly within the parameterization itself.
+
+This perspective reframes low-rank adaptation not as a static constraint,
+but as a dynamic, evidence-driven process:
+low-rank structure is preserved when reliable,
+and higher-resolution flexibility is engaged only when justified
+by consistency signals.
+
+\subsection{Gradient Shake-to-Align: Multi-View Diagnostics in Gradient Space}
+
+We introduce \emph{Gradient Shake-to-Align}, a diagnostic-first framework
+that operationalizes this principle through structured gradient voting.
+Within each optimization step, gradients are partitioned into multiple
+voters, enabling the computation of cosine-based internal consistencies
+within each resolution and cross-resolution directional agreement.
+
+Rather than immediately enforcing consensus,
+these diagnostics determine \emph{when} intervention is necessary.
+When agreement is high, updates proceed independently within each view.
+When unreliability or deviation is detected,
+a sparse global trigger activates cross-resolution reconciliation
+under a nested low-rank constraint.
+
+Importantly, reconciliation does not overwrite the low-rank core.
+Instead, trusted directions are selected based on consistency evidence,
+and higher-rank parameters realize only the residual semantics
+that cannot be expressed within the low-rank head.
+This design increases the effective information density of each step
+without introducing additional parameters or altering the base optimizer.
+
+\subsection{Contributions}
+
+We summarize our contributions as follows:
+
+\begin{itemize}
+
+    \item \textbf{Online multi-resolution gradient distillation.}
+    We propose a new diagnostic paradigm in which low- and high-rank
+    parameterizations act as complementary gradient views.
+    Cross-resolution consistency is treated as online evidence,
+    enabling adaptive distillation between resolutions rather than
+    enforcing fixed low-rank behavior a priori.
+
+    \item \textbf{Structure-induced implicit regularization.}
+    Instead of introducing explicit regularization objectives,
+    we stabilize high-rank updates by anchoring them to the
+    internally consistent low-rank core.
+    This nested resolution interaction suppresses high-frequency noise
+    and overfitting through structural coupling alone.
+
+    \item \textbf{Consistency-driven direction selection under conflict.}
+    In multi-view and multi-task settings,
+    gradient conflict is resolved via internal consistency comparison
+    across resolutions.
+    The framework selects trusted execution directions based on
+    reliability signals, enabling sparse and targeted reconciliation
+    without modifying the underlying optimizer.
+
+    \item \textbf{Stable execution under nested low-rank constraints.}
+    We introduce a constrained execution rule that preserves the
+    low-rank head exactly while allowing higher-rank extensions
+    to realize residual semantics.
+    This guarantees semantic closure and stabilizes training
+    in information-limited regimes.
+\end{itemize}
+\section{Related Work and Limitations}
+
+\subsection{Gradient Conflict, Agreement, and Diagnostic Signals}
+
+A line of work in multi-task and multi-objective optimization studies how to handle
+gradient conflicts when different objectives or data sources disagree.
+Representative approaches include PCGrad~\cite{yu2020pcgrad},
+which projects conflicting gradients to reduce interference,
+and CAGrad~\cite{liu2021cagrad}, which seeks a conflict-averse descent direction
+by optimizing a worst-case objective.
+These methods highlight the limitations of naive gradient averaging
+in the presence of heterogeneous or conflicting signals.
+
+However, most conflict-handling approaches treat disagreement as something to be
+resolved immediately at the direction-construction level,
+without explicitly diagnosing its underlying cause.
+In practice, gradient disagreement may arise from fundamentally different sources,
+including irreducible stochastic noise~\cite{yin2018gradient},
+capacity mismatch between parameterizations,
+or structured but weakly supported signals.
+Treating all conflicts uniformly can obscure whether disagreement
+reflects noise, insufficient capacity, or meaningful heterogeneity.
+
+Our work departs from immediate conflict resolution and instead treats
+cross-view gradient agreement as an \emph{online reliability signal}.
+Rather than modifying the descent objective directly,
+we compare internal consistencies across parameter resolutions
+and use this contrast to determine \emph{whether} and \emph{when}
+cross-resolution intervention is warranted.
+
+\subsection{Low-Rank Adaptation, Adaptive Capacity, and Subspace Drift}
+
+LoRA~\cite{hu2022lora} parameterizes task-specific updates in a low-rank subspace
+and has become a standard baseline for parameter-efficient fine-tuning.
+Subsequent methods, including adaptive and dynamic rank variants such as
+AdaLoRA~\cite{zhang2023adalora}, allocate capacity based on parameter magnitudes
+or heuristic importance measures.
+More recent work explores alternative parameterizations to improve stability
+and expressiveness, including DoRA~\cite{liu2024dora} and spectral approaches~\cite{wang2024svft}.
+
+Despite these advances, most PEFT methods implicitly assume that the effective
+adaptation subspace is sufficiently stable throughout training,
+or that capacity reallocation alone is sufficient to address mismatch.
+In contrast, empirical evidence suggests that the effective update subspace
+can evolve over time~\cite{aghajanyan2021intrinsic},
+particularly in low-data or high-entropy regimes.
+This mismatch can lead to unstable updates when low-rank structure
+is trusted prematurely or enforced without reliability evidence.
+
+Our framework addresses this issue from a \emph{diagnostic perspective}.
+Rather than adapting capacity solely based on parameter statistics,
+we use cross-resolution gradient consistency as an intrinsic reliability estimator.
+Low-rank structure is preserved when supported by internal agreement,
+while higher-resolution flexibility remains decoupled when signals are unstable.
+This shifts the focus from static rank control to evidence-driven execution control.
+
+\subsection{Gradient Compression and Residual Preservation}
+
+A related line of work studies gradient compression and approximation techniques,
+showing that discarding update components without retaining residual information
+can impair convergence, and that error feedback mechanisms are often required
+for stability~\cite{karimireddy2019error}.
+Low-rank compression schemes such as PowerSGD~\cite{vogels2019powersgd}
+demonstrate that structured approximations can significantly reduce
+communication or storage costs.
+
+While effective in distributed or communication-limited settings,
+most gradient compression methods treat residuals as undifferentiated numeric
+artifacts, without distinguishing stochastic noise from structured but
+temporarily misaligned signals.
+Compression decisions are typically based on magnitude or bandwidth constraints,
+rather than diagnostic evidence about reliability.
+
+In contrast, our framework emphasizes \emph{diagnosis before consolidation}.
+We do not assume that all information should be immediately compressed or merged.
+Instead, we use internal agreement across resolutions as evidence
+for when consolidation or alignment is appropriate.
+In our current setting, this principle manifests as sparse cross-resolution
+alignment rather than explicit compression,
+but the underlying idea remains evidence-driven update control.
+
+\subsection{Summary of Limitations in Existing Paradigms}
+
+Across these lines of work, existing paradigms tend to
+(i) resolve gradient conflicts without diagnosing their origin,
+(ii) impose or adapt low-rank structure without an explicit reliability criterion
+grounded in gradient agreement,
+or (iii) treat residual information uniformly without separating noise
+from structured but weakly supported signals.
+
+Our approach bridges these gaps by leveraging cross-resolution gradient consistency
+as an intrinsic online reliability signal.
+This enables sparse and targeted intervention in low-rank training,
+reframing PEFT as an evidence-driven execution process
+rather than a static structural constraint.
+% =========================
+% Existing section (keep your original text)
+% =========================
+% Method Overview (Component-first, Algorithm-ordered)
+% =========================
+\section{Method}
+\label{sec:method}
+
+
+\subsection{Overview}
+\label{sec:method-overview}
+
+We propose \textit{Gradient Shake-to-Align}, a diagnostic-first framework for Dual-Rank LoRA.
+Our design follows a single guiding principle:
+
+\begin{quote}
+\textbf{Diagnosis before intervention.}
+We do not enforce low-rank behavior \emph{a priori}; instead, we use online evidence from
+multi-view gradient consistency to decide \emph{when} cross-resolution alignment
+is necessary during training.
+\end{quote}
+
+\subsubsection{Objects and Parameterization (What exists in the system)}
+For each LoRA block $b$, we maintain a nested Dual-Rank update of target rank $R$
+with a stable core rank $r<R$:
+\begin{equation}
+\Delta W_{R,b}
+=
+\underbrace{U_{r,b}V_{r,b}}_{\text{core (rank } r\text{)}}
++
+\underbrace{U_{hi,b}V_{hi,b}}_{\text{extension (rank } R-r\text{)}}.
+\end{equation}
+
+\paragraph{Initialization (part of the method, not a separate chapter).}
+We initialize the extension to contribute zero at $t=0$:
+\begin{equation}
+U_{r,b},V_{r,b}\sim \text{Kaiming},\qquad
+U_{hi,b}\sim \mathcal{N}(0,\sigma^2),\qquad
+V_{hi,b}=0,
+\end{equation}
+so that $\Delta W_{R,b}(0)=U_{r,b}V_{r,b}$.
+As a result, the high-resolution branch starts as a pure \emph{reservoir}
+that can absorb heterogeneous or unreliable gradients
+without immediately affecting the low-rank core.
+
+\subsubsection{Diagnostic Evidence (How we look at the world)}
+\begin{itemize}
+    \item \textbf{Votes per step (implementation-aligned):}
+    at each training step we collect gradient votes by partitioning each task minibatch into
+    microbatch windows of size $s_{\mathrm{pv}}$ (``samples per vote'').
+    The effective number of votes at step $t$ is therefore
+    \[
+      V_t \coloneqq \sum_{m\in\mathcal{M}} \left\lceil \frac{|B_m|}{s_{\mathrm{pv}}} \right\rceil,
+    \]
+    which is constant only when task batch sizes are fixed.
+    \item \textbf{Two diagnostic views:}
+    \begin{itemize}
+        \item \textbf{$r$-view:} gradients restricted to $(U_r,V_r)$,
+        zero-padded to rank-$R$ space.
+        \item \textbf{$R$-view:} gradients over $(U_r,V_r,U_{hi},V_{hi})$.
+    \end{itemize}
+\end{itemize}
+
+From these votes, we compute per-step diagnostic statistics:
+\begin{itemize}
+    \item \textbf{Internal consistencies:} $C_{r,b}$ and $C_{R,b}$,
+    measuring agreement among votes within each view.
+    \item \textbf{Cross-resolution retention ratio:} $A_b$,
+    measuring how much of the aggregated rank-$R$ update remains explainable by the rank-$r$ subspace.
+\end{itemize}
+All statistics are computed directly from the microbatch votes within the current optimization step.
+Precise definitions are introduced where needed.
+
+\subsubsection{Direction Construction (Per-view, mean-based)}
+In the experimental setting considered in this paper,
+each view constructs its execution direction using the
+mean of its corresponding gradient votes.
+This choice provides a simple and stable reference direction
+while allowing the diagnostic statistics to determine
+whether further cross-resolution alignment is required.
+
+\subsubsection{Global Trigger (Gate-0): When to reconcile across resolutions}
+Cross-resolution reconciliation is designed to be \emph{sparse}.
+A global trigger (Gate-0) activates reconciliation only when
+there is evidence of unreliability or disagreement,
+as indicated by low internal consistency in either view
+or large directional deviation between the two views.
+When Gate-0 does not trigger, updates are applied independently
+within each view.
+
+\subsubsection{Cross-Resolution Reconciliation (Trusted reference + constrained execution)}
+When Gate-0 triggers, we identify a trusted reference view
+based on relative internal consistency.
+Execution is then performed under the nested-parameterization constraint:
+\textbf{the rank-$R$ update is not allowed to overwrite the rank-$r$ core}.
+Accordingly, the low-rank core is updated using the $r$-view direction,
+while the high-rank extension realizes any residual semantics
+required to maintain consistency with the $R$-view.
+
+This constrained execution rule ensures semantic closure
+under the nested parameterization,
+allowing higher-resolution information to assist training
+without destabilizing the low-rank representation.
+
+\subsection{Part A: Gradient Shake-to-Align (Per-step Diagnosis and Execution)}
+\label{sec:partA}
+\subsubsection{Core Methodology: Ordered Pipeline}
+\label{sec:core-methodology}
+We now describe the end-to-end per-step pipeline in execution order.
+
+\paragraph{Step 1: Build Diagnostic Statistics from Votes}
+At each training step, we construct a set of gradient votes for each LoRA block
+via a memory-safe \emph{serial microbatch voting} procedure:
+we iterate over microbatch windows, run \texttt{forward}+\texttt{backward} per window,
+and store the resulting (scale-normalized) LoRA gradients as votes.
+We then compute per-step diagnostic statistics purely from the current microbatch votes:
+\[
+C_{r,b},\quad C_{R,b},\quad A_b,
+\]
+where $C_{r,b}$ and $C_{R,b}$ measure instantaneous internal agreement among votes
+within the $r$- and $R$-views respectively, and $A_b$ measures
+cross-resolution retention of the aggregated rank-$R$ update by the rank-$r$ subspace.
+
+\paragraph{Step 2: Mean Direction Construction (Per-view)}
+For each view, we construct a representative execution direction
+using the mean of its corresponding gradient votes:
+\[
+\bar v_r := \frac{1}{V_t}\sum_{k=1}^{V_t} v^{(k)}_{r,b},
+\qquad
+\bar v_R := \frac{1}{V_t}\sum_{k=1}^{V_t} v^{(k)}_{R,b}.
+\]
+These mean directions serve as stable references,
+while all diagnostic decisions are made using the underlying vote statistics.
+All mean directions and subsequent pulling operations are interpreted in the scale-invariant (normalized) gradient space.
+
+\paragraph{Step 3: Gate-0 (Global Trigger): When to reconcile across resolutions}
+Cross-resolution reconciliation is designed to be \emph{sparse}.
+A global trigger (Gate-0) activates reconciliation only when
+there is evidence of unreliability or disagreement.
+Specifically, we enter reconciliation if either:
+(i) at least one view exhibits high internal unreliability under a consistency-derived noise score, or
+(ii) the two views disagree strongly under mean directions.
+
+\paragraph{(i) Noise-summary trigger from internal consistency.}
+\begin{equation}
+\label{eq:noise-gates}
+b_{r,b} := \sigma\!\left(\kappa_N(\tau_{\mathrm{noise}} - C_{r,b})\right),
+\qquad
+b_{R,b} := \sigma\!\left(\kappa_N(\tau_{\mathrm{noise}} - C_{R,b})\right),
+\end{equation}
+\begin{equation}
+\label{eq:noise-summary}
+N_b := \max(b_{r,b},\, b_{R,b}).
+\end{equation}
+
+\paragraph{(ii) Directional deviation trigger.}
+\begin{equation}
+\label{eq:direction-deviation-raw}
+D_b := 1 - \mathrm{CosSim}\!\left(\bar v_r,\; \mathrm{head}(\bar v_R)\right).
+\end{equation}
+We use $\mathrm{head}(\bar v_R)$ to denote the first $r$ coordinates
+of the rank-$R$ direction under the nested parameterization.
+This is not identical to the $r$-view direction $\bar v_r$.
+
+\paragraph{Gate-0 (OR logic).}
+\begin{equation}
+\label{eq:gate0-final}
+b \in \mathcal{T}
+\;\;\Longleftrightarrow\;\;
+\Big(N_b \ge \tau_N\Big)
+\;\;\lor\;\;
+\Big(D_b \ge \tau_D\Big).
+\end{equation}
+
+\noindent
+If $b\notin\mathcal{T}$, updates are applied independently in each view
+using mean directions.
+If $b\in\mathcal{T}$, we perform cross-resolution reconciliation
+as described below.
+
+\paragraph{Remark: Diagnostic statistics vs.\ execution directions.}
+We emphasize that diagnostic statistics $(C_{r,b}, C_{R,b}, A_b)$
+are computed solely from the vote distributions and are independent of
+the choice of execution direction.
+Here, $A_b$ is a retention-style diagnostic rather than a primary directional gating variable.
+Mean directions act only as representatives for execution and do not
+alter the underlying diagnostic evidence.
+
+\paragraph{Step 4: Trusted Reference Selection and Pull Strength}
+When reconciliation is triggered, we quantify the relative reliability
+contrast between the two views by
+\[
+\Delta C_b := C_{r,b} - C_{R,b}.
+\]
+
+Rather than performing a hard switch, we interpret $\Delta C_b$ as defining:
+(i) a \emph{trusted reference view}, and
+(ii) a continuous \emph{pull strength} controlling how strongly the less
+reliable view is aligned to the reference.
+
+\paragraph{Reference direction.}
+We select the trusted head direction as
+\[
+g_{\mathrm{ref}} :=
+\begin{cases}
+\bar v_r, & \Delta C_b \ge 0 \quad (\text{$r$ view more reliable}), \\
+\mathrm{head}(\bar v_R), & \Delta C_b < 0 \quad (\text{$R$ view more reliable}).
+\end{cases}
+\]
+
+\paragraph{Pull strength.}
+The magnitude of the reliability gap is converted into a pull coefficient:
+\[
+\lambda_b := \mathrm{clip}\!\left(\frac{|\Delta C_b|-\delta}{1-\delta},\,0,\,1\right),
+\]
+so that small gaps induce negligible alignment,
+while large gaps result in stronger reconciliation.
+
+\paragraph{Soft directional pulling.}
+Let $\bar v_R=(\bar v_{R,h},\bar v_{R,t})$ denote the head--tail decomposition
+of the rank-$R$ mean direction.
+The pulled head targets are defined as
+\[
+(g_h^\dagger,\; g_{R,h}^\dagger) :=
+\begin{cases}
+\big(\bar v_r,\; (1-\lambda_b)\bar v_{R,h} + \lambda_b \bar v_r\big), & \Delta C_b \ge 0, \\[6pt]
+\big((1-\lambda_b)\bar v_r + \lambda_b \bar v_{R,h},\; \bar v_{R,h}\big), & \Delta C_b < 0.
+\end{cases}
+\]
+Only the less reliable view is interpolated toward the reference,
+while the trusted view remains unchanged.
+
+\paragraph{Step 5: Constrained Execution (Semantic Closure under Nesting)}
+
+Execution is performed in a scale-normalized gradient space
+to ensure invariance to LoRA scaling factors. All directions are now interpreted in normalized space.
+Each branch applies scaling
+\[
+\Delta W_r = s_r B_r A_r,
+\qquad
+\Delta W_h = s_h B_h A_h,
+\qquad
+\Delta W_R = \Delta W_r + \Delta W_h.
+\]
+
+Before any execution or compensation, we define the scale-invariant (normalized) gradients:
+\[
+g_{A_r} := g_{A_r}/s_r,\quad
+g_{B_r} := g_{B_r}/s_r,
+\qquad
+g_{A_h} := g_{A_h}/s_h,\quad
+g_{B_h} := g_{B_h}/s_h.
+\]
+All reconciliation, pulling, and compensation are performed in this scale-invariant space.
+
+
+\paragraph{Why scale-invariant reconciliation?}
+LoRA scaling factors (e.g., shared $\alpha$ conventions)
+introduce magnitude differences that do not reflect
+intrinsic gradient reliability.
+Performing diagnostics and reconciliation in a normalized space
+ensures that cosine-based consistency statistics
+and cross-resolution pulling depend only on directional structure,
+not on arbitrary scaling choices.
+
+
+\paragraph{Head execution.}
+All pulling targets are defined in the scale-invariant space.
+Under the nested dual-rank parameterization, the rank-$R$ update is not allowed to overwrite the rank-$r$ core.
+We therefore execute the head strictly using the trusted head direction:
+
+\[
+g_r^{\mathrm{exec}} \coloneqq g_h^\dagger.
+\]
+where $g_r^{exec}$ denotes the concatenated executed gradient on $(A_r,B_r)$.
+
+\paragraph{Tail realization via residual compensation.}
+Let the executed rank-$R$ direction be
+\[
+g_R^{exec} = (g_{R,h}^\dagger,\; \bar v_{R,t}),
+\]
+where $\bar v_{R,t}$ is the tail (extension) component of the mean direction.
+
+Define the head discrepancy:
+\[
+r_{\mathrm{head}} =
+\mathrm{head}(g_R^{exec}) - g_r^{exec}.
+\]
+
+Mapping this discrepancy back to weight space yields a first-order residual:
+\[
+\Delta W_{\mathrm{res}}
+\approx
+B_r\,\delta A_r + \delta B_r\,A_r.
+\]
+
+To preserve rank-$r$ execution while realizing the full rank-$R$ semantics,
+we solve for extension updates $(\delta A_h,\delta B_h)$ such that
+\[
+B_h\,\delta A_h + \delta B_h\,A_h
+\approx
+\Delta W_{\mathrm{res}}.
+\]
+
+We use ridge-regularized least squares:
+\[
+\delta B_h^*
+=
+\arg\min_X
+\|X A_h - \Delta W_{\mathrm{res}}\|_F^2
++
+\lambda_{\mathrm{ls}}\|X\|_F^2,
+\qquad
+\delta A_h^*
+=
+\arg\min_Y
+\|B_h Y - \Delta W_{\mathrm{res}}\|_F^2
++
+\lambda_{\mathrm{ls}}\|Y\|_F^2,
+\]
+with closed-form solutions
+\[
+\delta B_h^*
+=
+\Delta W_{\mathrm{res}}
+A_h^\top
+(A_h A_h^\top + \lambda_{\mathrm{ls}} I)^{-1},
+\qquad
+\delta A_h^*
+=
+(B_h^\top B_h + \lambda_{\mathrm{ls}} I)^{-1}
+B_h^\top
+\Delta W_{\mathrm{res}}.
+\]
+
+The executed extension gradient becomes
+\[
+g_{hi}^{exec}
+=
+\bar v_{R,t}
++
+\mathrm{vec}(\delta A_h^*, \delta B_h^*).
+\]
+
+\paragraph{Justification of the first-order residual approximation.}
+The residual mapping
+\(
+\Delta W_{\mathrm{res}}
+\approx
+B_r\,\delta A_r + \delta B_r\,A_r
+\)
+follows from the first-order expansion of the bilinear LoRA parameterization.
+Under standard small-step assumptions of first-order optimizers (e.g., AdamW),
+the update of $(A_r,B_r)$ remains in a locally linear regime,
+making the ridge-based least-squares compensation a consistent approximation
+of the residual weight mismatch.
+
+\paragraph{Write-back to optimizer.}
+Finally, gradients are restored to the original scaled parameter space:
+\[
+g_{A_r}^{write}=s_r\,g_{A_r}^{exec},\quad
+g_{B_r}^{write}=s_r\,g_{B_r}^{exec},
+\qquad
+g_{A_h}^{write}=s_h\,g_{A_h}^{exec},\quad
+g_{B_h}^{write}=s_h\,g_{B_h}^{exec}.
+\]
+
+This construction guarantees:
+(i) exact preservation of the rank-$r$ core,
+(ii) semantic closure of the rank-$R$ update,
+(iii) invariance to LoRA scaling choices.
+Moreover, as the head discrepancy $r_{\mathrm{head}}$ shrinks (e.g., when $\lambda_b$ increases),
+the residual $\Delta W_{\mathrm{res}}$ approaches zero, and the LS compensation
+naturally vanishes.
+
+
+\subsubsection{Limiting Regimes (Explanatory)}
+
+The proposed mechanism is continuous and evidence-driven.
+The following familiar cases arise only as limiting patterns
+of the reliability contrast $\Delta C_b$ and deviation signal $D_b$:
+
+\begin{itemize}
+
+    \item \textbf{Low reliability regime.}
+    When one or both views exhibit high internal unreliability
+    ($N_b \ge \tau_N$),
+    reconciliation is triggered to prevent unstable execution.
+    In this regime, intervention is driven by unreliability
+    rather than directional disagreement.
+
+    \item \textbf{Capacity insufficiency regime.}
+    When $C_{R,b} \gg C_{r,b}$,
+    the high-resolution view demonstrates stronger internal agreement.
+    The framework interprets this as evidence that the rank-$r$
+    core lacks sufficient capacity,
+    and softly aligns the $r$-view toward the trusted $R$-head direction.
+
+    \item \textbf{High-frequency overfitting regime.}
+    When $C_{r,b} \gg C_{R,b}$,
+    the low-rank core is internally stable while the high-rank extension
+    ex exhibits lower consistency.
+    The mechanism therefore regularizes the $R$-view head toward
+    the $r$-view direction, suppressing unreliable high-frequency components.
+
+    \item \textbf{Stable directional disagreement.}
+    When both views are internally consistent
+    yet directionally misaligned ($D_b$ large),
+    the framework performs soft pulling without hard switching.
+    This corresponds to structured but resolution-dependent semantics,
+    reconciled through nested execution rather than constraint override.
+
+\end{itemize}
+
+
+
+\subsubsection{Computational Complexity and Implementation Notes}
+\label{sec:complexity}
+
+\paragraph{Algorithmic complexity.}
+Under a fixed global batch size,
+the proposed framework does not change the order of forward or backward
+computation with respect to baseline LoRA.
+All gradient votes are computed within the same optimization step,
+and reconciliation operates on low-rank parameter blocks.
+Therefore, the overall computational complexity
+remains of the same asymptotic order as standard PEFT training.
+
+\paragraph{Vote-level gradient extraction.}
+The primary overhead arises from obtaining vote-level gradients
+for consistency diagnostics.
+In our current implementation, we adopt a memory-safe
+serial microbatch strategy within each step.
+This introduces a constant-factor slowdown relative to baseline.
+
+\paragraph{Parallel implementation potential.}
+Algorithmically, vote extraction can be parallelized
+using per-sample or per-vote gradient computation (e.g., vectorized Jacobian methods),
+which allows the diagnostic statistics to be computed
+without repeated backward passes.
+In such implementations, the practical overhead can be substantially reduced,
+making the runtime comparable to baseline training up to constant factors.
+
+
+\section{Algorithm}
+
+\paragraph{Multi-task iteration (code-matched).}
+In the multi-task setting, each global step samples exactly one minibatch from \emph{each} task dataloader.
+Thus a single optimizer step processes the set $\{B_m\}_{m=1}^{M}$ simultaneously, where each $B_m$
+is independently shuffled within its own task stream.
+Votes are then extracted by microbatching each $B_m$ into vote windows.
+
+\paragraph{Multi-task weighting (implementation-aligned).}
+Let $|B_m^{(j)}|$ denote the number of samples in window $j$ of task $m$ and $N_t \coloneqq \sum_{m\in\mathcal{M}} |B_m|$ be the total number of samples across tasks at step $t$.
+During vote construction we weight each window loss/gradient by $w_{m,j} \coloneqq |B_m^{(j)}|/N_t$ when accumulating the step loss and the optimizer gradients.
+
+
+\begin{breakablealgorithm}
+\caption{Gradient Shake-to-Align (Single-Timescale, Scale-Invariant Routing)}
+\begin{algorithmic}[1]
+
+\Require Dual ranks $(r,R)$; voter set $\mathcal{V}$ with $V_t:=|\mathcal{V}|$.
+\Require Noise-gate parameters $(\tau_{\mathrm{noise}}, \kappa_N, \tau_N)$; directional threshold $\tau_D$; routing margin $\delta$; ridge $\lambda_{\mathrm{ls}}$.
+\Require LoRA scaling factors $(s_r,s_h)$ for core and extension branches.
+\Statex \textit{Note: All $v^{(k)}$, $\bar v_\chi$, and $g_\cdot$ inside the algorithm denote normalized gradients.}
+
+\While{training step $t=1,2,\dots$}
+
+    \State \textbf{Serial microbatch evidence construction (implementation-aligned):}
+    \State Obtain voter gradients $\{v^{(k)}_{r,b}, v^{(k)}_{R,b}\}_{k\in\mathcal{V}}$ for each LoRA block $b$.
+    \Comment{$\mathcal{V}$ indexes microbatch windows; in multi-task it spans windows across all tasks.}
+
+    \State \textbf{Scale-normalize voter gradients:}
+    \State Convert parameter gradients to scale-invariant space by dividing by branch scales $(s_r,s_h)$.
+
+    \State \textbf{Diagnostic computation:}
+    \State Compute instantaneous statistics $(C_{r,b}, C_{R,b}, A_b)$ from normalized voters,
+    where $A_b$ denotes a cross-resolution retention ratio.
+
+    \For{each block $b$}
+
+        \State \textbf{Mean directions (execution representatives):}
+        \State \quad $\bar v_r \gets \frac{1}{V_t}\sum_{k\in\mathcal{V}} v^{(k)}_{r,b}$
+        \State \quad $\bar v_R \gets \frac{1}{V_t}\sum_{k\in\mathcal{V}} v^{(k)}_{R,b}$
+
+        \State \textbf{Gate-0 signals (cheap):}
+        \State \quad $b_{r,b} \gets \sigma\!\left(\kappa_N(\tau_{\mathrm{noise}} - C_{r,b})\right)$
+        \State \quad $b_{R,b} \gets \sigma\!\left(\kappa_N(\tau_{\mathrm{noise}} - C_{R,b})\right)$
+        \State \quad $N_b \gets \max(b_{r,b}, b_{R,b})$
+        \State \quad $D_b \gets 1-\mathrm{CosSim}(\bar v_r,\mathrm{head}(\bar v_R))$
+
+        \State \textbf{Gate-0 (global trigger; cheap OR):}
+        \State \quad $\mathcal{T}_b \gets [N_b \ge \tau_N] \lor [D_b \ge \tau_D]$
+
+        \If{$\mathcal{T}_b$}
+
+            \State \textbf{Reliability contrast and pull strength:}
+            \State \quad $\Delta C_b \gets C_{r,b}-C_{R,b}$
+            \State \quad $\lambda_b \gets \mathrm{clip}\!\left(\frac{|\Delta C_b|-\delta}{1-\delta},\,0,\,1\right)$
+
+            \State \textbf{Soft cross-resolution pulling (head level):}
+            \State \quad \textbf{if} $\Delta C_b \ge 0$ \textbf{then} \Comment{$r$ view more reliable}
+            \State \qquad $g_h^\dagger \gets \bar v_r$
+            \State \qquad $g_{R,h}^\dagger \gets (1-\lambda_b)\mathrm{head}(\bar v_R) + \lambda_b \bar v_r$
+            \State \quad \textbf{else} \Comment{$R$ view more reliable}
+            \State \qquad $g_h^\dagger \gets (1-\lambda_b)\bar v_r + \lambda_b \mathrm{head}(\bar v_R)$
+            \State \qquad $g_{R,h}^\dagger \gets \mathrm{head}(\bar v_R)$
+            \State \quad \textbf{end if}
+
+            \State \textbf{Constrained execution under nesting (with residual compensation):}
+            \State \quad $g_r \gets g_h^\dagger$
+            \State \quad Compute head residual in weight space $\Delta W_{\mathrm{res}}$ from $(g_{R,h}^\dagger - g_h^\dagger)$.
+            \State \quad Solve ridge LS compensation on extension branch with $\lambda_{\mathrm{ls}}$ to realize $\Delta W_{\mathrm{res}}$.
+            \State \quad $g_{hi} \gets \mathrm{tail}(\bar v_R) + \mathrm{Compensate}(\Delta W_{\mathrm{res}};\lambda_{\mathrm{ls}})$
+
+        \Else
+
+            \State \textbf{Default execution (no reconciliation; mean-only):}
+            \State \quad $(g_r,g_{hi}) \gets (\bar v_r,\mathrm{tail}(\bar v_R))$
+
+        \EndIf
+
+        \State \textbf{Rescale and write-back:}
+        \State Multiply executed gradients by $(s_r,s_h)$ before writing to optimizer buffers.
+
+    \EndFor
+
+    \State \texttt{Optimizer.step()}
+
+\EndWhile
+\end{algorithmic}
+\end{breakablealgorithm}
+
+\begin{breakablealgorithm}
+\caption{Multi-Task Voter Construction (Implementation-Aligned Serial Microbatching)}
+\begin{algorithmic}[1]
+\Require Task set $\mathcal{M}=\{1,\dots,M\}$; at global step $t$ we draw one minibatch per task,
+i.e., $\{B_m\}_{m\in\mathcal{M}}$ with $B_m \sim \mathcal{D}_m$ (via independent task dataloader iterators).
+\Require Vote microbatch size $s_{\mathrm{pv}}$ (samples per vote); allow-tail flag.
+\Ensure Voter set $\mathcal{V}$ and voter gradients $\{v^{(k)}_{r,b}, v^{(k)}_{R,b}\}_{k\in\mathcal{V}}$ for each block $b$.
+
+\State Initialize $\mathcal{V}\gets\emptyset$.
+
+\For{each task $m\in\mathcal{M}$}
+    \State \textbf{Window-level voters per task (implementation-aligned):}
+    \State Partition $B_m$ into windows of size $s_{\mathrm{pv}}$: $\{B_m^{(j)}\}_{j=1}^{\lceil |B_m|/s_{\mathrm{pv}}\rceil}$.
+    \For{$j=1,\dots,\lceil |B_m|/s_{\mathrm{pv}}\rceil$}
+        \State Compute gradient votes for each block $b$:
+        \State \quad $v^{(m,j)}_{r,b} \gets \nabla_{(U_r,V_r)} \mathcal{L}_m(B_m^{(j)})$
+        \State \quad $v^{(m,j)}_{R,b} \gets \nabla_{(U_r,V_r,U_{hi},V_{hi})} \mathcal{L}_m(B_m^{(j)})$
+        \State Add voter index $(m,j)$ to $\mathcal{V}$.
+    \EndFor
+\EndFor
+
+\State \textbf{Return} $\mathcal{V}$ and voter gradients to Algorithm~1.
+\Comment{Algorithm~1 uses $\mathcal{V}$ uniformly: $\bar v_\chi=\frac{1}{|\mathcal{V}|}\sum_{k\in\mathcal{V}} v^{(k)}_{\chi,b}$.}
+
+\end{algorithmic}
+\end{breakablealgorithm}
+\section{Appendix: Single-Pass Streaming Accumulation}
+\label{app:kernel}
+
+This appendix describes a practical streaming kernel for accumulating all diagnostic consistency statistics
+$(C_{r,b}, C_{R,b}, A_b)$ without materializing any vote vectors in memory.
+The design explicitly respects the distinct parameter layouts of the $(r)$ and $(hi)$ tensors
+under the nested dual-rank LoRA parameterization.
+
+\paragraph{Scope.}
+This kernel computes \emph{only} the diagnostic statistics required by the routing rules:
+internal consistencies $C_r, C_R$ and the cross-resolution retention ratio $A$.
+The statistic $A_b$ is computed directly from the current step's votes.
+It does \emph{not} include:
+(i) any gating or routing logic,
+or (ii) any execution-layer direction construction or gradient aggregation.
+In particular, this kernel never produces update directions and does not interact with the optimizer.
+
+We include this kernel as an implementation note for memory-bounded training;
+the proposed method itself is independent of this accumulation strategy.
+
+\begin{algorithm}[H]
+\caption{Streaming Accumulation Kernel (Per-Block, Unified Voter Set $\mathcal{V}$)}
+\begin{algorithmic}[1]
+\Require Vote-grad shards on LoRA parameters for block $b$:
+$\{g_{U_r}^{(k)}, g_{V_r}^{(k)}, g_{U_{hi}}^{(k)}, g_{V_{hi}}^{(k)}\}_{k\in\mathcal{V}}$.
+\Ensure Accumulators $\{S_r^{(k)},D_r^{(i,j)}\}$, $\{S_R^{(k)},D_R^{(i,j)}\}$, and alignment scalars $(X_{\mathrm{sum2}}, Y_{\mathrm{sum2}})$.
+
+\State Initialize all accumulators to $0$.
+\State Initialize $X_{\mathrm{sum2}}\gets 0$, $Y_{\mathrm{sum2}}\gets 0$.
+\Comment{$X_{\mathrm{sum2}}=\|\sum_{k\in\mathcal V} v_{r,b}^{(k)}\|^2$ over $(U_r,V_r)$; $Y_{\mathrm{sum2}}=\|\sum_{k\in\mathcal V} v_{hi,b}^{(k)}\|^2$ over $(U_{hi},V_{hi})$}
+
+\Statex
+\State \textbf{1) Stream over rank-$r$ tensors} $(U_r,V_r)$:
+\For{each element index $idx$ in tensors $(U_r,V_r)$}
+    \State Load $x_k \gets g_r^{(k)}[idx]$ for $k\in\mathcal{V}$
+    \For{$k\in\mathcal{V}$}
+        \State $S_r^{(k)} \gets S_r^{(k)} + x_k^2$
+        \State $S_R^{(k)} \gets S_R^{(k)} + x_k^2$ \Comment{$r$-part contributes to $R$-view}
+    \EndFor
+    \For{$i<j,\; i,j\in\mathcal{V}$}
+        \State $D_r^{(i,j)} \gets D_r^{(i,j)} + x_i x_j$
+        \State $D_R^{(i,j)} \gets D_R^{(i,j)} + x_i x_j$
+    \EndFor
+    \State $s \gets \sum_{k\in\mathcal V} x_k$
+    \State $X_{\mathrm{sum2}} \gets X_{\mathrm{sum2}} + s^2$
+\EndFor
+
+\Statex
+\State \textbf{2) Stream over rank-extension tensors} $(U_{hi},V_{hi})$:
+\For{each element index $idx$ in tensors $(U_{hi},V_{hi})$}
+    \State Load $y_k \gets g_{hi}^{(k)}[idx]$ for $k\in\mathcal{V}$
+    \For{$k\in\mathcal{V}$}
+        \State $S_R^{(k)} \gets S_R^{(k)} + y_k^2$ \Comment{$hi$-part contributes only to $R$-view}
+    \EndFor
+    \For{$i<j,\; i,j\in\mathcal{V}$}
+        \State $D_R^{(i,j)} \gets D_R^{(i,j)} + y_i y_j$
+    \EndFor
+    \State $t \gets \sum_{k\in\mathcal V} y_k$
+    \State $Y_{\mathrm{sum2}} \gets Y_{\mathrm{sum2}} + t^2$
+\EndFor
+
+\Statex
+\State \textbf{3) Compute statistics:}
+\State Compute $C_r$ and $C_R$ from $\{S_r,D_r\}$ and $\{S_R,D_R\}$:
+\[
+C_{\chi,b}=
+\frac{2}{|\mathcal V|(|\mathcal V|-1)}
+\sum_{i<j,\; i,j\in\mathcal V}
+\frac{D_{\chi}^{(i,j)}}{\sqrt{S_{\chi}^{(i)}}\sqrt{S_{\chi}^{(j)}}+\epsilon},
+\quad \chi\in\{r,R\}.
+\]
+\State Compute the retention ratio using the padding identity:
+\[
+A_b=
+\frac{X_{\mathrm{sum2}}}
+{\sqrt{X_{\mathrm{sum2}}}\sqrt{X_{\mathrm{sum2}}+Y_{\mathrm{sum2}}}+\epsilon}.
+\]
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Scalar storage (per block, variable $V_t$).}
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+Quantity & Accumulators & Count & Storage (floats) \\
+\midrule
+$r$-Consistency ($C_r$) & $S_r, D_r$ & $V_t + \tfrac{V_t(V_t-1)}{2}$ & $V_t + \tfrac{V_t(V_t-1)}{2}$ \\
+$R$-Consistency ($C_R$) & $S_R, D_R$ & $V_t + \tfrac{V_t(V_t-1)}{2}$ & $V_t + \tfrac{V_t(V_t-1)}{2}$ \\
+Retention Ratio ($A_b$) & $X_{\mathrm{sum2}}, Y_{\mathrm{sum2}}$ & $2$ & $2$ \\
+\midrule
+\textbf{Total (diagnostic scalars)} & & & $\mathbf{V_t^2 + V_t + 2}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Compute cost.}
+Per-parameter cost is $O(|\mathcal V|^2)$ due to pairwise dot accumulators.
+This trades additional compute for bounded memory by avoiding
+materialization of vote vectors.
+
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}

@@ -2,11 +2,21 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PYTHON_BIN="${PYTHON_BIN:-python}"
+DEFAULT_OPT_PY="/home/lyclyq/miniconda3/envs/optimization/bin/python"
+if [[ -z "${PYTHON_BIN:-}" && -x "$DEFAULT_OPT_PY" ]]; then
+  PYTHON_BIN="$DEFAULT_OPT_PY"
+else
+  PYTHON_BIN="${PYTHON_BIN:-python}"
+fi
 PIPELINE="$ROOT/scripts/pipeline_oneclick.py"
 TRIALS="${TRIALS:-96}"
 HPO_SEEDS="${HPO_SEEDS:-[2,3]}"
 FINAL_SEEDS="${FINAL_SEEDS:-[2,3,5,7,11]}"
+TRAIN_COMPILE="${TRAIN_COMPILE:-false}"
+
+export HF_HOME="${HF_HOME:-$ROOT/.hf_cache}"
+export HF_DATASETS_CACHE="${HF_DATASETS_CACHE:-$HF_HOME/datasets}"
+export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-$HF_HOME/transformers}"
 
 run_single_task_protocol() {
   local runs_group="$1"
@@ -16,8 +26,7 @@ run_single_task_protocol() {
   local final_epochs="${5:-8}"
   local ours_r="${6:-32}"
   local ours_R="${7:-128}"
-  shift 7 || true
-  local extra=( "$@" )
+  local extra=( "${@:8}" )
 
   "$PYTHON_BIN" "$PIPELINE" \
     --runs_group "$runs_group" \
@@ -36,6 +45,7 @@ run_single_task_protocol() {
     --final_seeds "$FINAL_SEEDS" \
     --set "hpo.bandit.refine_seeds=$HPO_SEEDS" \
     --set "hpo.grid.rerank.seeds=$HPO_SEEDS" \
+    --set "train.compile=$TRAIN_COMPILE" \
     --ours_r "$ours_r" \
     --ours_R "$ours_R" \
     "${extra[@]}"
@@ -51,8 +61,7 @@ run_multi_source_protocol() {
   local virtual_epochs="${7:-8}"
   local ours_r="${8:-32}"
   local ours_R="${9:-128}"
-  shift 9 || true
-  local extra=( "$@" )
+  local extra=( "${@:10}" )
 
   "$PYTHON_BIN" "$PIPELINE" \
     --runs_group "$runs_group" \
@@ -74,6 +83,7 @@ run_multi_source_protocol() {
     --hpo_rerank_max_steps "$hpo_steps" \
     --set "hpo.bandit.refine_seeds=$HPO_SEEDS" \
     --set "hpo.grid.rerank.seeds=$HPO_SEEDS" \
+    --set "train.compile=$TRAIN_COMPILE" \
     --ours_r "$ours_r" \
     --ours_R "$ours_R" \
     "${extra[@]}"
