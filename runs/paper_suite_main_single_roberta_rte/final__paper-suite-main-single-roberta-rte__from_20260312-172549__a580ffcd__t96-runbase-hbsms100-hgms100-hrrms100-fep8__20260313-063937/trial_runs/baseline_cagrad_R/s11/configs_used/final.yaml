@@ -1,0 +1,30 @@
+# configs/schedules/final.yaml
+stage: final
+
+train:
+  single:
+    steps_mode: epochs
+  warmup_ratio: 0.1
+
+  eval:
+    strategy: dense_early
+    dense_early_per_epoch: 8
+    dense_early_epochs: 2
+
+    max_batches: 0
+    compute_train_acc: true
+    train_max_batches: 0
+
+    log_r_only: true
+
+    every_steps: 50
+    first_step: false
+
+final:
+  # final.py uses this single source of truth for per-trial train epochs.
+  epochs: 10
+  seeds: [2, 3, 5, 7, 11]
+  ablations:
+    enabled: false
+    no_gate: true
+    no_compensation: true
