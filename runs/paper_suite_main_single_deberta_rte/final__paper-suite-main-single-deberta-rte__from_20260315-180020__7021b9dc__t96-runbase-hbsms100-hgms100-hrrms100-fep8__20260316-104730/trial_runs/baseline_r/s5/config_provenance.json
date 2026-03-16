@@ -1,0 +1,33 @@
+{
+  "base_config_path": "configs/base.yaml",
+  "cli_set_args": [
+    "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_deberta_rte",
+    "task.name=glue/rte",
+    "model.name=microsoft/deberta-v3-base",
+    "task.scenario=single_task",
+    "task.multi.enabled=false",
+    "train.epochs=8",
+    "hpo.bandit.refine_seeds=[2,3]",
+    "hpo.grid.rerank.seeds=[2,3]",
+    "train.compile=false",
+    "method.baseline_r.lora.r=32",
+    "method.ours.lora.r=32",
+    "method.baseline_R.lora.r=128",
+    "method.ours.lora.R=128",
+    "train.epochs=8",
+    "final.epochs=8",
+    "final.seeds=[2, 3, 5, 7, 11]",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_deberta_rte/final__paper-suite-main-single-deberta-rte__from_20260315-180020__7021b9dc__t96-runbase-hbsms100-hgms100-hrrms100-fep8__20260316-104730",
+    "io.overwrite=resume",
+    "method.name=baseline_r",
+    "method.baseline_r.lora.r=32",
+    "method.baseline_r.grad_solver=avg",
+    "train.seed=5",
+    "train.epochs=8",
+    "train.warmup_ratio=0.04090909090909092",
+    "train.lr=3.935514593087578e-05",
+    "io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_deberta_rte/final__paper-suite-main-single-deberta-rte__from_20260315-180020__7021b9dc__t96-runbase-hbsms100-hgms100-hrrms100-fep8__20260316-104730/trial_runs/baseline_r/s5",
+    "io.overwrite=resume"
+  ],
+  "schedule_path": "configs/schedules/final.yaml"
+}

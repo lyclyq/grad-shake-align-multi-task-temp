@@ -1,0 +1,324 @@
+model:
+  name: microsoft/deberta-v3-base
+task:
+  scenario: single_task
+  name: glue/rte
+  max_len: 128
+  multi:
+    enabled: false
+    datasets:
+    - glue/cola
+    - glue/mrpc
+    - glue/rte
+train:
+  epochs: 8
+  max_steps: 1000
+  batch_size: 32
+  device_batch_size: 0
+  auto_device_batch:
+    enabled: true
+    min_batch_size: 1
+  precision: bf16
+  tf32: true
+  compile: false
+  fused_adamw: true
+  lr: 2e-5
+  warmup_ratio: 0.1
+  seed: 2
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  single:
+    steps_mode: epochs
+  multi:
+    steps_mode: max_steps
+    drop_last: true
+  dataloader:
+    num_workers: 4
+    pin_memory: true
+    persistent_workers: true
+    prefetch_factor: 2
+  eval:
+    strategy: dense_early
+    every_steps: 50
+    first_step: false
+    max_batches: 0
+    dense_early_per_epoch: 8
+    dense_early_epochs: 2
+    compute_train_acc: true
+    train_max_batches: 0
+    log_r_only: true
+io:
+  root: /home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_deberta_rte
+  overwrite: resume
+  run_dir: /home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_deberta_rte/final__paper-suite-main-single-deberta-rte__from_20260315-180020__7021b9dc__t96-runbase-hbsms100-hgms100-hrrms100-fep8__20260316-104730
+log:
+  csv: true
+  swanlab:
+    enabled: false
+    project: ShakeAlign_LoRA
+    timeout_s: 30
+    max_failures: 3
+debug:
+  enabled: false
+  print_every_steps: 80
+  max_blocks_to_print: 3
+  dump_init: true
+  dump_votes: true
+  dump_gates: true
+  dump_grad_norms: true
+  dump_history: false
+  assert_hi_zero_init: true
+method:
+  name: ours
+  baseline_r:
+    lora:
+      r: 32
+      alpha: 2.0
+      dropout: 0.1
+    grad_solver: avg
+    cagrad:
+      c: 0.4
+  baseline_R:
+    lora:
+      r: 128
+      alpha: 16.0
+      dropout: 0.1
+    grad_solver: avg
+    cagrad:
+      c: 0.4
+  ours:
+    lora:
+      r: 32
+      R: 128
+      alpha: 16.0
+      dropout: 0.1
+    ema_H: 1
+    votes: 4
+    ablate:
+      interp: false
+    gate0_noise:
+      tau: -10.0
+      kappa: 10.0
+    trigger_gate0:
+      tau_N: 0.6
+      tau_D: 0.0033914772
+    routing_delta: 0.005
+    pulling:
+      gamma_pull: 0.3
+      k_pull: 8.0
+    voting:
+      samples_per_vote: 4
+      allow_tail: true
+      keep_single_votes: true
+    history:
+      enabled: false
+      window_steps: 1
+      weighting: exp
+      exp_beta: 0.7
+    compensation:
+      enabled: true
+      ridge_lambda: 1e-4
+    compression:
+      enabled: false
+      every_steps: 0
+      target_rank: null
+      qr:
+        enabled: true
+      svd:
+        enabled: true
+hpo:
+  lr_grid:
+    min_lr: 1e-5
+    max_lr: 7e-3
+    baseline_points: 15
+    neighbor_points: 9
+    extend_factor: 1.6
+    clamp_min_lr: 1e-6
+    clamp_max_lr: 1e-2
+  baseline_variants:
+  - tag: baseline_r
+  - tag: baseline_R
+  cagrad:
+    c_grid:
+    - 0.2
+    - 0.4
+    - 0.6
+  budget:
+    total_trials: 96
+  ratio_sensitivity: 0.2
+  ratio_grid: 0.5
+  ratio_bayes: 0.3
+  use_bayes: false
+  bandit:
+    fixed_warmup_ratio: 0.1
+    refine_seeds:
+    - 2
+    - 3
+    score:
+      w_max: 0.5
+      w_final: 0.4
+      w_avg: 0.1
+  coord:
+    shared_order:
+    - lr
+    - warmup_ratio
+    - batch_size
+    method_orders:
+      baseline: []
+      cagrad:
+      - cagrad_c
+      ours:
+      - tau_D
+      - gamma_pull
+      - k_pull
+      - routing_delta
+    top_k: 3
+    refine_radix: 3
+    bayes_trials: 48
+    param_specs:
+      lr:
+        path: train.lr
+        scale: log
+        lower: 2e-6
+        center: 8e-5
+        upper: 1e-3
+      warmup_ratio:
+        path: train.warmup_ratio
+        scale: linear
+        lower: 0.0
+        center: 0.1
+        upper: 0.2
+      batch_size:
+        path: train.batch_size
+        kind: choice
+        choices:
+        - 16
+        - 32
+        - 128
+        center: 32
+      cagrad_c:
+        path_template: method.{tag}.cagrad.c
+        scale: linear
+        lower: 0.1
+        center: 0.4
+        upper: 0.8
+      tau_D:
+        path: method.ours.trigger_gate0.tau_D
+        scale: log
+        lower: 0.0015
+        center: 0.0033914772
+        upper: 0.008
+      gamma_pull:
+        path: method.ours.pulling.gamma_pull
+        scale: linear
+        lower: 0.15
+        center: 0.3
+        upper: 0.45
+      k_pull:
+        path: method.ours.pulling.k_pull
+        scale: linear
+        lower: 6.0
+        center: 8.0
+        upper: 10.0
+      routing_delta:
+        path: method.ours.routing_delta
+        scale: log
+        lower: 0.002
+        center: 0.005
+        upper: 0.02
+  grid:
+    knobs:
+    - tau_D
+    - gamma_pull
+    - k_pull
+    - routing_delta
+    drop_if_weight_lt: 0.0
+    baseline_search_epochs: 3
+    baseline_search_max_steps: 200
+    sensitivity_epochs: 1
+    grid_epochs: 3
+    grid_max_steps: 200
+    sens_samples_per_knob: 40
+    sens_seed: 2
+    rng_seed: 2026
+    max_retries: 3
+    max_m_float: 7
+    max_m_choice: 0
+    bayes_rng_seed: 20260211
+    bayes_pool: 256
+    bayes_gp_length: 0.6
+    bayes_gp_var: 1.0
+    bayes_gp_noise: 1e-3
+    bayes_ei_xi: 0.01
+    rerank:
+      enabled: true
+      top_k: 10
+      epochs: 6
+      max_steps: 500
+      seeds:
+      - 2
+      - 3
+    alpha_probe:
+      enabled: true
+      num_alpha: 2
+      num_lr: 2
+      seeds:
+      - 2
+      - 3
+      epochs: 3
+    knob_specs:
+      tau_D:
+        kind: float
+        lo: 0.0015
+        hi: 0.008
+      gamma_pull:
+        kind: float
+        lo: 0.15
+        hi: 0.45
+      k_pull:
+        kind: float
+        lo: 6.0
+        hi: 10.0
+      routing_delta:
+        kind: float
+        lo: 0.002
+        hi: 0.02
+  ablations:
+    enabled: false
+    no_gate: true
+    no_compensation: true
+stage: final
+final:
+  epochs: 8
+  seeds:
+  - 2
+  - 3
+  - 5
+  - 7
+  - 11
+  ablations:
+    enabled: false
+    no_gate: true
+    no_compensation: true
+_provenance:
+  base_config_path: configs/base.yaml
+  schedule_path: configs/schedules/final.yaml
+  cli_set_args:
+  - io.root=/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_deberta_rte
+  - task.name=glue/rte
+  - model.name=microsoft/deberta-v3-base
+  - task.scenario=single_task
+  - task.multi.enabled=false
+  - train.epochs=8
+  - hpo.bandit.refine_seeds=[2,3]
+  - hpo.grid.rerank.seeds=[2,3]
+  - train.compile=false
+  - method.baseline_r.lora.r=32
+  - method.ours.lora.r=32
+  - method.baseline_R.lora.r=128
+  - method.ours.lora.R=128
+  - train.epochs=8
+  - final.epochs=8
+  - final.seeds=[2, 3, 5, 7, 11]
+  - io.run_dir=/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_deberta_rte/final__paper-suite-main-single-deberta-rte__from_20260315-180020__7021b9dc__t96-runbase-hbsms100-hgms100-hrrms100-fep8__20260316-104730
+  - io.overwrite=resume
