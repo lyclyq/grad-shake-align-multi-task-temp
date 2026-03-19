@@ -1,0 +1,69 @@
+{
+  "best_path": "/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_deberta_sst2/hpo__single_task_glue_sst2__microsoft_deberta-v3-base__ours__ep8__bs32__lr2e-5__hpo__t96__bsms100__gms100__rrms100__runep8__20260317-054105__1263963f/best_hparams.json",
+  "debug_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_deberta_sst2/hpo__single_task_glue_sst2__microsoft_deberta-v3-base__ours__ep8__bs32__lr2e-5__hpo__t96__bsms100__gms100__rrms100__runep8__20260317-054105__1263963f",
+  "debug_hash": "1263963f",
+  "debug_name": "hpo__single_task_glue_sst2__microsoft_deberta-v3-base__ours__ep8__bs32__lr2e-5__hpo__t96__bsms100__gms100__rrms100__runep8__20260317-054105__1263963f",
+  "debug_timestamp": "20260317-054105",
+  "final_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_deberta_sst2/final__paper-suite-main-single-deberta-sst2__from_20260317-054105__1263963f__t96-runbase-hbsms100-hgms100-hrrms100-fep8__20260318-174949",
+  "sets": {
+    "global": [
+      "io.root=/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_deberta_sst2",
+      "task.name=glue/sst2",
+      "model.name=microsoft/deberta-v3-base",
+      "task.scenario=single_task",
+      "task.multi.enabled=false",
+      "train.epochs=8",
+      "hpo.bandit.refine_seeds=[2,3]",
+      "hpo.grid.rerank.seeds=[2,3]",
+      "train.compile=false",
+      "method.baseline_r.lora.r=32",
+      "method.ours.lora.r=32",
+      "method.baseline_R.lora.r=128",
+      "method.ours.lora.R=128"
+    ],
+    "hpo_only": [
+      "hpo.budget.total_trials=96",
+      "hpo.grid.rerank.epochs=1",
+      "hpo.grid.baseline_search_epochs=1",
+      "hpo.grid.grid_epochs=1",
+      "hpo.grid.baseline_search_max_steps=100",
+      "hpo.grid.grid_max_steps=100",
+      "hpo.grid.rerank.max_steps=100"
+    ],
+    "ours_only": []
+  },
+  "spec": {
+    "ablate_interp": false,
+    "dataset": "glue/sst2",
+    "epochs": 8,
+    "final_epochs": 8,
+    "final_seeds": [
+      2,
+      3,
+      5,
+      7,
+      11
+    ],
+    "history_enabled": false,
+    "hpo_baseline_epochs": 1,
+    "hpo_baseline_max_steps": 100,
+    "hpo_grid_epochs": 1,
+    "hpo_grid_max_steps": 100,
+    "hpo_rerank_max_steps": 100,
+    "max_steps": null,
+    "model": "microsoft/deberta-v3-base",
+    "multi_datasets": null,
+    "multi_drop_last": null,
+    "multi_enabled": null,
+    "multi_steps_mode": null,
+    "ours_R": 128,
+    "ours_r": 32,
+    "rerank_enabled": null,
+    "rerank_epochs": 1,
+    "rerank_top_k": null,
+    "runs_group": "paper_suite_main_single_deberta_sst2",
+    "scenario": "single_task",
+    "total_trials": 96,
+    "with_ablations": false
+  }
+}
