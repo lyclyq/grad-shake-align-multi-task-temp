@@ -1,0 +1,41 @@
+{
+  "budget": {
+    "bayes_trials": 48,
+    "method_orders": {
+      "ours": [
+        "tau_D",
+        "gamma_pull",
+        "k_pull",
+        "routing_delta"
+      ]
+    },
+    "refine_radix": 3,
+    "shared_order": [
+      "lr",
+      "warmup_ratio",
+      "batch_size"
+    ],
+    "top_k": 3,
+    "total_trials_per_family": 96
+  },
+  "hpo_train_schedule": {
+    "bayes": {
+      "epochs": 1,
+      "max_steps": 300,
+      "trials": 48
+    },
+    "coord_search": {
+      "configured_max_steps": 300,
+      "epochs": 1,
+      "max_steps": 300
+    },
+    "global_train_max_steps": 1000,
+    "local_refine": {
+      "configured_max_steps": 300,
+      "epochs": 1,
+      "max_steps": 300
+    },
+    "mode": "max_steps"
+  },
+  "mode": "ours_only"
+}
