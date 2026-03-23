@@ -1,0 +1,27 @@
+{
+  "method": "baseline_cagrad_r",
+  "trial_idx": 13,
+  "lr": 0.00014050561584861255,
+  "score": 0.5667870036101084,
+  "val_max": 0.5667870036101084,
+  "val_final": 0.5667870036101084,
+  "val_avg": 0.5667870036101084,
+  "seed_metrics": [
+    {
+      "seed": 2,
+      "score": 0.5270758122743683,
+      "val_max": 0.5270758122743683,
+      "val_final": 0.5270758122743683,
+      "val_avg": 0.5270758122743683,
+      "metrics_csv": "/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_roberta_rte/hpo__ours-cagrad-lr20__from_final__paper-suite-main-single-roberta-rte__from_20260312-172549__a580ffcd__t96-runbase-hbsms100-hgms100-hrrms100-fep8__20260313-063937__ours_cagrad_lr20__20260323-093712/baseline_cagrad_r/trial_runs/baseline_cagrad_r/lr_13/s2/metrics.csv"
+    },
+    {
+      "seed": 3,
+      "score": 0.6064981949458483,
+      "val_max": 0.6064981949458483,
+      "val_final": 0.6064981949458483,
+      "val_avg": 0.6064981949458483,
+      "metrics_csv": "/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_roberta_rte/hpo__ours-cagrad-lr20__from_final__paper-suite-main-single-roberta-rte__from_20260312-172549__a580ffcd__t96-runbase-hbsms100-hgms100-hrrms100-fep8__20260313-063937__ours_cagrad_lr20__20260323-093712/baseline_cagrad_r/trial_runs/baseline_cagrad_r/lr_13/s3/metrics.csv"
+    }
+  ]
+}

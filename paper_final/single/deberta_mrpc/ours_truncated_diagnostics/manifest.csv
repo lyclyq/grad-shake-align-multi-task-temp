@@ -1,0 +1,6 @@
+metric,csv,png
+train/gate0_trigger_rate,gate0_trigger_rate.csv,gate0_trigger_rate.png
+train/pull_to_r_rate,pull_to_r_rate.csv,pull_to_r_rate.png
+train/pull_to_R_rate,pull_to_R_rate.csv,pull_to_R_rate.png
+train/alpha_pull_to_r_mean,alpha_pull_to_r_mean.csv,alpha_pull_to_r_mean.png
+train/alpha_pull_to_R_mean,alpha_pull_to_R_mean.csv,alpha_pull_to_R_mean.png

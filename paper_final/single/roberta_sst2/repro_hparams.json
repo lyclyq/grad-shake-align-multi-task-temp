@@ -1,0 +1,48 @@
+{
+  "dataset": "roberta_sst2",
+  "final_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_roberta_sst2/final__paper-suite-main-single-roberta-sst2__from_20260313-214718__0bba73b8__t96-runbase-hbsms100-hgms100-hrrms100-fep8__20260315-003216",
+  "cutoff_step": 6315,
+  "baseline_r": {
+    "train.lr": 3.935514593087578e-05,
+    "train.warmup_ratio": 0.01363636363636364,
+    "train.epochs": 8,
+    "train.batch_size": 32,
+    "method.name": "baseline_r",
+    "lora.r": 32,
+    "grad_solver": "avg",
+    "cagrad.c": 0.4
+  },
+  "baseline_R": {
+    "train.lr": 6.941803164017966e-05,
+    "train.warmup_ratio": 0.09545454545454546,
+    "train.epochs": 8,
+    "train.batch_size": 32,
+    "method.name": "baseline_R",
+    "lora.r": 128,
+    "grad_solver": "avg",
+    "cagrad.c": 0.4
+  },
+  "ours": {
+    "train.lr": 3.524330721078912e-05,
+    "train.warmup_ratio": 0.19374999999999998,
+    "train.epochs": 8,
+    "train.batch_size": 32,
+    "method.name": "ours",
+    "lora.r": 32,
+    "lora.R": 128,
+    "lora.alpha": 16.0,
+    "lora.dropout": 0.1,
+    "routing_delta": 0.004999999999999999,
+    "tau_N": 0.6,
+    "tau_D": 0.0052088211334235714,
+    "gamma_pull": 0.3,
+    "k_pull": 6.857142857142857,
+    "votes": 4,
+    "samples_per_vote": 4,
+    "allow_tail": true,
+    "keep_single_votes": true,
+    "ema_H": 1,
+    "compensation.enabled": true,
+    "compensation.ridge_lambda": 0.0001
+  }
+}

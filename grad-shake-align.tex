@@ -86,17 +86,10 @@
 
 
 \begin{abstract}
-We present \textit{Gradient Shake-to-Align}, a diagnostic-first training paradigm for Dual-Rank LoRA that stabilizes learning in information-limited regimes.
-Our core idea is to treat the rank-$r$ core and the rank-$R$ extension as two resolution views of the same update and to use online cosine-based gradient consistency as evidence for when cross-resolution intervention is necessary.
+Parameter-efficient fine-tuning with LoRA depends critically on rank choice, yet a larger rank does not necessarily outperform a smaller one on a given dataset. This is especially true in information-limited or heterogeneous regimes, where gradients are noisy, weakly supported, or conflicting across samples and tasks. In such settings, rank selection becomes both a practical burden and an optimization problem: the key question is not simply which rank is best offline, but which rank provides the more trustworthy gradient direction at each training step under a fixed parameter budget.
 
-At each optimization step, we construct a set of gradient voters and compute instantaneous internal consistencies within each resolution, together with cross-resolution directional agreement.
-Rather than enforcing alignment a priori, we introduce a sparse global trigger (Gate-0) that activates cross-resolution reconciliation only when internal unreliability or directional deviation is detected.
+We propose Gradient Shake-to-Align, a diagnostic-first framework that treats a nested rank-$r$ core and rank-$R$ extension as two gradient views of the same update. At each optimization step, cosine-based diagnostics computed from micro-batch votes measure internal consistency within each rank and directional deviation across ranks. These signals determine whether sparse cross-rank intervention is needed and which direction should be trusted. Under the nested parameterization, the low-rank head is preserved as the structural anchor, while the higher-rank branch is allowed to realize only residual semantics supported by consistency evidence. Operating in normalized gradient space, the method provides a scale-invariant way to use the internal orderliness of sample-induced gradient structure itself as a source of constraint and reference. This yields stable performance in standard single-task training and stronger robustness than baseline methods in multi-task settings with pronounced gradient conflict.
 
-Under the nested $(r,hi)$ parameterization, the rank-$R$ update is not allowed to overwrite the rank-$r$ core.
-We therefore execute the trusted head direction at rank $r$ and realize the remaining rank-$R$ semantics through the extension branch using a scale-invariant residual compensation mechanism.
-All diagnostic and reconciliation operations are performed in a normalized gradient space, ensuring invariance to LoRA scaling conventions.
-
-This framework preserves stable low-rank structure when reliable, absorbs heterogeneous gradients when necessary, and provides a unified mechanism for handling stochastic instability and resolution-level conflict within parameter-efficient fine-tuning.
 
 \end{abstract}
 
@@ -116,75 +109,79 @@ This framework preserves stable low-rank structure when reliable, absorbs hetero
 Parameter-efficient fine-tuning (PEFT) methods such as LoRA~\cite{hu2022lora}
 are built on the premise that most task-specific updates can be represented
 within a low-rank subspace.
-This assumption has proven effective in many large-scale settings.
-However, in \emph{information-limited regimes}---including small datasets,
-high-entropy labels, heterogeneous supervision, or multi-task mixtures---
-the observed gradients are often noisy, unstable, and mutually inconsistent
-across minibatches and data shards~\cite{yu2020pcgrad,liu2021cagrad}.
+This assumption is often effective, but in practice the choice of rank is
+highly data-dependent.
+A larger rank does not necessarily yield better adaptation than a smaller one
+on a given dataset, especially in \emph{information-limited regimes}---including
+small datasets, high-entropy labels, heterogeneous supervision, or multi-task
+mixtures---where gradients are noisy, weakly supported, and often inconsistent
+across samples and minibatches~\cite{yu2020pcgrad,liu2021cagrad}.
 
-In such regimes, naive gradient averaging may amplify stochastic noise
-or cause destructive interference between incompatible updates.
-At the same time, enforcing a fixed low-rank constraint too early can distort
-structured but weakly supported signals.
-Recent evidence further suggests that the effective adaptation subspace
-may evolve during training~\cite{aghajanyan2021intrinsic,zhang2023adalora},
-making premature compression particularly brittle.
+This creates both a practical and a conceptual challenge.
+Practically, selecting a suitable LoRA rank usually requires manual search over
+discrete candidates, which is expensive and brittle.
+Conceptually, existing PEFT methods mostly treat rank as a static capacity
+choice, even though the reliability of the induced gradients can vary over the
+course of training.
+A higher-rank parameterization provides more flexibility, but may absorb
+stochastic noise or task-specific interference.
+A lower-rank parameterization is more restrictive, yet can sometimes expose a
+cleaner and more stable optimization direction.
 
-These observations raise a fundamental question:
-\emph{what online evidence should guide when and how low-rank structure
-ought to be trusted during optimization?}
-More specifically, can reliability of gradient information be inferred
-intrinsically from the interaction between parameter resolutions,
-rather than imposed through static constraints or explicit regularizers?
+These observations suggest that the central question is not simply
+\emph{which rank is better}, but rather:
+\emph{at each optimization step, which rank provides the more trustworthy
+gradient direction for the current data and training state?}
+If such reliability can be inferred online, rank selection no longer needs to
+be treated purely as an offline hyperparameter search problem.
 
-\subsection{Core Insight: Multi-Resolution Parameters as Reliability Estimators}
+\subsection{Core Insight: Nested Ranks as Online Reliability Probes}
 
-Our key insight is that different parameter resolutions provide
-complementary views of the same gradient signal.
-High-resolution (high-rank) parameterizations offer expressive capacity
-and can absorb heterogeneous or weak signals,
-but are more susceptible to transient noise and overfitting.
-Low-resolution (low-rank) parameterizations are capacity-limited,
-yet often capture more stable and compressible structure
-when the underlying signal is reliable.
+Our key insight is that nested LoRA parameterizations with different ranks
+provide complementary resolutions of the same update signal.
+The smaller rank captures the most compressible and structurally stable part of
+the adaptation, while the larger rank retains additional flexibility for
+residual semantics that cannot be expressed in the low-rank core.
 
-Crucially, the \emph{contrast} between gradient behaviors observed at low
-and high resolutions provides an intrinsic \emph{online reliability estimator}.
-When gradient directions agree across resolutions,
-the signal is likely coherent and compressible.
-When persistent disagreement arises,
-it may indicate either insufficient capacity at low rank
-or dominance of stochastic noise at high rank.
-In this sense, resolution contrast acts as a diagnostic mechanism
-embedded directly within the parameterization itself.
+Importantly, we do not assume that the larger rank should always dominate.
+Instead, the interaction between the two ranks provides an intrinsic diagnostic
+signal.
+When low- and high-rank views exhibit consistent gradient structure, the update
+is more likely to be reliable and semantically aligned across resolutions.
+When they disagree, the discrepancy may reveal high-rank overfitting,
+low-rank under-capacity, or gradient conflict induced by noisy or heterogeneous
+samples.
 
-This perspective reframes low-rank adaptation not as a static constraint,
-but as a dynamic, evidence-driven process:
-low-rank structure is preserved when reliable,
-and higher-resolution flexibility is engaged only when justified
-by consistency signals.
+This turns nested rank design into more than a capacity decomposition:
+it becomes a mechanism for online reliability estimation.
+Rather than manually searching for a single best rank, we use the internal
+structure of gradient space to determine which direction is more trustworthy at
+each step, and to constrain high-rank execution accordingly.
 
-\subsection{Gradient Shake-to-Align: Multi-View Diagnostics in Gradient Space}
+\subsection{Gradient Shake-to-Align: Reliability-Guided Direction Selection}
 
 We introduce \emph{Gradient Shake-to-Align}, a diagnostic-first framework
-that operationalizes this principle through structured gradient voting.
-Within each optimization step, gradients are partitioned into multiple
-voters, enabling the computation of cosine-based internal consistencies
-within each resolution and cross-resolution directional agreement.
+that uses nested low- and high-rank LoRA views to identify trustworthy update
+directions during training.
+At each optimization step, gradients are partitioned into multiple voters,
+allowing us to measure internal consistency within each rank and directional
+agreement across ranks.
 
-Rather than immediately enforcing consensus,
-these diagnostics determine \emph{when} intervention is necessary.
-When agreement is high, updates proceed independently within each view.
-When unreliability or deviation is detected,
-a sparse global trigger activates cross-resolution reconciliation
-under a nested low-rank constraint.
+These signals are used not to enforce constant alignment, but to determine
+whether intervention is necessary.
+When the gradient structure is coherent, each rank proceeds with its own update.
+When inconsistency or conflict becomes prominent, the method activates a sparse
+cross-rank reconciliation mechanism that selects the more trustworthy direction
+based on consistency evidence.
+The low-rank head is preserved as the structural anchor, while the higher-rank
+component is constrained to realize only residual semantics outside the trusted
+core.
 
-Importantly, reconciliation does not overwrite the low-rank core.
-Instead, trusted directions are selected based on consistency evidence,
-and higher-rank parameters realize only the residual semantics
-that cannot be expressed within the low-rank head.
-This design increases the effective information density of each step
-without introducing additional parameters or altering the base optimizer.
+In this sense, our method uses the geometry and orderliness of the
+sample-induced gradient space itself as a source of constraint and reference.
+It improves optimization stability in standard single-task settings and is
+particularly beneficial in multi-task regimes, where gradient conflict is more
+severe and direction reliability becomes a central challenge.
 
 \subsection{Contributions}
 
@@ -192,34 +189,27 @@ We summarize our contributions as follows:
 
 \begin{itemize}
 
-    \item \textbf{Online multi-resolution gradient distillation.}
-    We propose a new diagnostic paradigm in which low- and high-rank
-    parameterizations act as complementary gradient views.
-    Cross-resolution consistency is treated as online evidence,
-    enabling adaptive distillation between resolutions rather than
-    enforcing fixed low-rank behavior a priori.
+    \item \textbf{We reformulate rank selection as an online reliability problem.}
+    Instead of assuming that a larger LoRA rank is always preferable, or
+    treating rank choice purely as offline hyperparameter tuning, we ask which
+    rank provides the more trustworthy gradient direction at each training step.
 
-    \item \textbf{Structure-induced implicit regularization.}
-    Instead of introducing explicit regularization objectives,
-    we stabilize high-rank updates by anchoring them to the
-    internally consistent low-rank core.
-    This nested resolution interaction suppresses high-frequency noise
-    and overfitting through structural coupling alone.
+    \item \textbf{We propose a nested-rank diagnostic framework for trustworthy update selection.}
+    Our method uses low- and high-rank LoRA parameterizations as complementary
+    gradient views and leverages their internal consistency and cross-rank
+    agreement to evaluate directional reliability online.
 
-    \item \textbf{Consistency-driven direction selection under conflict.}
-    In multi-view and multi-task settings,
-    gradient conflict is resolved via internal consistency comparison
-    across resolutions.
-    The framework selects trusted execution directions based on
-    reliability signals, enabling sparse and targeted reconciliation
-    without modifying the underlying optimizer.
+    \item \textbf{We introduce a structure-driven execution rule under a fixed parameter budget.}
+    Without exceeding the trainable parameter count of a comparable
+    single large-rank LoRA, our framework preserves the low-rank head as a
+    trusted structural core and constrains the high-rank component to realize
+    residual semantics only when supported by consistency evidence.
 
-    \item \textbf{Stable execution under nested low-rank constraints.}
-    We introduce a constrained execution rule that preserves the
-    low-rank head exactly while allowing higher-rank extensions
-    to realize residual semantics.
-    This guarantees semantic closure and stabilizes training
-    in information-limited regimes.
+    \item \textbf{We provide a gradient-space regularization perspective that is especially effective under conflict.}
+    The method uses the orderliness of sample-induced gradient structure itself
+    as a source of constraint and reference, yielding stable performance in
+    standard single-task training and stronger robustness than baseline methods
+    in multi-task settings with pronounced gradient conflict.
 \end{itemize}
 \section{Related Work and Limitations}
 
@@ -230,26 +220,25 @@ gradient conflicts when different objectives or data sources disagree.
 Representative approaches include PCGrad~\cite{yu2020pcgrad},
 which projects conflicting gradients to reduce interference,
 and CAGrad~\cite{liu2021cagrad}, which seeks a conflict-averse descent direction
-by optimizing a worst-case objective.
+by optimizing a worst-case objective so that progress on one task does not come
+at the expense of severe degradation on others.
 These methods highlight the limitations of naive gradient averaging
 in the presence of heterogeneous or conflicting signals.
 
-However, most conflict-handling approaches treat disagreement as something to be
-resolved immediately at the direction-construction level,
-without explicitly diagnosing its underlying cause.
-In practice, gradient disagreement may arise from fundamentally different sources,
-including irreducible stochastic noise~\cite{yin2018gradient},
-capacity mismatch between parameterizations,
-or structured but weakly supported signals.
-Treating all conflicts uniformly can obscure whether disagreement
-reflects noise, insufficient capacity, or meaningful heterogeneity.
+However, these methods primarily aim to construct a better descent direction
+once conflict is observed, rather than asking why the conflict arises or whether
+one parameterization is more trustworthy than another.
+In practice, disagreement may stem from stochastic noise~\cite{yin2018gradient},
+capacity mismatch, or structured but weakly supported signals.
+Treating all conflicts uniformly can therefore obscure whether disagreement
+reflects noise, insufficient rank, or meaningful heterogeneity.
 
 Our work departs from immediate conflict resolution and instead treats
-cross-view gradient agreement as an \emph{online reliability signal}.
+cross-rank gradient agreement as an \emph{online reliability signal}.
 Rather than modifying the descent objective directly,
-we compare internal consistencies across parameter resolutions
-and use this contrast to determine \emph{whether} and \emph{when}
-cross-resolution intervention is warranted.
+we compare internal consistencies across nested parameter resolutions
+and use this contrast to determine \emph{whether}, \emph{when}, and
+\emph{which rank direction} should guide cross-resolution intervention.
 
 \subsection{Low-Rank Adaptation, Adaptive Capacity, and Subspace Drift}
 
@@ -272,35 +261,28 @@ is trusted prematurely or enforced without reliability evidence.
 
 Our framework addresses this issue from a \emph{diagnostic perspective}.
 Rather than adapting capacity solely based on parameter statistics,
-we use cross-resolution gradient consistency as an intrinsic reliability estimator.
+we use cross-rank gradient consistency as an intrinsic reliability estimator.
 Low-rank structure is preserved when supported by internal agreement,
-while higher-resolution flexibility remains decoupled when signals are unstable.
-This shifts the focus from static rank control to evidence-driven execution control.
+while higher-rank flexibility remains available but constrained when signals are
+unstable.
+This shifts the focus from static rank control to evidence-driven execution
+control under a fixed parameter budget.
 
-\subsection{Gradient Compression and Residual Preservation}
+\subsection{Residual Information and Evidence-Driven Consolidation}
 
-A related line of work studies gradient compression and approximation techniques,
-showing that discarding update components without retaining residual information
-can impair convergence, and that error feedback mechanisms are often required
-for stability~\cite{karimireddy2019error}.
-Low-rank compression schemes such as PowerSGD~\cite{vogels2019powersgd}
-demonstrate that structured approximations can significantly reduce
-communication or storage costs.
+Work on gradient compression and approximation shows that discarding update
+components without retaining residual information can impair convergence, and
+that error feedback is often important for stability~\cite{karimireddy2019error}.
+Low-rank approximation methods such as PowerSGD~\cite{vogels2019powersgd}
+further illustrate that structured update compression can be effective.
 
-While effective in distributed or communication-limited settings,
-most gradient compression methods treat residuals as undifferentiated numeric
-artifacts, without distinguishing stochastic noise from structured but
-temporarily misaligned signals.
-Compression decisions are typically based on magnitude or bandwidth constraints,
-rather than diagnostic evidence about reliability.
-
-In contrast, our framework emphasizes \emph{diagnosis before consolidation}.
-We do not assume that all information should be immediately compressed or merged.
-Instead, we use internal agreement across resolutions as evidence
-for when consolidation or alignment is appropriate.
-In our current setting, this principle manifests as sparse cross-resolution
-alignment rather than explicit compression,
-but the underlying idea remains evidence-driven update control.
+Our setting is different: we are not primarily compressing gradients for
+communication or storage.
+The relevance of this line of work is conceptual.
+It suggests that information outside a compressed core should not be discarded
+blindly.
+Our method follows the same principle, but uses cross-rank agreement to decide
+when residual semantics should remain decoupled and when alignment is justified.
 
 \subsection{Summary of Limitations in Existing Paradigms}
 
@@ -311,11 +293,11 @@ grounded in gradient agreement,
 or (iii) treat residual information uniformly without separating noise
 from structured but weakly supported signals.
 
-Our approach bridges these gaps by leveraging cross-resolution gradient consistency
+Our approach bridges these gaps by leveraging cross-rank gradient consistency
 as an intrinsic online reliability signal.
-This enables sparse and targeted intervention in low-rank training,
-reframing PEFT as an evidence-driven execution process
-rather than a static structural constraint.
+This enables sparse and targeted intervention in nested-rank training,
+reframing PEFT as an evidence-driven execution process rather than a static
+structural constraint or a one-shot rank-selection problem.
 % =========================
 % Existing section (keep your original text)
 % =========================
@@ -875,6 +857,66 @@ i.e., $\{B_m\}_{m\in\mathcal{M}}$ with $B_m \sim \mathcal{D}_m$ (via independent
 
 \end{algorithmic}
 \end{breakablealgorithm}
+\section{Experimental Results}
+\label{sec:exp-results}
+
+We report final validation accuracy at the selected cutoff step for six
+single-task settings: DeBERTa/MRPC, DeBERTa/RTE, DeBERTa/SST-2,
+RoBERTa/MRPC, RoBERTa/RTE, and RoBERTa/SST-2.
+The \textbf{Overall} column is the unweighted mean across these six datasets.
+We compare four lines: \textit{ours r}, \textit{ours R}, \textit{baseline r},
+and \textit{baseline R}.
+
+\begin{table}[H]
+\centering
+\caption{Final validation accuracy at the selected cutoff step. The
+\textbf{Overall} column is the mean across all six datasets.}
+\label{tab:final-val-acc}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccc}
+\toprule
+Method & DeBERTa/MRPC & DeBERTa/RTE & DeBERTa/SST-2 & RoBERTa/MRPC & RoBERTa/RTE & RoBERTa/SST-2 & Overall \\
+\midrule
+ours r     & 0.8799 & \textbf{0.8195} & \textbf{0.9360} & \textbf{0.8863} & 0.7668 & 0.9298 & \textbf{0.8697} \\
+ours R     & \textbf{0.8814} & 0.8166 & 0.9358 & 0.8848 & 0.7661 & \textbf{0.9300} & 0.8691 \\
+baseline r & 0.8515 & 0.8130 & 0.9261 & 0.8765 & 0.7444 & 0.9264 & 0.8563 \\
+baseline R & 0.8676 & 0.7675 & 0.9333 & 0.8696 & \textbf{0.7834} & 0.9032 & 0.8541 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+Table~\ref{tab:final-val-acc} shows that the proposed method is competitive on
+all datasets and achieves the best overall mean validation accuracy. In five of
+the six datasets, either \textit{ours r} or \textit{ours R} attains the best
+validation accuracy.
+
+\begin{table}[H]
+\centering
+\caption{Mean validation-accuracy variance between seeds over the \emph{entire}
+training process. The \textbf{Overall} column is the mean across all six
+datasets. Lower is better.}
+\label{tab:seed-variance}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccc}
+\toprule
+Method & DeBERTa/MRPC & DeBERTa/RTE & DeBERTa/SST-2 & RoBERTa/MRPC & RoBERTa/RTE & RoBERTa/SST-2 & Overall \\
+\midrule
+ours r     & 0.000700 & 0.000394 & 0.000173 & \textbf{0.000153} & 0.001092 & 0.000088 & \textbf{0.000433} \\
+ours R     & 0.000711 & 0.000478 & 0.000156 & 0.000165 & 0.001117 & 0.000100 & 0.000455 \\
+baseline r & 0.006457 & \textbf{0.000349} & 0.000151 & 0.000369 & \textbf{0.000691} & \textbf{0.000026} & 0.001340 \\
+baseline R & \textbf{0.001023} & 0.005951 & \textbf{0.000005} & 0.000192 & 0.000776 & 0.000114 & 0.001344 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+For the variance metric in Table~\ref{tab:seed-variance}, we do \textbf{not}
+measure only the endpoint variance. Instead, we compute the validation-accuracy
+variance \emph{between random seeds over the entire training process}, and then
+report the mean variance over steps for each method line on each dataset. This
+is therefore a full-process between-seed stability statistic.
+
 \section{Appendix: Single-Pass Streaming Accumulation}
 \label{app:kernel}
 

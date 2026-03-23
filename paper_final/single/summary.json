@@ -1,0 +1,17 @@
+{
+  "runs_root": "/home/lyclyq/Optimization/grad-shake-align/runs",
+  "output_root": "/home/lyclyq/Optimization/grad-shake-align/paper_final/single",
+  "datasets": [
+    "deberta_mrpc",
+    "deberta_rte",
+    "deberta_sst2",
+    "roberta_mrpc",
+    "roberta_rte",
+    "roberta_sst2"
+  ],
+  "assumptions": {
+    "cutoff_step_rule": "argmax over common steps of 0.5*((ours_r_only_mean-baseline_r_mean)+(ours_full_mean-baseline_R_mean))",
+    "variance_metric": "mean over steps<=cutoff of seed variance on validation accuracy for each method line",
+    "mrpc_roberta_source": "prefer latest ours-only compare final when present"
+  }
+}
