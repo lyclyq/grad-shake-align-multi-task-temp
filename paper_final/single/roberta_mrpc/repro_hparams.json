@@ -1,7 +1,7 @@
 {
   "dataset": "roberta_mrpc",
   "final_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_roberta_mrpc/final__ours-only-compare__from_final__paper-suite-main-single-roberta-mrpc__from_20260313-075536__83cd25d3__t96-runbase-hbsms100-hgms100-hrrms100-fep8__20260313-202540__ms300__ours300__20260321-212746",
-  "cutoff_step": 460,
+  "cutoff_step": 805,
   "baseline_r": {
     "train.lr": 4.535437839536398e-05,
     "train.warmup_ratio": 0.04545454545454546,
@@ -44,5 +44,7 @@
     "ema_H": 1,
     "compensation.enabled": true,
     "compensation.ridge_lambda": 0.0001
-  }
+  },
+  "selected_epoch": 7,
+  "selected_step": 805
 }

@@ -1,0 +1,4 @@
+dataset,epoch,step,baseline_r_max,baseline_r_final,baseline_r_total,baseline_R_max,baseline_R_final,baseline_R_total,ours_r_max,ours_r_final,ours_r_total,ours_R_max,ours_R_final,ours_R_total,baseline_avg_total,ours_avg_total,margin
+deberta_rte,7,546,0.851986,0.838267,0.842383,0.836823,0.831769,0.833285,0.842599,0.838989,0.840072,0.842599,0.838989,0.840072,0.837834,0.840072,0.002238
+roberta_rte,7,546,0.769675,0.744404,0.751986,0.787004,0.783394,0.784477,0.772563,0.766787,0.768520,0.774729,0.766065,0.768664,0.768231,0.768592,0.000361
+rte_avg,7,,,,,,,,,,,,,,0.803032,0.804332,0.001300

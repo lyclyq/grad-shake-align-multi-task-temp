@@ -44,5 +44,7 @@
     "ema_H": 1,
     "compensation.enabled": true,
     "compensation.ridge_lambda": 0.0001
-  }
+  },
+  "selected_epoch": 7,
+  "selected_step": 546
 }

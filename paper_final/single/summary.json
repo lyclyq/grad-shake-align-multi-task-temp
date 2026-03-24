@@ -9,9 +9,18 @@
     "roberta_rte",
     "roberta_sst2"
   ],
-  "assumptions": {
-    "cutoff_step_rule": "argmax over common steps of 0.5*((ours_r_only_mean-baseline_r_mean)+(ours_full_mean-baseline_R_mean))",
-    "variance_metric": "mean over steps<=cutoff of seed variance on validation accuracy for each method line",
-    "mrpc_roberta_source": "prefer latest ours-only compare final when present"
+  "selection": {
+    "task_epoch": {
+      "rte": 7,
+      "mrpc": 7,
+      "sst2": 2
+    },
+    "task_step": {
+      "rte": 546,
+      "mrpc": 805,
+      "sst2": 4210
+    },
+    "score_rule": "total = 0.7 * final + 0.3 * maximum",
+    "comparison_rule": "average(ours_r_total, ours_R_total) versus average(baseline_r_total, baseline_R_total)"
   }
 }

@@ -1,0 +1,6 @@
+group,epoch_choice,baseline_avg_total,ours_avg_total,margin
+rte,ep7,0.803032,0.804332,0.001300
+mrpc,ep7,0.883272,0.890748,0.007475
+sst2,ep2,0.925946,0.934530,0.008584
+overall_dataset_mean,mix,0.870750,0.876536,0.005786
+overall_task_mean,mix,0.870750,0.876536,0.005786

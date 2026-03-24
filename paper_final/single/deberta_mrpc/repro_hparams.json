@@ -1,7 +1,7 @@
 {
   "dataset": "deberta_mrpc",
   "final_dir": "/home/lyclyq/Optimization/grad-shake-align/runs/paper_suite_main_single_deberta_mrpc/final__paper-suite-main-single-deberta-mrpc__from_20260316-123229__a898c4db__t96-runbase-hbsms100-hgms100-hrrms100-fep8__20260317-034942",
-  "cutoff_step": 460,
+  "cutoff_step": 805,
   "baseline_r": {
     "train.lr": 8.000000000000003e-05,
     "train.warmup_ratio": 0.03636363636363637,
@@ -44,5 +44,7 @@
     "ema_H": 1,
     "compensation.enabled": true,
     "compensation.ridge_lambda": 0.0001
-  }
+  },
+  "selected_epoch": 7,
+  "selected_step": 805
 }
